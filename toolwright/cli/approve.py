@@ -494,12 +494,18 @@ def run_approve_check(
     else:
         click.echo(f"FAIL: {message}")
 
-        if verbose:
-            pending = manager.get_pending(toolset=toolset)
-            if pending:
+        pending = manager.get_pending(toolset=toolset)
+        if pending:
+            if verbose:
                 click.echo("\nPending tools:")
                 for tool in pending:
                     click.echo(f"  - {tool.name} [{tool.risk_tier}] {tool.method} {tool.path}")
+
+            pending_names = ", ".join(t.name for t in pending[:5])
+            if len(pending) > 5:
+                pending_names += f" (and {len(pending) - 5} more)"
+            click.echo("\nApprove with:")
+            click.echo(f"  toolwright gate allow --all --lockfile {manager.lockfile_path}")
 
         sys.exit(1)
 

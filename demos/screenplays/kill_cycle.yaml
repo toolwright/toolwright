@@ -1,0 +1,54 @@
+title: "Toolwright Circuit Breaker Lifecycle"
+output: "kill_cycle"
+variables:
+  demo_dir: "{{tmp_dir}}/toolwright_kill_demo"
+  tw: "/Users/thomasallicino/oss/toolwright/.venv/bin/toolwright"
+settings:
+  width: 1440
+  height: 900
+  font_size: 20
+  theme: "TokyoNightStorm"
+  padding: 24
+  window_bar: "Colorful"
+  framerate: 60
+  line_height: 1.15
+  letter_spacing: 0
+preinstall:
+  - "rm -rf {{demo_dir}} && mkdir -p {{demo_dir}}/.toolwright/state"
+scenarios:
+  - label: "Circuit Breaker Lifecycle"
+    surface: "terminal"
+    prompt:
+      style: "macos"
+      user: "user"
+      host: "dev"
+      path: "basename"
+      symbol: "%"
+    setup:
+      - "cd {{demo_dir}}"
+    actions:
+      - type: "{{tw}} kill search_api --reason 'API returning 500s' --breaker-state .toolwright/state/breakers.json"
+      - wait_for: "killed"
+        wait_mode: "screen"
+        wait_timeout: "5s"
+      - sleep: "800ms"
+      - type: "{{tw}} quarantine --breaker-state .toolwright/state/breakers.json"
+      - wait_for: "quarantine"
+        wait_mode: "screen"
+        wait_timeout: "5s"
+      - sleep: "800ms"
+      - type: "{{tw}} breaker-status search_api --breaker-state .toolwright/state/breakers.json"
+      - wait_for: "State:"
+        wait_mode: "screen"
+        wait_timeout: "5s"
+      - sleep: "1s"
+      - type: "{{tw}} enable search_api --breaker-state .toolwright/state/breakers.json"
+      - wait_for: "enabled"
+        wait_mode: "screen"
+        wait_timeout: "5s"
+      - sleep: "800ms"
+      - type: "{{tw}} quarantine --breaker-state .toolwright/state/breakers.json"
+      - wait_for: "No tools"
+        wait_mode: "screen"
+        wait_timeout: "5s"
+      - sleep: "1500ms"

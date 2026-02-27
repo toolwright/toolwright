@@ -1,0 +1,34 @@
+title: "Toolwright Quick Start"
+output: "quickstart"
+variables:
+  demo_dir: "{{tmp_dir}}/toolwright_quickstart"
+  tw: "/Users/thomasallicino/oss/toolwright/.venv/bin/toolwright"
+settings:
+  width: 1440
+  height: 900
+  font_size: 20
+  theme: "TokyoNightStorm"
+  padding: 24
+  window_bar: "Colorful"
+  framerate: 60
+  line_height: 1.15
+  letter_spacing: 0
+preinstall:
+  - "rm -rf {{demo_dir}} && mkdir -p {{demo_dir}}"
+scenarios:
+  - label: "Quick Start"
+    surface: "terminal"
+    prompt:
+      style: "macos"
+      user: "user"
+      host: "dev"
+      path: "basename"
+      symbol: "%"
+    setup:
+      - "cd {{demo_dir}}"
+    actions:
+      - type: "{{tw}} demo 2>&1"
+      - wait_for: "Results"
+        wait_mode: "screen"
+        wait_timeout: "30s"
+      - sleep: "3s"

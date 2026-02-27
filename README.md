@@ -10,6 +10,8 @@ Tool doesn't exist &rarr; tool exists &rarr; tool broke &rarr; **tool fixed** &r
 
 Point it at any web app. It discovers API endpoints, compiles governed MCP tools, and enforces safety policies -- all without writing a single line of code.
 
+![Toolwright governance demo](demos/outputs/hero.gif)
+
 ## Try It in 30 Seconds
 
 ```bash
@@ -290,6 +292,8 @@ toolwright serve --toolpack toolpack.yaml --rules-path .toolwright/rules.json
 When an agent violates a rule, Toolwright returns structured feedback explaining what went wrong and how to fix it -- no retraining required.
 
 ### Circuit Breakers (KILL Pillar)
+
+![Circuit breaker lifecycle demo](demos/outputs/kill_cycle.gif)
 
 Per-tool circuit breakers automatically trip after repeated failures and recover after a timeout. Operators can also manually kill or enable tools:
 

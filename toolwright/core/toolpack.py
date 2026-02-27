@@ -128,11 +128,21 @@ class ResolvedToolpackPaths:
 
 def load_toolpack(toolpack_path: str | Path) -> Toolpack:
     """Load and validate a toolpack YAML file."""
+    from pydantic import ValidationError
+
     resolved = Path(toolpack_path)
     with open(resolved) as f:
         payload = yaml.safe_load(f) or {}
     resolve_schema_version(payload, artifact="toolpack", allow_legacy=False)
-    return Toolpack(**payload)
+    try:
+        return Toolpack(**payload)
+    except ValidationError as e:
+        missing = [err["loc"][-1] for err in e.errors() if err["type"] == "missing"]
+        if missing:
+            msg = f"Invalid toolpack {resolved}: missing required fields: {', '.join(str(f) for f in missing)}"
+        else:
+            msg = f"Invalid toolpack {resolved}: {len(e.errors())} validation error(s)"
+        raise ValueError(msg) from e
 
 
 def write_toolpack(toolpack: Toolpack, toolpack_path: str | Path) -> None:

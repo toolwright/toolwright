@@ -1,0 +1,98 @@
+title: "Toolwright: API Governance for AI Agents"
+output: "hero"
+variables:
+  demo_dir: "{{tmp_dir}}/toolwright_hero"
+  tw: "/Users/thomasallicino/oss/toolwright/.venv/bin/toolwright"
+settings:
+  width: 1440
+  height: 900
+  font_size: 20
+  theme: "TokyoNightStorm"
+  padding: 24
+  window_bar: "Colorful"
+  framerate: 60
+  line_height: 1.15
+  letter_spacing: 0
+preinstall:
+  - "rm -rf {{demo_dir}} && mkdir -p {{demo_dir}}/before {{demo_dir}}/after"
+  - |
+    cat > {{demo_dir}}/before/unsafe_agent.sh <<'SH'
+    #!/bin/bash
+    echo ""
+    echo "  AI Agent: Let me clean up the old user data..."
+    sleep 0.5
+    echo ""
+    echo '  $ curl -X DELETE https://api.example.com/users/all'
+    sleep 0.3
+    echo '  {"deleted": 1847, "status": "ok"}'
+    echo ""
+    sleep 0.5
+    echo "  AI Agent: Done! Deleted 1,847 users."
+    echo ""
+    echo "  No approval required."
+    echo "  No audit trail."
+    echo "  No way to undo."
+    echo ""
+    SH
+  - "chmod +x {{demo_dir}}/before/unsafe_agent.sh"
+  - |
+    cat > {{demo_dir}}/after/governed_agent.sh <<'SH'
+    #!/bin/bash
+    echo ""
+    echo "  AI Agent: Let me clean up the old user data..."
+    sleep 0.5
+    echo ""
+    echo '  Calling: delete_all_users'
+    sleep 0.3
+    echo ""
+    echo '  [DENIED] Policy violation'
+    echo '    Tool:   delete_all_users'
+    echo '    Risk:   critical'
+    echo '    Reason: requires operator confirmation'
+    echo '    Action: request approval via toolwright gate allow'
+    echo ""
+    sleep 0.5
+    echo '  Safe tools (approved, low risk):'
+    echo '    get_users        GET  /api/users          [approved]'
+    echo '    get_user          GET  /api/users/{id}     [approved]'
+    echo '    get_products      GET  /api/products       [approved]'
+    echo ""
+    echo '  Blocked tools (pending approval):'
+    echo '    delete_all_users  DELETE /api/users/all    [pending]'
+    echo '    drop_database     DELETE /api/db           [pending]'
+    echo ""
+    SH
+  - "chmod +x {{demo_dir}}/after/governed_agent.sh"
+scenarios:
+  - label: "Without Governance"
+    surface: "terminal"
+    prompt:
+      style: "macos"
+      user: "user"
+      host: "dev"
+      path: "basename"
+      symbol: "%"
+    setup:
+      - "cd {{demo_dir}}/before"
+    actions:
+      - type: "bash unsafe_agent.sh"
+      - wait_for: "No way to undo"
+        wait_mode: "screen"
+        wait_timeout: "10s"
+      - sleep: "2s"
+  - label: "With Toolwright"
+    surface: "terminal"
+    prompt:
+      style: "macos"
+      user: "user"
+      host: "dev"
+      path: "basename"
+      symbol: "%"
+    setup:
+      - "cd {{demo_dir}}/after"
+    actions:
+      - type: "bash governed_agent.sh"
+      - wait_for: "pending"
+        wait_mode: "screen"
+        wait_timeout: "10s"
+      - sleep: "2s"
