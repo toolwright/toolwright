@@ -43,12 +43,14 @@ Classify tools by risk tier (low/medium/high/critical) based on HTTP method, pat
 
 ### CAP-CONNECT-005: Authentication Detection
 
-Automatically detect and extract auth patterns (Bearer, OAuth, API keys) from captured traffic.
+Automatically detect and extract auth patterns (Bearer, OAuth, API keys) from captured traffic. Results are stored as `ToolpackAuthRequirement` concrete models in `toolpack.yaml` with pre-computed env var names.
 
-- `toolwright/core/auth/detector.py` -> `AuthDetector`
+- `toolwright/core/auth/detector.py` -> `detect_auth_requirements()`
+- `toolwright/core/toolpack.py` -> `ToolpackAuthRequirement`, `build_auth_requirements()`
 - `toolwright/core/auth/provider.py` -> `TokenProvider` (protocol)
 - `toolwright/core/auth/profiles.py` -> Auth profiles
-- CLI: `toolwright auth`
+- CLI: `toolwright auth`, `toolwright auth check`
+- Auth display: shown in `mint` output after compile, with env var export suggestions
 
 ### CAP-CONNECT-011: OAuth2 Credential Provider
 
@@ -68,11 +70,11 @@ Single command to capture API traffic via browser, compile tools, and publish a 
 
 ### CAP-CONNECT-007: MCP Server Provisioning
 
-Start a governed MCP server on stdio transport serving compiled tools. Supports auth via env vars, per-host auth, and CLI flag.
+Start a governed MCP server on stdio transport serving compiled tools. Supports auth via env vars, per-host auth, and CLI flag. Toolpack path auto-resolves when omitted.
 
 - `toolwright/mcp/server.py` -> `ToolwrightMCPServer`, `_resolve_auth_for_host()`
-- `toolwright/cli/mcp.py` -> `run_mcp_serve()`
-- CLI: `toolwright serve --toolpack <path> [--auth "Bearer <token>"]`
+- `toolwright/cli/commands_mcp.py` -> `run_mcp_serve()`, auto-resolution via `resolve_toolpack_path()`
+- CLI: `toolwright serve [--toolpack <path>] [--auth "Bearer <token>"]`
 - Auth priority: `--auth` flag > `TOOLWRIGHT_AUTH_<NORMALIZED_HOST>` env var > `TOOLWRIGHT_AUTH_HEADER` env var > None
 - Per-host env var naming: replace dots/hyphens with underscores, uppercase (e.g., `api.github.com` -> `TOOLWRIGHT_AUTH_API_GITHUB_COM`)
 
@@ -496,3 +498,40 @@ Migrate artifacts between schema versions.
 
 - `toolwright/cli/migrate.py` -> Migration command
 - CLI: `toolwright migrate`
+
+---
+
+## UX -- Toolpack Resolution & Naming
+
+### CAP-UX-001: Toolpack Auto-Resolution
+
+Automatic resolution of toolpack path when `--toolpack` is omitted. Resolution chain: explicit flag -> env var -> config file -> auto-detect single -> error with actionable message.
+
+- `toolwright/utils/resolve.py` -> `resolve_toolpack_path()`
+- Wired into: `commands_approval.py` (all gate commands), `commands_mcp.py` (serve), `main.py` (status, dashboard, diff, repair, verify, config, rename, run)
+- Env var: `TOOLWRIGHT_TOOLPACK`
+- Config: `.toolwright/config.yaml` -> `default_toolpack` (directory name)
+
+### CAP-UX-002: Friendly Toolpack Naming
+
+Human-friendly toolpack directory names derived from API hostnames instead of hash-based `tp_` prefixes. Collision handling via suffixes (`stripe`, `stripe-2`, `stripe-3`).
+
+- `toolwright/utils/resolve.py` -> `generate_toolpack_slug()`, `_host_to_slug()`
+- Used by: `toolwright/cli/mint.py`, `toolwright/cli/compile.py`
+- Example: `api.stripe.com` -> directory `stripe`
+
+### CAP-UX-003: Config File + `toolwright use`
+
+Set/clear default toolpack for multi-toolpack projects. Config stored in `.toolwright/config.yaml`.
+
+- `toolwright/utils/config_file.py` -> `load_config()`, `save_config()`
+- `toolwright/cli/commands_use.py` -> `register_use_command()`
+- CLI: `toolwright use <name>`, `toolwright use --clear`
+
+### CAP-UX-004: Auth Check Diagnostic
+
+Verify auth configuration for the active toolpack. Shows per-host and global env var status, probes endpoints by default.
+
+- `toolwright/cli/commands_auth.py` -> `register_auth_check_command()`, `_host_to_env_var()`, `_probe_host()`
+- CLI: `toolwright auth check [--no-probe]`
+- Probes by default with `--no-probe` for offline/CI environments

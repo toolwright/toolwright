@@ -73,10 +73,58 @@ If any stage fails, `toolwright ship` tells you exactly what went wrong and what
 ### 4. Connect to your AI client
 
 ```bash
-toolwright config --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
+toolwright config
 ```
 
 Generates a ready-to-paste config snippet for Claude Desktop, Cursor, or Codex.
+
+> **Auto-resolution:** When your project has a single toolpack, `--toolpack` is optional on all commands. See [Toolpack Resolution](#toolpack-resolution) below.
+
+---
+
+## Toolpack Resolution
+
+Toolwright automatically resolves which toolpack to use. The resolution chain:
+
+1. `--toolpack` flag (explicit, always wins)
+2. `TOOLWRIGHT_TOOLPACK` env var
+3. `.toolwright/config.yaml` -> `default_toolpack` setting
+4. Auto-detect: if exactly one toolpack exists, use it
+5. Error with actionable message listing available toolpacks
+
+### Setting a Default
+
+When you have multiple toolpacks:
+
+```bash
+toolwright use stripe        # set default to the 'stripe' toolpack
+toolwright use github        # switch default to 'github'
+toolwright use --clear       # remove the default setting
+```
+
+This writes to `.toolwright/config.yaml`:
+
+```yaml
+default_toolpack: stripe
+```
+
+## Auth Check
+
+Verify your auth configuration is correct before serving:
+
+```bash
+toolwright auth check
+```
+
+This checks each host in the toolpack's `allowed_hosts` and:
+- Shows whether per-host and global env vars are set
+- Probes each host with a lightweight GET to verify the token works
+- Suggests the exact `export` command if auth is missing
+
+```bash
+# Skip probing (offline/CI environments)
+toolwright auth check --no-probe
+```
 
 ---
 
@@ -127,24 +175,19 @@ No lockfile, no runtime. If a tool isn't explicitly approved in the signed lockf
 
 ### Approval workflow
 
-Every tool goes through a gate review. All gate commands accept `--toolpack` for unified path resolution:
+Every tool goes through a gate review. All gate commands auto-resolve the toolpack (or accept `--toolpack` for explicit override):
 
 ```bash
 # Approve all pending tools
-toolwright gate allow --all --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
-
+toolwright gate allow --all
 # Approve specific tools
-toolwright gate allow get_users create_user --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
-
+toolwright gate allow get_users create_user
 # Block a dangerous tool
-toolwright gate block delete_all_users --reason "Too dangerous" --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
-
+toolwright gate block delete_all_users --reason "Too dangerous"
 # Check approval status (CI-friendly)
-toolwright gate check --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
-
+toolwright gate check
 # List current status
-toolwright gate status --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
-```
+toolwright gate status```
 
 ### Signed approvals
 
@@ -186,8 +229,7 @@ Actions: `allow`, `deny`, `confirm` (requires HMAC challenge), `budget` (rate-li
 Detect API surface changes between your baseline and current state:
 
 ```bash
-toolwright drift --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
-```
+toolwright drift```
 
 For CI, use the `--format markdown` flag and wire it into your GitHub Actions (see README).
 
@@ -196,8 +238,7 @@ For CI, use the `--format markdown` flag and wire it into your GitHub Actions (s
 When something breaks, `toolwright repair` diagnoses and proposes fixes:
 
 ```bash
-toolwright repair --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
-```
+toolwright repair```
 
 5-phase lifecycle: preflight → diagnosis → repair plan → guided resolution → re-verification. Fixes are classified as safe (auto-apply), approval-required, or manual.
 
@@ -206,8 +247,7 @@ toolwright repair --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
 Run assertion-based contracts:
 
 ```bash
-toolwright verify --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
-```
+toolwright verify```
 
 Contracts check replay parity, provenance, and outcome consistency.
 
@@ -216,20 +256,18 @@ Contracts check replay parity, provenance, and outcome consistency.
 See governance health and recommended next action:
 
 ```bash
-toolwright status --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
-```
+toolwright status```
 
 ### Change reports
 
 ```bash
-toolwright diff --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
-toolwright diff --toolpack .toolwright/toolpacks/my-api/toolpack.yaml --format github-md
+toolwright diff --format github-md
 ```
 
 ### Rename
 
 ```bash
-toolwright rename "Stripe API" --toolpack .toolwright/toolpacks/stripe-api/toolpack.yaml
+toolwright rename "Stripe API"
 ```
 
 ---
@@ -242,8 +280,7 @@ Set auth via environment variable to avoid tokens in shell history:
 
 ```bash
 export TOOLWRIGHT_AUTH_HEADER="Bearer your-token-here"
-toolwright serve --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
-```
+toolwright serve```
 
 ### Per-host auth
 
@@ -252,8 +289,7 @@ For toolpacks covering multiple APIs, set per-host env vars:
 ```bash
 export TOOLWRIGHT_AUTH_API_GITHUB_COM="Bearer github-token"
 export TOOLWRIGHT_AUTH_API_STRIPE_COM="Bearer stripe-token"
-toolwright serve --toolpack .toolwright/toolpacks/multi-api/toolpack.yaml
-```
+toolwright serve```
 
 Per-host naming: replace dots and hyphens with underscores, uppercase everything. `api.github.com` becomes `TOOLWRIGHT_AUTH_API_GITHUB_COM`.
 
@@ -262,7 +298,7 @@ Per-host naming: replace dots and hyphens with underscores, uppercase everything
 For quick testing, pass auth directly:
 
 ```bash
-toolwright serve --toolpack .toolwright/toolpacks/my-api/toolpack.yaml --auth "Bearer your-token"
+toolwright serve --auth "Bearer your-token"
 ```
 
 **Priority order:** `--auth` flag > `TOOLWRIGHT_AUTH_<HOST>` env var > `TOOLWRIGHT_AUTH_HEADER` env var.
@@ -384,8 +420,7 @@ toolwright serve --toolpack toolpack.yaml \
 ### Start serving
 
 ```bash
-toolwright serve --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
-```
+toolwright serve```
 
 The server enforces multiple safety layers on every tool call:
 
@@ -401,10 +436,9 @@ The server enforces multiple safety layers on every tool call:
 
 ```bash
 # JSON (Claude Desktop, Cursor)
-toolwright config --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
-
+toolwright config
 # Codex TOML
-toolwright config --toolpack .toolwright/toolpacks/my-api/toolpack.yaml --format codex
+toolwright config --format codex
 ```
 
 ---
@@ -415,8 +449,7 @@ Full-screen Textual dashboard for toolpack-scoped governance overview:
 
 ```bash
 pip install "toolwright[tui]"
-toolwright dashboard --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
-```
+toolwright dashboard```
 
 Falls back to `toolwright status` output when Textual is not installed.
 
