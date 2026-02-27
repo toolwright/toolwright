@@ -54,7 +54,8 @@ def register_mcp_commands(
     @click.option(
         "--auth",
         "auth_header",
-        help="Authorization header value for upstream requests",
+        envvar="TOOLWRIGHT_AUTH_HEADER",
+        help="Authorization header value for upstream requests (also reads TOOLWRIGHT_AUTH_HEADER env var)",
     )
     @click.option(
         "--audit-log",
@@ -87,6 +88,16 @@ def register_mcp_commands(
         is_flag=True,
         help="Allow runtime without approved lockfile (unsafe escape hatch)",
     )
+    @click.option(
+        "--rules-path",
+        type=click.Path(),
+        help="Path to behavioral rules JSON file (enables CORRECT pillar runtime enforcement)",
+    )
+    @click.option(
+        "--circuit-breaker-path",
+        type=click.Path(),
+        help="Path to circuit breaker state JSON file (enables KILL pillar runtime enforcement)",
+    )
     @click.pass_context
     def serve(
         ctx: click.Context,
@@ -104,6 +115,8 @@ def register_mcp_commands(
         allow_private_cidrs: tuple[str, ...],
         allow_redirects: bool,
         unsafe_no_lockfile: bool,
+        rules_path: str | None,
+        circuit_breaker_path: str | None,
     ) -> None:
         """Start the governed MCP server on stdio transport.
 
@@ -172,6 +185,8 @@ def register_mcp_commands(
                 allow_redirects=allow_redirects,
                 unsafe_no_lockfile=unsafe_no_lockfile,
                 verbose=ctx.obj.get("verbose", False),
+                rules_path=rules_path,
+                circuit_breaker_path=circuit_breaker_path,
             ),
             lock_id=lock_id,
         )
@@ -197,6 +212,16 @@ def register_mcp_commands(
         type=click.Path(),
         help="Path to lockfile (default: ./toolwright.lock.yaml)",
     )
+    @click.option(
+        "--rules-path",
+        type=click.Path(),
+        help="Path to behavioral rules JSON file (enables CORRECT meta-tools)",
+    )
+    @click.option(
+        "--circuit-breaker-path",
+        type=click.Path(),
+        help="Path to circuit breaker state JSON file (enables KILL meta-tools)",
+    )
     @click.pass_context
     def inspect(
         ctx: click.Context,  # noqa: ARG001
@@ -204,6 +229,8 @@ def register_mcp_commands(
         tools: str | None,
         policy: str | None,
         lockfile: str | None,
+        rules_path: str | None,
+        circuit_breaker_path: str | None,
     ) -> None:
         """Start a read-only MCP introspection server.
 
@@ -214,15 +241,17 @@ def register_mcp_commands(
         Examples:
           toolwright inspect --artifacts .toolwright/artifacts/*/
           toolwright inspect --tools tools.json --policy policy.yaml
+          toolwright inspect --tools tools.json --rules-path rules.json --circuit-breaker-path breakers.json
 
         \b
         Available tools exposed:
-          - toolwright_list_actions: List all actions with filtering
-          - toolwright_check_policy: Check if action allowed by policy
-          - toolwright_get_approval_status: Get approval status
-          - toolwright_list_pending_approvals: List pending approvals
-          - toolwright_get_action_details: Get detailed action info
-          - toolwright_risk_summary: Get risk tier breakdown
+          GOVERN: toolwright_list_actions, toolwright_check_policy,
+                  toolwright_get_approval_status, toolwright_risk_summary
+          HEAL:   toolwright_diagnose_tool, toolwright_health_check
+          KILL:   toolwright_kill_tool, toolwright_enable_tool,
+                  toolwright_quarantine_report (requires --circuit-breaker-path)
+          CORRECT: toolwright_add_rule, toolwright_list_rules,
+                   toolwright_remove_rule (requires --rules-path)
 
         \b
         Claude Desktop configuration:
@@ -246,4 +275,6 @@ def register_mcp_commands(
             tools_path=tools,
             policy_path=policy,
             lockfile_path=lockfile,
+            rules_path=rules_path,
+            circuit_breaker_path=circuit_breaker_path,
         )

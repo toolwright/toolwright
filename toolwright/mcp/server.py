@@ -7,6 +7,7 @@ import hashlib
 import ipaddress
 import json
 import logging
+import os
 import re
 from pathlib import Path
 from typing import Any
@@ -29,7 +30,10 @@ from toolwright.core.audit import (
     FileAuditBackend,
     MemoryAuditBackend,
 )
+from toolwright.core.correct.engine import RuleEngine
+from toolwright.core.correct.session import SessionHistory
 from toolwright.core.enforce import ConfirmationStore, DecisionEngine, PolicyEngine
+from toolwright.core.kill.breaker import CircuitBreakerRegistry
 from toolwright.core.network_safety import (
     RuntimeBlockError,
     host_matches_allowlist,
@@ -57,6 +61,34 @@ from toolwright.utils.schema_version import resolve_schema_version
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_MAX_RESPONSE_BYTES: int = 10 * 1024 * 1024  # 10 MB
+
+
+def get_max_response_bytes() -> int:
+    """Return max response size from env or default."""
+    return int(os.environ.get("TOOLWRIGHT_MAX_RESPONSE_BYTES", DEFAULT_MAX_RESPONSE_BYTES))
+
+
+def _check_response_size(
+    content_length: int | None,
+    max_bytes: int,
+) -> None:
+    """Raise RuntimeBlockError if content_length exceeds max_bytes.
+
+    Does nothing when content_length is None (header absent) or max_bytes is 0
+    (unlimited).
+    """
+    if max_bytes == 0 or content_length is None:
+        return
+    if content_length > max_bytes:
+        from toolwright.core.network_safety import RuntimeBlockError
+
+        raise RuntimeBlockError(
+            ReasonCode.DENIED_RESPONSE_TOO_LARGE,
+            f"Response size {content_length} bytes exceeds limit of {max_bytes} bytes",
+        )
+
+
 _NEXTJS_DATA_PLACEHOLDER_RE = re.compile(r"/_next/data/\{([^}]+)\}/", re.IGNORECASE)
 _NEXTJS_NEXT_DATA_RE = re.compile(
     r'<script[^>]+id="__NEXT_DATA__"[^>]*>(.*?)</script>',
@@ -81,6 +113,8 @@ class ToolwrightMCPServer:
         confirmation_store_path: str | Path = ".toolwright/state/confirmations.db",
         allow_private_cidrs: list[str] | None = None,
         allow_redirects: bool = False,
+        rules_path: str | Path | None = None,
+        circuit_breaker_path: str | Path | None = None,
     ) -> None:
         self.tools_path = Path(tools_path)
         self.toolsets_path = Path(toolsets_path) if toolsets_path else None
@@ -204,6 +238,20 @@ class ToolwrightMCPServer:
             approval_root_path=str(self.approval_root_path),
             require_signed_approvals=True,
         )
+
+        # CORRECT pillar: behavioral rule engine (optional)
+        self.rule_engine: RuleEngine | None = None
+        self.session_history: SessionHistory | None = None
+        if rules_path is not None:
+            self.rule_engine = RuleEngine(rules_path=Path(rules_path))
+            self.session_history = SessionHistory()
+
+        # KILL pillar: circuit breaker (optional)
+        self.circuit_breaker: CircuitBreakerRegistry | None = None
+        if circuit_breaker_path is not None:
+            self.circuit_breaker = CircuitBreakerRegistry(
+                state_path=Path(circuit_breaker_path)
+            )
 
         self.server = Server("toolwright")
         self._register_handlers()
@@ -377,6 +425,60 @@ class ToolwrightMCPServer:
                     )
                 return [types.TextContent(type="text", text=json.dumps(payload))]
 
+            # CORRECT pillar: behavioral rule check
+            if self.rule_engine is not None and self.session_history is not None:
+                rule_eval = self.rule_engine.evaluate(
+                    tool_id, method, host, effective_args, self.session_history
+                )
+                if not rule_eval.allowed:
+                    self._emit_decision_trace(
+                        tool_id=tool_id,
+                        scope_id=self.toolset_name,
+                        request_fingerprint=None,
+                        decision=DecisionType.DENY.value,
+                        reason_code=ReasonCode.DENIED_BEHAVIORAL_RULE.value,
+                        reason=rule_eval.feedback,
+                    )
+                    payload = {
+                        "status": "blocked",
+                        "decision": DecisionType.DENY.value,
+                        "reason_code": ReasonCode.DENIED_BEHAVIORAL_RULE.value,
+                        "reason": rule_eval.feedback,
+                        "action": name,
+                    }
+                    if hasattr(types, "CallToolResult"):
+                        return types.CallToolResult(
+                            content=[types.TextContent(type="text", text=json.dumps(payload))],
+                            isError=True,
+                        )
+                    return [types.TextContent(type="text", text=json.dumps(payload))]
+
+            # KILL pillar: circuit breaker check
+            if self.circuit_breaker is not None:
+                cb_allowed, cb_reason = self.circuit_breaker.should_allow(tool_id)
+                if not cb_allowed:
+                    self._emit_decision_trace(
+                        tool_id=tool_id,
+                        scope_id=self.toolset_name,
+                        request_fingerprint=None,
+                        decision=DecisionType.DENY.value,
+                        reason_code=ReasonCode.DENIED_CIRCUIT_BREAKER_OPEN.value,
+                        reason=cb_reason,
+                    )
+                    payload = {
+                        "status": "blocked",
+                        "decision": DecisionType.DENY.value,
+                        "reason_code": ReasonCode.DENIED_CIRCUIT_BREAKER_OPEN.value,
+                        "reason": cb_reason,
+                        "action": name,
+                    }
+                    if hasattr(types, "CallToolResult"):
+                        return types.CallToolResult(
+                            content=[types.TextContent(type="text", text=json.dumps(payload))],
+                            isError=True,
+                        )
+                    return [types.TextContent(type="text", text=json.dumps(payload))]
+
             if self.dry_run:
                 self._emit_decision_trace(
                     tool_id=tool_id,
@@ -417,6 +519,13 @@ class ToolwrightMCPServer:
                     reason_code=decision.reason_code.value,
                     reason="Execution allowed",
                 )
+                # CORRECT pillar: record successful call in session history
+                if self.session_history is not None:
+                    result_summary = str(response.get("status_code", ""))[:100] if isinstance(response, dict) else ""
+                    self.session_history.record(tool_id, method, host, effective_args, result_summary)
+                # KILL pillar: record success
+                if self.circuit_breaker is not None:
+                    self.circuit_breaker.record_success(tool_id)
                 # Return structured content when possible so clients can validate outputSchema.
                 #
                 # `_execute_request` returns a response envelope:
@@ -464,6 +573,8 @@ class ToolwrightMCPServer:
                     )
                 return [types.TextContent(type="text", text=json.dumps(response))]
             except RuntimeBlockError as blocked:
+                if self.circuit_breaker is not None:
+                    self.circuit_breaker.record_failure(tool_id, blocked.message)
                 self._emit_decision_trace(
                     tool_id=tool_id,
                     scope_id=self.toolset_name,
@@ -488,6 +599,8 @@ class ToolwrightMCPServer:
                     )
                 return [types.TextContent(type="text", text=json.dumps(payload))]
             except Exception as e:
+                if self.circuit_breaker is not None:
+                    self.circuit_breaker.record_failure(tool_id, str(e))
                 logger.exception("Error executing %s", name)
                 self._emit_decision_trace(
                     tool_id=tool_id,
@@ -541,6 +654,19 @@ class ToolwrightMCPServer:
             desc += " [Requires confirmation]"
         return desc
 
+    def _resolve_auth_for_host(self, host: str) -> str | None:
+        """Resolve auth header for a specific host.
+
+        Priority: self.auth_header (--auth / TOOLWRIGHT_AUTH_HEADER) >
+                  TOOLWRIGHT_AUTH_<NORMALIZED_HOST> > None
+        """
+        if self.auth_header:
+            return self.auth_header
+        # Check per-host env var: api.example.com -> TOOLWRIGHT_AUTH_API_EXAMPLE_COM
+        normalized = re.sub(r"[^A-Za-z0-9]", "_", host).upper()
+        env_key = f"TOOLWRIGHT_AUTH_{normalized}"
+        return os.environ.get(env_key)
+
     def _resolve_action_endpoint(self, action: dict[str, Any]) -> tuple[str, str, str]:
         endpoint = action.get("endpoint")
         endpoint_data = endpoint if isinstance(endpoint, dict) else {}
@@ -586,8 +712,9 @@ class ToolwrightMCPServer:
         probe_url = urljoin(base, probe_path.lstrip("/"))
 
         headers: dict[str, str] = {"User-Agent": "Toolwright/1.0"}
-        if self.auth_header:
-            headers["Authorization"] = self.auth_header
+        auth = self._resolve_auth_for_host(action_host)
+        if auth:
+            headers["Authorization"] = auth
 
         client = await self._get_http_client()
         current_url = probe_url
@@ -754,8 +881,9 @@ class ToolwrightMCPServer:
                     url = url.replace(placeholder, str(param_value))
 
             headers: dict[str, str] = {"User-Agent": "Toolwright/1.0"}
-            if self.auth_header:
-                headers["Authorization"] = self.auth_header
+            auth = self._resolve_auth_for_host(action_host)
+            if auth:
+                headers["Authorization"] = auth
 
             kwargs: dict[str, Any] = {"headers": headers, "follow_redirects": False}
             if method.upper() in ("POST", "PUT", "PATCH"):
@@ -846,6 +974,13 @@ class ToolwrightMCPServer:
                 f"Blocked response content type: {content_type}",
             )
 
+        # KILL pillar: response size limit
+        raw_cl = response.headers.get("content-length")
+        _check_response_size(
+            content_length=int(raw_cl) if raw_cl else None,
+            max_bytes=get_max_response_bytes(),
+        )
+
         result: dict[str, Any] = {
             "status": "success",
             "status_code": response.status_code,
@@ -904,6 +1039,8 @@ def run_mcp_server(
     confirmation_store_path: str = ".toolwright/state/confirmations.db",
     allow_private_cidrs: list[str] | None = None,
     allow_redirects: bool = False,
+    rules_path: str | None = None,
+    circuit_breaker_path: str | None = None,
 ) -> None:
     """Run the Toolwright MCP server."""
     server = ToolwrightMCPServer(
@@ -919,6 +1056,8 @@ def run_mcp_server(
         confirmation_store_path=confirmation_store_path,
         allow_private_cidrs=allow_private_cidrs,
         allow_redirects=allow_redirects,
+        rules_path=rules_path,
+        circuit_breaker_path=circuit_breaker_path,
     )
 
     async def main() -> None:
