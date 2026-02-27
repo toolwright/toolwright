@@ -98,6 +98,22 @@ def register_mcp_commands(
         type=click.Path(),
         help="Path to circuit breaker state JSON file (enables KILL pillar runtime enforcement)",
     )
+    @click.option(
+        "--watch",
+        is_flag=True,
+        help="Enable continuous health monitoring (reconciliation loop)",
+    )
+    @click.option(
+        "--watch-config",
+        type=click.Path(),
+        help="Path to watch config YAML (default: .toolwright/watch.yaml)",
+    )
+    @click.option(
+        "--auto-heal",
+        type=click.Choice(["off", "safe", "all"]),
+        default=None,
+        help="Auto-heal policy (requires --watch): off, safe, or all",
+    )
     @click.pass_context
     def serve(
         ctx: click.Context,
@@ -117,6 +133,9 @@ def register_mcp_commands(
         unsafe_no_lockfile: bool,
         rules_path: str | None,
         circuit_breaker_path: str | None,
+        watch: bool,
+        watch_config: str | None,
+        auto_heal: str | None,
     ) -> None:
         """Start the governed MCP server on stdio transport.
 
@@ -154,6 +173,10 @@ def register_mcp_commands(
             }
           }
         """
+        if auto_heal is not None and not watch:
+            click.echo("Error: --auto-heal requires --watch", err=True)
+            ctx.exit(2)
+
         resolved_confirm_store = confirm_store or str(
             confirmation_store_path(ctx.obj.get("root", resolve_root()))
         )
@@ -196,6 +219,9 @@ def register_mcp_commands(
                 verbose=ctx.obj.get("verbose", False),
                 rules_path=rules_path,
                 circuit_breaker_path=circuit_breaker_path,
+                watch=watch,
+                watch_config_path=watch_config,
+                auto_heal_override=auto_heal,
             ),
             lock_id=lock_id,
         )

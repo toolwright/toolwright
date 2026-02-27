@@ -60,6 +60,7 @@ class ToolwrightMetaMCPServer:
         lockfile_path: str | Path | None = None,
         circuit_breaker_path: str | Path | None = None,
         rules_path: str | Path | None = None,
+        state_dir: str | Path | None = None,
     ) -> None:
         """Initialize the meta MCP server.
 
@@ -70,8 +71,10 @@ class ToolwrightMetaMCPServer:
             lockfile_path: Path to lockfile (default: ./toolwright.lock.yaml)
             circuit_breaker_path: Path to circuit breaker state file (KILL pillar)
             rules_path: Path to behavioral rules JSON file (CORRECT pillar)
+            state_dir: Path to .toolwright/state/ for reconcile state and repair plans
         """
         self.artifacts_dir = Path(artifacts_dir) if artifacts_dir else None
+        self.state_dir: Path | None = Path(state_dir) if state_dir else None
 
         # Resolve paths
         self.tools_path: Path | None
@@ -124,6 +127,11 @@ class ToolwrightMetaMCPServer:
             from toolwright.core.correct.engine import RuleEngine
 
             self.rule_engine = RuleEngine(rules_path=Path(rules_path))
+
+        # Proposals directory (for toolwright_request_capability)
+        self.proposals_dir: Path | None = (
+            self.state_dir / "proposals" if self.state_dir else None
+        )
 
         # Create MCP server
         self.server = Server("toolwright-meta")
@@ -372,6 +380,85 @@ class ToolwrightMetaMCPServer:
                     "required": ["rule_id"],
                 },
             ),
+            types.Tool(
+                name="toolwright_suggest_rule",
+                description="Suggest a new behavioral rule. Creates a DRAFT rule that must be activated by a human.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "enum": [
+                                "prerequisite",
+                                "prohibition",
+                                "parameter",
+                                "sequence",
+                                "rate",
+                                "approval",
+                            ],
+                            "description": "Type of behavioral rule",
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "Human-readable description of the rule",
+                        },
+                        "target_tool_ids": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "Tool IDs this rule applies to",
+                        },
+                        "config": {
+                            "type": "object",
+                            "description": "Rule-specific configuration (depends on kind)",
+                        },
+                    },
+                    "required": ["kind", "description", "config"],
+                },
+            ),
+            # --- RECONCILE ---
+            types.Tool(
+                name="toolwright_reconcile_status",
+                description="Get reconciliation loop health status for all monitored tools.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "filter_status": {
+                            "type": "string",
+                            "enum": ["healthy", "degraded", "unhealthy", "unknown"],
+                            "description": "Filter tools by health status",
+                        },
+                    },
+                },
+            ),
+            types.Tool(
+                name="toolwright_pending_repairs",
+                description="Get pending repair patches from the latest repair plan.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "filter_kind": {
+                            "type": "string",
+                            "enum": ["safe", "approval_required", "manual"],
+                            "description": "Filter patches by kind",
+                        },
+                    },
+                },
+            ),
+            # --- REQUEST CAPABILITY ---
+            types.Tool(
+                name="toolwright_request_capability",
+                description="Request a new API capability by probing a host for its OpenAPI spec. Creates a PENDING proposal for human review.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "host": {
+                            "type": "string",
+                            "description": "Host URL to probe for an OpenAPI spec (e.g., 'https://api.example.com')",
+                        },
+                    },
+                    "required": ["host"],
+                },
+            ),
         ]
         return tools
 
@@ -400,6 +487,12 @@ class ToolwrightMetaMCPServer:
             "toolwright_add_rule": lambda: self._add_rule(arguments),
             "toolwright_list_rules": lambda: self._list_rules(arguments),
             "toolwright_remove_rule": lambda: self._remove_rule(arguments),
+            "toolwright_suggest_rule": lambda: self._suggest_rule(arguments),
+            # RECONCILE
+            "toolwright_reconcile_status": lambda: self._reconcile_status(arguments),
+            "toolwright_pending_repairs": lambda: self._pending_repairs(arguments),
+            # REQUEST CAPABILITY
+            "toolwright_request_capability": lambda: self._request_capability(arguments),
         }
 
         handler = dispatch.get(name)
@@ -1090,7 +1183,7 @@ class ToolwrightMetaMCPServer:
                 "kind": r.kind.value,
                 "description": r.description,
                 "target_tool_ids": r.target_tool_ids,
-                "enabled": r.enabled,
+                "status": r.status.value,
             }
             for r in rules
         ]
@@ -1133,6 +1226,236 @@ class ToolwrightMetaMCPServer:
                 "removed": removed,
             }, indent=2)
         )]
+
+    async def _suggest_rule(
+        self, arguments: dict[str, Any]
+    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        """Suggest a new behavioral rule as DRAFT (agent cannot activate)."""
+        if self.rule_engine is None:
+            return [types.TextContent(
+                type="text",
+                text="Error: No rule engine configured.",
+            )]
+
+        kind = arguments.get("kind")
+        if not kind:
+            return [types.TextContent(
+                type="text",
+                text="Error: 'kind' parameter required.",
+            )]
+
+        description = arguments.get("description", "")
+        config = arguments.get("config", {})
+        target_tool_ids = arguments.get("target_tool_ids", [])
+
+        from datetime import UTC, datetime
+        from uuid import uuid4
+
+        from toolwright.models.rule import (
+            _KIND_TO_CONFIG,
+            BehavioralRule,
+            RuleKind,
+            RuleStatus,
+        )
+
+        rule_id = f"rule_{uuid4().hex[:8]}"
+
+        try:
+            rule_kind = RuleKind(kind)
+            config_cls = _KIND_TO_CONFIG.get(rule_kind)
+            if config_cls is None:
+                return [types.TextContent(
+                    type="text",
+                    text=f"Error: Unknown rule kind: {kind}",
+                )]
+            parsed_config = config_cls.model_validate(config)
+        except Exception as e:
+            return [types.TextContent(
+                type="text",
+                text=f"Error: Invalid config for {kind}: {e}",
+            )]
+
+        rule = BehavioralRule(
+            rule_id=rule_id,
+            kind=rule_kind,
+            description=description,
+            status=RuleStatus.DRAFT,
+            target_tool_ids=target_tool_ids,
+            target_methods=[],
+            target_hosts=[],
+            config=parsed_config,
+            created_at=datetime.now(UTC),
+            created_by="agent",
+        )
+
+        self.rule_engine.add_rule(rule)
+
+        text = (
+            f"Rule suggested: {rule_id} ({kind}, DRAFT)\n"
+            f"{description}\n"
+            f"Next: Activate with `toolwright rules activate {rule_id}`"
+        )
+        return [types.TextContent(type="text", text=text)]
+
+    # ------------------------------------------------------------------
+    # RECONCILE handlers
+    # ------------------------------------------------------------------
+
+    async def _reconcile_status(
+        self, arguments: dict[str, Any]
+    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        """Return concise per-tool health status from the reconciliation loop."""
+        from toolwright.models.reconcile import ReconcileState
+
+        state = ReconcileState()
+        if self.state_dir is not None:
+            state_path = self.state_dir / "reconcile.json"
+            if state_path.exists():
+                try:
+                    state = ReconcileState.model_validate_json(
+                        state_path.read_text(encoding="utf-8")
+                    )
+                except Exception:
+                    logger.warning("Failed to parse reconcile state at %s", state_path)
+
+        if not state.tools:
+            return [types.TextContent(
+                type="text",
+                text="Reconciliation: no tools monitored (0 cycles)",
+            )]
+
+        # Summary counts
+        counts: dict[str, int] = {}
+        for ts in state.tools.values():
+            s = str(ts.status)
+            counts[s] = counts.get(s, 0) + 1
+
+        filter_status = arguments.get("filter_status")
+
+        # Header line
+        parts = [f"{v} {k}" for k, v in sorted(counts.items())]
+        header = f"Reconciliation: cycle #{state.reconcile_count}, {', '.join(parts)}"
+
+        # Detail lines for non-healthy tools (or filtered)
+        lines = [header]
+        for ts in state.tools.values():
+            if filter_status and str(ts.status) != filter_status:
+                continue
+            if str(ts.status) == "healthy" and not filter_status:
+                continue
+            detail = f"  {ts.tool_id}: {ts.failure_class or 'unknown'}"
+            if str(ts.last_action) != "none":
+                detail += f", {ts.last_action}"
+            lines.append(detail)
+
+        # Footer
+        lines.append(
+            f"Auto-repairs: {state.auto_repairs_applied}"
+            f" | Approvals queued: {state.approvals_queued}"
+            f" | Errors: {state.errors}"
+        )
+
+        return [types.TextContent(type="text", text="\n".join(lines))]
+
+    async def _pending_repairs(
+        self, arguments: dict[str, Any]
+    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        """Return concise pending repair patches from the latest repair plan."""
+        no_repairs = "No pending repairs."
+
+        if self.state_dir is None:
+            return [types.TextContent(type="text", text=no_repairs)]
+
+        plan_path = self.state_dir / "repair_plan.json"
+        if not plan_path.exists():
+            return [types.TextContent(type="text", text=no_repairs)]
+
+        try:
+            plan_data = json.loads(plan_path.read_text(encoding="utf-8"))
+        except Exception:
+            logger.warning("Failed to parse repair plan at %s", plan_path)
+            return [types.TextContent(type="text", text=no_repairs)]
+
+        plan_body = plan_data.get("plan", {})
+        patches = plan_body.get("patches", [])
+
+        # Apply kind filter
+        filter_kind = arguments.get("filter_kind")
+        if filter_kind:
+            patches = [p for p in patches if p.get("kind") == filter_kind]
+
+        if not patches:
+            return [types.TextContent(type="text", text=no_repairs)]
+
+        total = plan_body.get("total_patches", len(patches))
+        safe = plan_body.get("safe_count", 0)
+        approval = plan_body.get("approval_required_count", 0)
+        manual = plan_body.get("manual_count", 0)
+
+        # Header
+        lines = [f"{total} repairs pending ({safe} safe, {approval} approval_required, {manual} manual):"]
+
+        # Patch lines
+        for p in patches:
+            kind = p.get("kind", "?")
+            title = p.get("title", "untitled")
+            cmd = p.get("cli_command", "")
+            lines.append(f"  [{kind}] {title} — {cmd}")
+
+        lines.append("Run `toolwright repair apply` to apply.")
+
+        return [types.TextContent(type="text", text="\n".join(lines))]
+
+    # ------------------------------------------------------------------
+    # REQUEST CAPABILITY handler
+    # ------------------------------------------------------------------
+
+    async def _request_capability(
+        self, arguments: dict[str, Any]
+    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        """Probe a host for an OpenAPI spec and create a PENDING proposal."""
+        host = arguments.get("host")
+        if not host:
+            return [types.TextContent(type="text", text="Error: 'host' parameter required.")]
+
+        from toolwright.core.discover.openapi import OpenAPIDiscovery
+
+        discovery = OpenAPIDiscovery()
+        session = await discovery.discover(host)
+
+        if session is None:
+            return [types.TextContent(
+                type="text",
+                text=f"No OpenAPI spec found at {host}. Manual capture may be needed.",
+            )]
+
+        if self.proposals_dir is None:
+            return [types.TextContent(
+                type="text",
+                text="Error: No state directory configured for proposals.",
+            )]
+
+        from toolwright.core.proposal.engine import ProposalEngine
+        from toolwright.models.proposal import MissingCapability
+
+        capability = MissingCapability(
+            reason_code="AGENT_REQUESTED",
+            attempted_action=f"discover:{host}",
+            suggested_host=host,
+            risk_guess="medium",
+            agent_context=f"Discovered {len(session.exchanges)} endpoints via OpenAPI",
+        )
+
+        engine = ProposalEngine(root=self.proposals_dir)
+        proposal = engine.create_proposal(capability)
+
+        n = len(session.exchanges)
+        text = (
+            f"Capability requested: {n} endpoints at {host}\n"
+            f"Proposal: {proposal.proposal_id} (PENDING)\n"
+            f"Next: Human must review and approve via `toolwright proposals approve {proposal.proposal_id}`"
+        )
+        return [types.TextContent(type="text", text=text)]
 
     # ------------------------------------------------------------------
     # Server lifecycle

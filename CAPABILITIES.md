@@ -61,6 +61,16 @@ Per-host OAuth2 client-credentials token manager with automatic refresh, proacti
 - Optional dependency: `pip install "toolwright[oauth]"`
 - Token lifecycle: fetch → cache → proactive refresh (configurable `expiry_margin_seconds`)
 
+### CAP-CONNECT-012: Draft Toolpack Creation
+
+Create draft toolpacks from discovered `CaptureSession` data (e.g., from OpenAPI discovery). Draft toolpacks are staged in `.toolwright/drafts/<id>/` for human review before promotion. Drafts are NOT loaded by `toolwright serve`.
+
+- `toolwright/core/discover/draft_toolpack.py` -> `DraftToolpackCreator`
+- Methods: `create(session, label)`, `list_drafts()`, `get_draft_path(draft_id)`
+- Outputs: `toolpack.yaml` (with `draft: true`), `tools.json` (action manifest), `manifest.json` (metadata)
+- Action generation: deduplicates by method+path, auto-names (e.g., `get_users`), assigns risk tiers
+- Tests: `tests/test_draft_toolpack.py`
+
 ### CAP-CONNECT-006: One-Command API Onboarding (Mint)
 
 Single command to capture API traffic via browser, compile tools, and publish a toolpack.
@@ -263,6 +273,55 @@ Non-mutating health probes for API endpoints. Uses HEAD for GET endpoints and OP
 - Configurable: `scheme`, `timeout_seconds`, `max_concurrent`
 - CLI: `toolwright health --tools <path>` — probes all endpoints, exits 0 if all healthy, 1 if any unhealthy
 
+### CAP-HEAL-008: Reconciliation Loop (Level-Triggered)
+
+Kubernetes-style async reconciliation loop that continuously monitors tool health, detects API drift, and orchestrates repairs. Runs as a background asyncio.Task alongside the MCP server.
+
+- `toolwright/core/reconcile/loop.py` -> `ReconcileLoop`
+- `toolwright/core/reconcile/prober.py` -> `HealthProber` (wraps HealthChecker with scheduling + backoff)
+- `toolwright/core/reconcile/event_log.py` -> `ReconcileEventLog` (JSONL append-only log)
+- `toolwright/core/reconcile/differ.py` -> `DriftDiffer` (wraps DriftEngine)
+- `toolwright/core/reconcile/rediscovery.py` -> `EndpointRediscovery`
+- `toolwright/models/reconcile.py` -> `ReconcileState`, `ToolReconcileState`, `WatchConfig`, `ReconcileEvent`
+- State: `.toolwright/state/reconcile.json`, `.toolwright/state/reconcile.log.jsonl`
+- CLI: `toolwright serve --watch [--watch-config <path>]`
+- CLI: `toolwright watch status`, `toolwright watch log [--tool X] [--last N]`
+- Probe intervals configurable per risk tier (critical: 120s, high: 300s, medium: 600s, low: 1800s)
+- Exponential backoff for unhealthy tools, fail-closed on errors
+
+### CAP-HEAL-009: Toolpack Versioning (Snapshots & Rollback)
+
+Timestamped snapshots of toolpack files with rollback support. Pruning respects snapshots referenced by pending repairs or active repair plans.
+
+- `toolwright/core/reconcile/versioner.py` -> `ToolpackVersioner`
+- Methods: `snapshot(label)`, `rollback(snapshot_id)`, `list_snapshots()`, `prune()`
+- Files: `.toolwright/snapshots/<id>/` (tools.json, policy.yaml, lockfile, toolpack.yaml, manifest.json)
+- Pruning: keeps max 20 snapshots; protects snapshots referenced in `reconcile.json` or `repair_plan.json`
+- CLI: `toolwright snapshots`, `toolwright rollback <snapshot_id>`
+- Tests: `tests/test_toolpack_versioner.py`, `tests/test_snapshots_cli.py`
+
+### CAP-HEAL-010: Repair Plan/Apply (Terraform-Style)
+
+Terraform-style `plan` then `apply` workflow for tool repairs. Groups patches by safety tier with color-coded output.
+
+- `toolwright/cli/commands_repair.py` -> `register_repair_commands()`
+- CLI: `toolwright repair plan [--toolpack <path>]`, `toolwright repair apply [--toolpack <path>]`
+- Plan output: SAFE (green), APPROVAL_REQUIRED (yellow), MANUAL (red) patches with CLI commands
+- Plan persistence: `.toolwright/state/repair_plan.json` with `generated_at` staleness check
+- Tests: `tests/test_repair_plan_apply.py`
+
+### CAP-HEAL-011: Auto-Repair (Three-Tier Policy)
+
+Programmatic patch application with three-tier auto-heal policy. Snapshots before any repair and rolls back on failure (fail-closed).
+
+- `toolwright/core/repair/applier.py` -> `RepairApplier`, `PatchResult`, `ApplyResult`
+- Policy tiers: OFF (nothing auto-applies), SAFE (only PatchKind.SAFE), ALL (SAFE + APPROVAL_REQUIRED)
+- Action dispatch: VERIFY_CONTRACTS, VERIFY_PROVENANCE (safe); GATE_ALLOW, GATE_SYNC, GATE_RESEAL (approval); INVESTIGATE, RE_MINT, REVIEW_POLICY, ADD_HOST (manual)
+- Wired into ReconcileLoop: `toolwright/core/reconcile/loop.py` -> `_handle_repair()`
+- CLI: `toolwright serve --watch --auto-heal <off|safe|all>`
+- Config: `.toolwright/watch.yaml` -> `auto_heal` field
+- Tests: `tests/test_repair_applier.py`
+
 ---
 
 ## KILL -- Circuit Breakers & Safety Gates
@@ -387,6 +446,24 @@ Integrate behavioral rule checks into the MCP server request pipeline (between p
 - `toolwright/models/decision.py` -> `ReasonCode.DENIED_BEHAVIORAL_RULE`
 - CLI: `toolwright serve --rules-path <path>`
 
+### CAP-CORRECT-008: Agent Rule Suggestion (suggest_rule)
+
+Allow agents to propose new behavioral rules as DRAFT. Agent-suggested rules are created with `status=DRAFT` and `created_by="agent"`, ensuring agents cannot self-activate rules -- only humans can promote them to ACTIVE via `toolwright rules activate`.
+
+- `toolwright/mcp/meta_server.py` -> `_suggest_rule()`, `toolwright_suggest_rule` tool definition
+- Parameters: `kind`, `description`, `config`, `target_tool_ids` (optional)
+- Output: concise plain-text with rule ID, DRAFT status, and next-step guidance
+- Tests: `tests/test_suggest_rule_meta.py`
+
+### CAP-CORRECT-009: Rule Status Lifecycle (DRAFT/ACTIVE/DISABLED)
+
+Three-state lifecycle for behavioral rules enabling agent suggestion and human activation. Rules default to ACTIVE; agent-suggested rules start as DRAFT. Backward-compatible migration from legacy `enabled` boolean.
+
+- `toolwright/models/rule.py` -> `RuleStatus` enum (DRAFT, ACTIVE, DISABLED), `BehavioralRule._migrate_enabled_to_status()` model validator
+- `toolwright/core/correct/engine.py` -> `_applicable_rules()` filters on `status == ACTIVE`
+- CLI: `toolwright rules drafts`, `toolwright rules activate <id>`, `toolwright rules disable <id>`
+- Tests: `tests/test_rule_status_lifecycle.py`, `tests/test_rules_lifecycle_cli.py`
+
 ### CAP-CORRECT-007: Rules CLI Management
 
 CLI commands for creating, listing, removing, inspecting, exporting, and importing behavioral rules.
@@ -399,6 +476,9 @@ CLI commands for creating, listing, removing, inspecting, exporting, and importi
   - `toolwright rules show <rule_id>`
   - `toolwright rules export --output <file>`
   - `toolwright rules import --input <file>`
+  - `toolwright rules drafts` -- list DRAFT rules
+  - `toolwright rules activate <rule_id>` -- DRAFT/DISABLED → ACTIVE
+  - `toolwright rules disable <rule_id>` -- ACTIVE → DISABLED
 
 ---
 
@@ -448,9 +528,11 @@ Governance-aware MCP server exposing Toolwright metadata as tools for agent self
 - GOVERN tools: `toolwright_list_actions`, `toolwright_check_policy`, `toolwright_get_approval_status`, `toolwright_list_pending_approvals`, `toolwright_get_action_details`, `toolwright_risk_summary`, `toolwright_get_flows`
 - HEAL tools: `toolwright_diagnose_tool`, `toolwright_health_check`
 - KILL tools: `toolwright_kill_tool`, `toolwright_enable_tool`, `toolwright_quarantine_report`
-- CORRECT tools: `toolwright_add_rule`, `toolwright_list_rules`, `toolwright_remove_rule`
+- CORRECT tools: `toolwright_add_rule`, `toolwright_list_rules`, `toolwright_remove_rule`, `toolwright_suggest_rule`
+- RECONCILE tools: `toolwright_reconcile_status`, `toolwright_pending_repairs`
+- EXPAND tools: `toolwright_request_capability`
 - CLI: `toolwright inspect --tools <path>`
-- Params: `circuit_breaker_path`, `rules_path` (optional, enable KILL/CORRECT meta-tools)
+- Params: `circuit_breaker_path`, `rules_path`, `state_dir` (optional, enable KILL/CORRECT/RECONCILE meta-tools)
 
 ### CAP-CROSS-007: Workflow Runner (Tide Integration)
 
@@ -491,6 +573,37 @@ Compare current tools against approved baselines with structured output.
 
 - `toolwright/ui/views/diff.py` -> Diff rendering
 - CLI: `toolwright diff --toolpack <path> --format <json|github-md>`
+
+### CAP-CROSS-014: OpenAPI Discovery
+
+Probe API hosts for OpenAPI specs at well-known paths. Returns a CaptureSession for downstream compilation.
+
+- `toolwright/core/discover/openapi.py` -> `OpenAPIDiscovery`
+- Well-known paths: `/openapi.json`, `/openapi.yaml`, `/swagger.json`, `/v1/openapi.json`, `/api-docs`, `/.well-known/openapi.json`
+- Methods: `async discover(host) -> CaptureSession | None`
+- Delegates to `OpenAPIParser.parse_file()` on first successful response
+- Handles: URL normalization, timeout, connection errors, invalid specs
+- Tests: `tests/test_openapi_discovery.py`
+
+### CAP-CROSS-015: Agent Capability Request
+
+Meta-tool for agents to request new API capabilities. Creates PENDING proposals that require human approval (trust boundary: agents cannot self-approve).
+
+- `toolwright/mcp/meta_server.py` -> `_request_capability()`, `toolwright_request_capability` tool definition
+- Flow: agent provides host → OpenAPIDiscovery probes → CaptureSession → MissingCapability → ProposalEngine creates PENDING proposal
+- Output: concise plain-text with proposal_id, endpoint count, and next-step guidance
+- Proposals stored at: `<state_dir>/proposals/drafts/<proposal_id>.json`
+- Tests: `tests/test_request_capability_meta.py`
+
+### CAP-CROSS-016: Reconciliation Meta-Tools
+
+Agent-facing meta-tools for reconciliation status and pending repairs. Return concise, agent-friendly text summaries under 200 tokens.
+
+- `toolwright/mcp/meta_server.py` -> `_reconcile_status()`, `_pending_repairs()`
+- `toolwright_reconcile_status`: per-tool health counts, non-healthy tool details, repair/approval counts
+- `toolwright_pending_repairs`: patch listing with [kind] title — CLI command format, apply hint
+- Optional filters: `filter_status` (for status), `filter_kind` (for repairs)
+- Tests: `tests/test_reconcile_meta_tools.py`
 
 ### CAP-CROSS-013: Schema Version Migration
 

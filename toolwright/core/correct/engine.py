@@ -21,6 +21,7 @@ from toolwright.models.rule import (
     ProhibitionConfig,
     RuleEvaluation,
     RuleKind,
+    RuleStatus,
     RuleViolation,
     SequenceConfig,
     SessionRateConfig,
@@ -117,7 +118,7 @@ class RuleEngine:
         """Filter rules by targets, skip disabled, sort by priority."""
         result = []
         for rule in self._rules.values():
-            if not rule.enabled:
+            if rule.status != RuleStatus.ACTIVE:
                 continue
             if rule.target_tool_ids and tool_id not in rule.target_tool_ids:
                 continue

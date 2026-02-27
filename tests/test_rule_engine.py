@@ -14,16 +14,10 @@ import pytest
 
 from toolwright.core.correct.session import SessionHistory
 from toolwright.models.rule import (
-    ApprovalConfig,
     BehavioralRule,
-    ParameterConfig,
-    PrerequisiteConfig,
-    ProhibitionConfig,
     RuleKind,
-    SequenceConfig,
-    SessionRateConfig,
+    RuleStatus,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -38,7 +32,7 @@ def _make_rule(
     target_methods: list[str] | None = None,
     target_hosts: list[str] | None = None,
     config: dict | None = None,
-    enabled: bool = True,
+    status: RuleStatus = RuleStatus.ACTIVE,
     priority: int = 100,
 ) -> BehavioralRule:
     """Build a BehavioralRule with sensible defaults."""
@@ -52,7 +46,7 @@ def _make_rule(
         target_methods=target_methods or [],
         target_hosts=target_hosts or [],
         config=config,
-        enabled=enabled,
+        status=status,
         priority=priority,
     )
 
@@ -162,10 +156,10 @@ class TestRuleEngineCRUD:
     def test_update_rule(self, tmp_path: Path):
         rule = _make_rule("upd", RuleKind.PROHIBITION, config={"always": True}, description="old")
         engine = _engine_with_rules(tmp_path, [rule])
-        engine.update_rule("upd", description="new desc", enabled=False)
+        engine.update_rule("upd", description="new desc", status=RuleStatus.DISABLED)
         updated = engine.get_rule("upd")
         assert updated.description == "new desc"
-        assert updated.enabled is False
+        assert updated.status == RuleStatus.DISABLED
 
     def test_update_missing_rule_raises(self, tmp_path: Path):
         from toolwright.core.correct.engine import RuleEngine
@@ -238,7 +232,7 @@ class TestApplicableRules:
             "r1",
             RuleKind.PROHIBITION,
             config={"always": True},
-            enabled=False,
+            status=RuleStatus.DISABLED,
         )
         engine = _engine_with_rules(tmp_path, [rule])
         applicable = engine._applicable_rules("any_tool", "GET", "any.host")

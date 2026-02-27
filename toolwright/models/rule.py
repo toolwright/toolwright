@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 # ---------------------------------------------------------------------------
 # Rule kinds
@@ -24,6 +24,12 @@ class RuleKind(StrEnum):
     SEQUENCE = "sequence"
     RATE = "rate"
     APPROVAL = "approval"
+
+
+class RuleStatus(StrEnum):
+    DRAFT = "draft"
+    ACTIVE = "active"
+    DISABLED = "disabled"
 
 
 # ---------------------------------------------------------------------------
@@ -110,7 +116,7 @@ class BehavioralRule(BaseModel):
     rule_id: str
     kind: RuleKind
     description: str
-    enabled: bool = True
+    status: RuleStatus = RuleStatus.ACTIVE
     priority: int = 100
     target_tool_ids: list[str] = Field(default_factory=list)
     target_methods: list[str] = Field(default_factory=list)
@@ -118,6 +124,16 @@ class BehavioralRule(BaseModel):
     config: RuleConfig
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     created_by: str = "system"
+
+    @model_validator(mode="before")
+    @classmethod
+    def _migrate_enabled_to_status(cls, data: Any) -> Any:
+        """Legacy migration: convert enabled bool to status."""
+        if isinstance(data, dict) and "enabled" in data:
+            enabled = data.pop("enabled")
+            if "status" not in data:
+                data["status"] = RuleStatus.ACTIVE if enabled else RuleStatus.DISABLED
+        return data
 
     def model_post_init(self, __context: Any) -> None:
         """Ensure config type matches kind on deserialization."""

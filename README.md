@@ -2,149 +2,124 @@
 
 > Give your AI agent any API. Safely.
 
-Browse any API for 30 seconds. Toolwright turns your traffic into governed MCP tools -- risk-classified, cryptographically signed, and self-repairing. No code required.
+Toolwright turns API traffic into governed MCP tools. Point it at an OpenAPI spec, a HAR file, or a live web app — it compiles typed tool definitions, classifies every tool by risk, and serves them through an MCP server that enforces approval gates, circuit breakers, and behavioral rules at runtime. Your credentials are automatically redacted from captured traffic. Nothing runs without your explicit sign-off.
 
 ![Toolwright hero demo](demos/outputs/hero.gif)
 
-## The Magic Moment
+## What It Looks Like
 
 ```bash
-# You browsed Stripe's dashboard for 30 seconds. Now:
 $ toolwright mint https://dashboard.stripe.com -a api.stripe.com
+  ✓ Captured 47 API calls across 12 endpoints
+  ✓ Compiled 12 tools (8 read, 3 write, 1 admin)
+  ✓ Risk classified: 3 low, 6 medium, 2 high, 1 critical
+  ✓ Auth detected: Bearer token (Authorization header)
+  ✓ Credentials redacted from captured traffic
 
-  Captured 47 API calls across 12 endpoints
-  Compiled 12 tools (8 read, 3 write, 1 admin)
-  Risk classified: 3 low, 6 medium, 2 high, 1 critical
-  Auth detected: Bearer token (Authorization header)
+  Set before serving:
+    export TOOLWRIGHT_AUTH_API_STRIPE_COM="Bearer <your-token>"
 
-$ toolwright gate allow --all
-$ toolwright serve
-  12 governed tools ready for your agent
+$ toolwright gate allow --all        # review and approve every tool
+$ toolwright serve                   # start the governed MCP server
+  12 governed tools ready
 ```
 
-Your agent just gained 12 new capabilities. Each one is risk-classified, signed, and governed by circuit breakers and behavioral rules.
+The `-a` flag specifies which host to capture — only traffic to that host is recorded. For OpenAPI specs and HAR files, the host is detected automatically.
 
-## Try It in 30 Seconds
+> **No paths to memorize.** Toolwright auto-detects your toolpack when there's only one. For multiple toolpacks, run `toolwright use stripe` to set a default.
+
+## Try It Now
 
 ```bash
 pip install toolwright
 toolwright demo
 ```
 
+Compiles a governed toolpack from bundled traffic, enforces fail-closed gates, and writes a full audit log. Exit `0` means every safety check passed.
+
 ## Quick Start
 
-### 1. Discover and compile tools
-
 ```bash
-toolwright init
-toolwright mint https://app.example.com -a api.example.com
+toolwright init                           # set up project
+toolwright mint <url> -a <api-host>       # capture traffic + compile tools
+toolwright gate allow --all               # approve discovered tools
+toolwright auth check                     # verify your API token works
+toolwright serve                          # start MCP server
+toolwright config                         # get config for Claude Desktop / Cursor
 ```
 
-Or import from a HAR file or OpenAPI spec:
+Or use `toolwright ship` for a guided walkthrough that runs each step interactively.
+
+## Why This Exists
+
+Giving an AI agent API access today means writing MCP tool definitions by hand, hoping the agent doesn't call a destructive endpoint, and having no recourse when the API changes or starts failing. Toolwright automates the tool creation and adds the safety layer that's missing: every tool is risk-classified, every action is auditable, and misbehaving tools are automatically circuit-broken before they can cascade.
+
+## How It Stays Safe
+
+**Credentials never touch disk.** Captured traffic is redacted — tokens, cookies, API keys, and PII are stripped automatically. Auth is injected at runtime via environment variables, never stored in toolpacks.
+
+**Nothing runs without approval.** Toolwright is fail-closed. Every tool must pass through a gate review before it can execute. The approval is cryptographically signed and recorded in a tamper-evident lockfile. If a tool isn't explicitly approved, it doesn't run. There is no "allow by default" mode.
+
+**You see everything before it ships.** During compilation, every tool is classified by risk tier — critical (destructive operations), high (writes), medium (sensitive reads), low (read-only). You approve tools individually or by tier, with full visibility into what each one does.
+
+## When Things Break
+
+**Circuit breakers.** When an API starts failing, per-tool circuit breakers trip automatically after repeated errors, blocking further calls until the API recovers. You can also kill or re-enable tools manually:
 
 ```bash
-toolwright capture import recording.har -a api.example.com
-toolwright compile --capture <capture_id> --scope first_party_only
+toolwright kill search_api --reason "Upstream 500s"
+toolwright quarantine             # see what's killed and why
+toolwright enable search_api      # bring it back
 ```
-
-### 2. Approve and serve
-
-```bash
-toolwright gate allow --all            # approve discovered tools
-toolwright auth check                  # verify your API token is configured
-toolwright serve                       # start the governed MCP server
-```
-
-### 3. Connect to your AI agent
-
-```bash
-toolwright config                      # generates config for Claude Desktop, Cursor, etc.
-```
-
-## How It Works
-
-1. **Capture**: Toolwright observes real API traffic (browser, HAR, or OpenAPI spec) and identifies every endpoint, method, and parameter.
-2. **Compile**: Raw observations become typed MCP tool definitions with inferred schemas and risk tiers.
-3. **Govern**: A cryptographic lockfile tracks approval state. Nothing runs without explicit sign-off.
-4. **Serve**: The MCP server exposes only approved tools, enforcing policy, confirmation gates, and circuit breakers at runtime.
-
-## The Five Pillars
-
-| Pillar | What It Does | Maturity |
-|--------|-------------|----------|
-| **CONNECT** | Discover, compile, and register new API tools | Stable |
-| **GOVERN** | Risk-classify, sign, approve, and audit every tool | Stable |
-| **HEAL** | Diagnose failures and repair broken tools | Beta |
-| **KILL** | Circuit-break misbehaving tools with instant kill switches | Beta |
-| **CORRECT** | Enforce durable behavioral rules across sessions | Early |
-
-## Authentication
-
-Toolwright detects auth requirements during capture and tells you exactly which env var to set:
-
-```bash
-# Global (all hosts)
-export TOOLWRIGHT_AUTH_HEADER="Bearer your-token"
-
-# Per-host (for multi-API toolpacks)
-export TOOLWRIGHT_AUTH_API_GITHUB_COM="Bearer github-token"
-export TOOLWRIGHT_AUTH_API_STRIPE_COM="Bearer stripe-token"
-```
-
-Verify your setup:
-
-```bash
-toolwright auth check
-```
-
-## What's Under the Hood
-
-### Governance & Approval
-
-Every tool goes through a governance pipeline: automatic risk classification, Ed25519 cryptographic signing, tamper-evident lockfiles, configurable policy rules, and full audit logging. Write operations require human confirmation tokens.
-
-### Circuit Breakers (KILL)
 
 ![Circuit breaker lifecycle demo](demos/outputs/kill_cycle.gif)
 
-Per-tool circuit breakers trip after repeated failures and auto-recover. Operators can manually kill or re-enable tools:
+**Behavioral rules.** Define constraints that persist across agent sessions — no retraining, no prompt engineering. When a rule is violated, the agent gets structured feedback explaining what went wrong and how to proceed:
 
 ```bash
-toolwright kill flaky_api --reason "Upstream 500s"
-toolwright quarantine                  # see what's killed
-toolwright enable flaky_api            # bring it back
+toolwright rules add --kind prerequisite --target update_issue \
+  --requires get_repo --description "Read context before modifying"
+
+toolwright rules add --kind prohibition --target delete_contents \
+  --description "Never delete repository files"
 ```
 
-### Behavioral Rules (CORRECT)
+Six rule types: prerequisites, prohibitions, parameter constraints, rate limits, call sequencing, and approval gates.
 
-Define persistent constraints agents must follow -- no retraining required:
-
-```bash
-toolwright rules add --kind prerequisite --target update_user \
-  --requires get_user --description "Must fetch before update"
-
-toolwright rules add --kind prohibition --target delete_user \
-  --description "Never delete users"
-```
-
-### Drift Detection & Self-Repair (HEAL)
-
-Detect when APIs change and automatically repair broken tools:
+**Drift detection and repair.** When an API changes under you, drift detection catches it and repair proposes classified fixes — safe (auto-apply), approval-required, or manual:
 
 ```bash
-toolwright drift --capture-a <old> --capture-b <new>
+toolwright drift
 toolwright repair
 ```
 
-### MCP Meta-Server
+## Start Where You Are
 
-Agents can query and manage their own tool infrastructure via MCP meta-tools:
-introspection (`toolwright_list_actions`, `toolwright_risk_summary`),
-diagnosis (`toolwright_diagnose_tool`, `toolwright_health_check`),
-kill switches (`toolwright_kill_tool`, `toolwright_enable_tool`),
-and behavioral rules (`toolwright_add_rule`, `toolwright_list_rules`).
+| You have... | Run |
+|------------|-----|
+| A web app | `toolwright mint https://app.example.com -a api.example.com` |
+| An OpenAPI spec | `toolwright capture import openapi.yaml` |
+| A HAR file from DevTools | `toolwright capture import traffic.har` |
+| OpenTelemetry traces | `toolwright capture import traces.json --input-format otel` |
+| No idea | `toolwright ship` |
 
-## Installation
+All paths converge: capture → compile → approve → serve.
+
+## What's Inside
+
+| Capability | What It Does | Maturity |
+|-----------|-------------|----------|
+| **Connect** | Compile MCP tools from any API source (browser, spec, HAR, OTEL) | Stable |
+| **Govern** | Risk classification, cryptographic signing, approval gates, audit logging | Stable |
+| **Heal** | Drift detection, failure diagnosis, guided repair | Beta |
+| **Kill** | Per-tool circuit breakers with auto-recovery and manual kill switches | Beta |
+| **Correct** | Persistent behavioral rules enforced across agent sessions | Early |
+
+58 capabilities. 1600+ tests.
+
+Agents can also introspect their own governance via MCP meta-tools — check risk summaries, diagnose failures, manage circuit breakers, and read behavioral rules.
+
+## Install
 
 ```bash
 pip install toolwright                 # core
@@ -153,42 +128,7 @@ pip install "toolwright[mcp]"          # + MCP server
 pip install "toolwright[all]"          # everything
 ```
 
-## Architecture
-
-```
-  Agent (Claude, GPT, etc.)
-       |
-       v
-  +---------------+
-  |  MCP Server   |  <-- toolwright serve
-  |  (governed)   |
-  +-------+-------+
-          |
-  +-------+-------+
-  | Policy Engine | Risk tiers, method filtering,
-  | + Rules       | confirmations, behavioral rules
-  +-------+-------+
-          |
-  +-------+-------+
-  | Circuit       | Per-tool CLOSED/OPEN/HALF_OPEN
-  | Breakers      | with auto-recovery & kill switch
-  +-------+-------+
-          |
-          v
-    Upstream API
-```
-
-**Alias:** `tw` works as a shorthand for `toolwright`.
-
-Full CLI reference and detailed docs: [docs/user-guide.md](docs/user-guide.md)
-
-## Design Principles
-
-- **Safe by default**: All capture and enforcement requires explicit allowlists
-- **Redaction on**: Sensitive data (cookies, tokens, PII) is removed by default
-- **Audit everything**: Every compile, drift, and enforce decision is logged
-- **Compiler mindset**: Convert behavior into contracts, not scan for vulnerabilities
-- **Plug and play**: Minimal configuration required to get started
+`tw` works as shorthand for `toolwright`. Full docs: **[docs/user-guide.md](docs/user-guide.md)**
 
 ## License
 

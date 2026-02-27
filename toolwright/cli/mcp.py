@@ -28,6 +28,9 @@ def run_mcp_serve(
     unsafe_no_lockfile: bool = False,
     rules_path: str | None = None,
     circuit_breaker_path: str | None = None,
+    watch: bool = False,
+    watch_config_path: str | None = None,
+    auto_heal_override: str | None = None,
 ) -> None:
     """Run the MCP server command."""
     resolved_toolpack = None
@@ -229,6 +232,10 @@ def run_mcp_serve(
             click.echo("  Mode: DRY RUN (no actual requests)", err=True)
         if unsafe_no_lockfile:
             click.echo("  WARNING: unsafe no-lockfile mode enabled", err=True)
+        if watch:
+            click.echo("  Watch mode: ENABLED (reconciliation loop active)", err=True)
+            if watch_config_path:
+                click.echo(f"  Watch config: {watch_config_path}", err=True)
 
     # Import here to avoid loading MCP dependencies unless needed
     from toolwright.mcp.server import run_mcp_server
@@ -249,6 +256,9 @@ def run_mcp_serve(
             allow_redirects=allow_redirects,
             rules_path=rules_path,
             circuit_breaker_path=circuit_breaker_path,
+            watch=watch,
+            watch_config_path=watch_config_path,
+            auto_heal_override=auto_heal_override,
         )
     except ValueError as exc:
         click.echo(f"Error: {exc}", err=True)

@@ -5,8 +5,6 @@ from __future__ import annotations
 import json
 from datetime import UTC, datetime
 
-import pytest
-
 from toolwright.models.rule import (
     ApprovalConfig,
     BehavioralRule,
@@ -16,11 +14,11 @@ from toolwright.models.rule import (
     RuleConflict,
     RuleEvaluation,
     RuleKind,
+    RuleStatus,
     RuleViolation,
     SequenceConfig,
     SessionRateConfig,
 )
-
 
 # ---------------------------------------------------------------------------
 # RuleKind enum
@@ -133,7 +131,7 @@ class TestBehavioralRule:
         )
         assert rule.rule_id == "rule_001"
         assert rule.kind == RuleKind.PREREQUISITE
-        assert rule.enabled is True  # default
+        assert rule.status == RuleStatus.ACTIVE  # default
         assert rule.priority == 100  # default
         assert isinstance(rule.config, PrerequisiteConfig)
 

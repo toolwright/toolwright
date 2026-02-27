@@ -1041,6 +1041,9 @@ def run_mcp_server(
     allow_redirects: bool = False,
     rules_path: str | None = None,
     circuit_breaker_path: str | None = None,
+    watch: bool = False,
+    watch_config_path: str | None = None,
+    auto_heal_override: str | None = None,
 ) -> None:
     """Run the Toolwright MCP server."""
     server = ToolwrightMCPServer(
@@ -1060,10 +1063,42 @@ def run_mcp_server(
         circuit_breaker_path=circuit_breaker_path,
     )
 
+    reconcile_loop = None
+    if watch:
+        from toolwright.core.reconcile.loop import ReconcileLoop
+        from toolwright.models.reconcile import WatchConfig
+
+        tools_dir = Path(tools_path).resolve().parent
+        project_root = str(tools_dir)
+
+        config_path = watch_config_path or str(tools_dir / ".toolwright" / "watch.yaml")
+        config = WatchConfig.from_yaml(config_path)
+
+        if auto_heal_override is not None:
+            from toolwright.models.reconcile import AutoHealPolicy
+            config.auto_heal = AutoHealPolicy(auto_heal_override)
+
+        actions = list(server.actions.values())
+        risk_tiers = {a["name"]: "medium" for a in actions}
+
+        reconcile_loop = ReconcileLoop(
+            project_root=project_root,
+            actions=actions,
+            risk_tiers=risk_tiers,
+            config=config,
+            breaker_registry=server.circuit_breaker,
+        )
+
     async def main() -> None:
         try:
+            if reconcile_loop is not None:
+                await reconcile_loop.start()
+                logger.info("Reconciliation loop started (watch mode)")
             await server.run_stdio()
         finally:
+            if reconcile_loop is not None:
+                await reconcile_loop.stop()
+                logger.info("Reconciliation loop stopped")
             await server.close()
 
     asyncio.run(main())

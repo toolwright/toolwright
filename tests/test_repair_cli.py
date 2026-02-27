@@ -117,26 +117,26 @@ class TestRepairHelp:
         )
 
     def test_repair_help_shows_examples(self) -> None:
-        """'toolwright repair --help' includes usage examples."""
+        """'toolwright repair diagnose --help' includes usage examples."""
         runner = CliRunner()
-        result = runner.invoke(cli, ["repair", "--help"])
+        result = runner.invoke(cli, ["repair", "diagnose", "--help"])
 
         assert result.exit_code == 0
         assert "--toolpack" in result.output
         assert "Examples:" in result.output
 
     def test_repair_help_shows_from_flag(self) -> None:
-        """'toolwright repair --help' shows the --from flag."""
+        """'toolwright repair diagnose --help' shows the --from flag."""
         runner = CliRunner()
-        result = runner.invoke(cli, ["repair", "--help"])
+        result = runner.invoke(cli, ["repair", "diagnose", "--help"])
 
         assert result.exit_code == 0
         assert "--from" in result.output
 
     def test_repair_help_shows_auto_discover_flag(self) -> None:
-        """'toolwright repair --help' shows --auto-discover/--no-auto-discover."""
+        """'toolwright repair diagnose --help' shows --auto-discover/--no-auto-discover."""
         runner = CliRunner()
-        result = runner.invoke(cli, ["repair", "--help"])
+        result = runner.invoke(cli, ["repair", "diagnose", "--help"])
 
         assert result.exit_code == 0
         assert "--auto-discover" in result.output
@@ -157,7 +157,7 @@ class TestRepairExitCodes:
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ["repair", "--toolpack", str(tp), "--no-auto-discover"],
+            ["repair", "diagnose", "--toolpack", str(tp), "--no-auto-discover"],
         )
 
         assert result.exit_code == 0
@@ -171,7 +171,7 @@ class TestRepairExitCodes:
         result = runner.invoke(
             cli,
             [
-                "repair",
+                "repair", "diagnose",
                 "--toolpack", str(tp),
                 "--from", str(audit),
                 "--no-auto-discover",
@@ -185,7 +185,7 @@ class TestRepairExitCodes:
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ["repair", "--toolpack", str(tmp_path / "nope.yaml")],
+            ["repair", "diagnose", "--toolpack", str(tmp_path / "nope.yaml")],
         )
 
         assert result.exit_code == 2
@@ -209,7 +209,7 @@ class TestRepairOutputs:
         result = runner.invoke(
             cli,
             [
-                "repair",
+                "repair", "diagnose",
                 "--toolpack", str(tp),
                 "--from", str(audit),
                 "-o", str(out),
@@ -234,7 +234,7 @@ class TestRepairOutputs:
         result = runner.invoke(
             cli,
             [
-                "repair",
+                "repair", "diagnose",
                 "--toolpack", str(tp),
                 "--from", str(audit),
                 "-o", str(out),
@@ -256,7 +256,7 @@ class TestRepairOutputs:
         result = runner.invoke(
             cli,
             [
-                "repair",
+                "repair", "diagnose",
                 "--toolpack", str(tp),
                 "--from", str(audit),
                 "-o", str(out),
@@ -295,7 +295,7 @@ class TestRepairFlags:
         result = runner.invoke(
             cli,
             [
-                "repair",
+                "repair", "diagnose",
                 "--toolpack", str(tp),
                 "--from", str(audit1),
                 "--from", str(audit2),
@@ -316,7 +316,7 @@ class TestRepairFlags:
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ["repair", "--toolpack", str(tp), "--no-auto-discover"],
+            ["repair", "diagnose", "--toolpack", str(tp), "--no-auto-discover"],
         )
 
         # With --no-auto-discover and no --from, should be healthy

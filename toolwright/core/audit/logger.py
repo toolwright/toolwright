@@ -24,6 +24,11 @@ class EventType(StrEnum):
     CONFIRMATION_DENIED = "confirmation_denied"
     BUDGET_EXCEEDED = "budget_exceeded"
     REQUEST_BLOCKED = "request_blocked"
+    RECONCILE_PROBE = "reconcile_probe"
+    RECONCILE_STATUS_CHANGE = "reconcile_status_change"
+    RECONCILE_DRIFT_DETECTED = "reconcile_drift_detected"
+    RECONCILE_REPAIR_APPLIED = "reconcile_repair_applied"
+    RECONCILE_REPAIR_FAILED = "reconcile_repair_failed"
 
 
 class AuditBackend(Protocol):

@@ -17,8 +17,11 @@ from toolwright.cli.commands_approval import register_approval_commands
 from toolwright.cli.commands_auth import register_auth_check_command
 from toolwright.cli.commands_kill import register_kill_commands
 from toolwright.cli.commands_mcp import register_mcp_commands
+from toolwright.cli.commands_repair import register_repair_plan_apply
 from toolwright.cli.commands_rules import register_rules_commands
+from toolwright.cli.commands_snapshots import register_snapshot_commands
 from toolwright.cli.commands_use import register_use_command
+from toolwright.cli.commands_watch import register_watch_commands
 from toolwright.cli.commands_workflow import register_workflow_commands
 from toolwright.utils.locks import RootLockError, clear_root_lock, root_command_lock
 from toolwright.utils.state import confirmation_store_path, resolve_root
@@ -69,6 +72,9 @@ CORE_COMMANDS = [
     "use",
     "demo",
     "rename",
+    "watch",
+    "snapshots",
+    "rollback",
 ]
 
 
@@ -999,13 +1005,25 @@ def drift(
     )
 
 
-@cli.command(
+@cli.group()
+def repair() -> None:
+    """Diagnose, plan, and apply fixes for a governed toolpack.
+
+    \b
+    Subcommands:
+      diagnose  Diagnose issues from audit logs, drift, and verify reports
+      plan      Show the current repair plan (Terraform-style)
+      apply     Apply patches from the repair plan
+    """
+
+
+@repair.command(
     epilog="""\b
 Examples:
-  toolwright repair --toolpack toolpack.yaml
-  toolwright repair --toolpack toolpack.yaml --from audit.log.jsonl
-  toolwright repair --toolpack toolpack.yaml --from audit.log.jsonl --from drift.json
-  toolwright repair --toolpack toolpack.yaml --no-auto-discover
+  toolwright repair diagnose --toolpack toolpack.yaml
+  toolwright repair diagnose --toolpack toolpack.yaml --from audit.log.jsonl
+  toolwright repair diagnose --toolpack toolpack.yaml --from audit.log.jsonl --from drift.json
+  toolwright repair diagnose --toolpack toolpack.yaml --no-auto-discover
 """,
 )
 @click.option(
@@ -1033,7 +1051,7 @@ Examples:
     help="Auto-discover context files near the toolpack",
 )
 @click.pass_context
-def repair(
+def diagnose(
     ctx: click.Context,
     toolpack: str | None,
     from_: tuple[str, ...],
@@ -1065,6 +1083,9 @@ def repair(
         verbose=ctx.obj.get("verbose", False),
         root_path=str(ctx.obj.get("root", resolve_root())),
     )
+
+
+register_repair_plan_apply(repair_group=repair)
 
 
 @cli.command(
@@ -1262,6 +1283,8 @@ register_use_command(cli=cli)
 register_workflow_commands(cli=cli)
 register_rules_commands(cli=cli)
 register_kill_commands(cli=cli)
+register_watch_commands(cli=cli)
+register_snapshot_commands(cli=cli)
 
 
 # ---------------------------------------------------------------------------

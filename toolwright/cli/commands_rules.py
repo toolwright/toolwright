@@ -13,7 +13,7 @@ from uuid import uuid4
 import click
 
 from toolwright.core.correct.engine import RuleEngine
-from toolwright.models.rule import BehavioralRule, RuleKind
+from toolwright.models.rule import BehavioralRule, RuleKind, RuleStatus
 
 
 def _default_rules_path() -> str:
@@ -106,7 +106,7 @@ def register_rules_commands(*, cli: click.Group) -> None:
 
         for r in all_rules:
             targets = ", ".join(r.target_tool_ids) if r.target_tool_ids else "*"
-            status = "enabled" if r.enabled else "disabled"
+            status = r.status.value
             click.echo(f"  {r.rule_id}  [{r.kind}]  {r.description}  targets={targets}  ({status})")
 
     @rules.command("show")
@@ -167,6 +167,54 @@ def register_rules_commands(*, cli: click.Group) -> None:
                 imported += 1
 
         click.echo(f"Imported {imported} rule(s).")
+
+    @rules.command("drafts")
+    @click.pass_context
+    def rules_drafts(ctx: click.Context) -> None:
+        """List behavioral rules in DRAFT status."""
+        rules_path = ctx.obj["rules_path"]
+        engine = RuleEngine(rules_path=rules_path)
+        drafts = [r for r in engine.list_rules() if r.status == RuleStatus.DRAFT]
+        if not drafts:
+            click.echo("No draft rules.")
+            return
+        for r in drafts:
+            targets = ", ".join(r.target_tool_ids) if r.target_tool_ids else "*"
+            click.echo(f"  {r.rule_id}  [{r.kind}]  {r.description}  targets={targets}")
+
+    @rules.command("activate")
+    @click.argument("rule_id")
+    @click.pass_context
+    def rules_activate(ctx: click.Context, rule_id: str) -> None:
+        """Activate a DRAFT or DISABLED rule."""
+        rules_path = ctx.obj["rules_path"]
+        engine = RuleEngine(rules_path=rules_path)
+        rule = engine.get_rule(rule_id)
+        if rule is None:
+            click.echo(f"Rule not found: {rule_id}", err=True)
+            raise SystemExit(1)
+        if rule.status == RuleStatus.ACTIVE:
+            click.echo(f"Rule {rule_id} is already active.")
+            return
+        engine.update_rule(rule_id, status=RuleStatus.ACTIVE)
+        click.echo(f"Activated rule: {rule_id}")
+
+    @rules.command("disable")
+    @click.argument("rule_id")
+    @click.pass_context
+    def rules_disable(ctx: click.Context, rule_id: str) -> None:
+        """Disable an ACTIVE rule."""
+        rules_path = ctx.obj["rules_path"]
+        engine = RuleEngine(rules_path=rules_path)
+        rule = engine.get_rule(rule_id)
+        if rule is None:
+            click.echo(f"Rule not found: {rule_id}", err=True)
+            raise SystemExit(1)
+        if rule.status == RuleStatus.DISABLED:
+            click.echo(f"Rule {rule_id} is already disabled.")
+            return
+        engine.update_rule(rule_id, status=RuleStatus.DISABLED)
+        click.echo(f"Disabled rule: {rule_id}")
 
 
 def _build_config(
