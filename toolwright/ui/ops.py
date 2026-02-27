@@ -368,7 +368,12 @@ def get_status(toolpack_path: str) -> StatusModel:
     if resolved.tools_path and resolved.tools_path.exists():
         try:
             tools_data = json.loads(resolved.tools_path.read_text())
-            tool_count = len(tools_data) if isinstance(tools_data, list) else 0
+            if isinstance(tools_data, dict):
+                tool_count = len(tools_data.get("actions", []))
+            elif isinstance(tools_data, list):
+                tool_count = len(tools_data)
+            else:
+                tool_count = 0
         except Exception:
             pass
 
