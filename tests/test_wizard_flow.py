@@ -307,4 +307,5 @@ class TestDashboardFallback:
 
         output = mock_con.file.getvalue()  # type: ignore[attr-defined]
         assert sys.executable in output
-        assert "pip install" in output
+        # "pip install" may be split across lines by terminal wrapping
+        assert "pip" in output and "install" in output
