@@ -1,4 +1,4 @@
-"""Shared test fixtures for Cask test suite."""
+"""Shared test fixtures for Toolwright test suite."""
 
 from __future__ import annotations
 

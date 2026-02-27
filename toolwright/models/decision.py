@@ -42,6 +42,8 @@ class ReasonCode(StrEnum):
     DENIED_SCHEME_NOT_ALLOWED = "denied_scheme_not_allowed"
     DENIED_REDIRECT_NOT_ALLOWLISTED = "denied_redirect_not_allowlisted"
     DENIED_CONTENT_TYPE_NOT_ALLOWED = "denied_content_type_not_allowed"
+    DENIED_BEHAVIORAL_RULE = "denied_behavioral_rule"
+    DENIED_CIRCUIT_BREAKER_OPEN = "denied_circuit_breaker_open"
     ERROR_INTERNAL = "error_internal"
 
 

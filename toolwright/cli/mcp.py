@@ -26,22 +26,10 @@ def run_mcp_serve(
     allow_redirects: bool,
     verbose: bool,
     unsafe_no_lockfile: bool = False,
+    rules_path: str | None = None,
+    circuit_breaker_path: str | None = None,
 ) -> None:
-    """Run the MCP server command.
-
-    Args:
-        tools_path: Path to tools.json manifest
-        toolpack_path: Path to toolpack.yaml metadata
-        toolsets_path: Path to toolsets.yaml artifact
-        toolset_name: Named toolset to expose
-        policy_path: Path to policy.yaml file
-        lockfile_path: Path to approval lockfile
-        base_url: Base URL for upstream API
-        auth_header: Authorization header value
-        audit_log: Path for audit log
-        dry_run: Evaluate but don't execute
-        verbose: Enable verbose output
-    """
+    """Run the MCP server command."""
     resolved_toolpack = None
     resolved_toolpack_paths = None
     if toolpack_path:
@@ -213,7 +201,7 @@ def run_mcp_serve(
                 sys.exit(1)
 
     if verbose:
-        click.echo("Starting Cask MCP Server...", err=True)
+        click.echo("Starting Toolwright MCP Server...", err=True)
         click.echo(f"  Tools: {resolved_tools_path}", err=True)
         if toolpack_path:
             click.echo(f"  Toolpack: {toolpack_path}", err=True)
@@ -259,6 +247,8 @@ def run_mcp_serve(
             confirmation_store_path=confirmation_store_path,
             allow_private_cidrs=allow_private_cidrs,
             allow_redirects=allow_redirects,
+            rules_path=rules_path,
+            circuit_breaker_path=circuit_breaker_path,
         )
     except ValueError as exc:
         click.echo(f"Error: {exc}", err=True)

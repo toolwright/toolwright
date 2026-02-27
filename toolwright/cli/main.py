@@ -1,4 +1,4 @@
-"""Main CLI entry point for Cask."""
+"""Main CLI entry point for Toolwright."""
 
 from __future__ import annotations
 
@@ -14,7 +14,9 @@ from toolwright.branding import (
     PRODUCT_NAME,
 )
 from toolwright.cli.commands_approval import register_approval_commands
+from toolwright.cli.commands_kill import register_kill_commands
 from toolwright.cli.commands_mcp import register_mcp_commands
+from toolwright.cli.commands_rules import register_rules_commands
 from toolwright.cli.commands_workflow import register_workflow_commands
 from toolwright.utils.locks import RootLockError, clear_root_lock, root_command_lock
 from toolwright.utils.state import confirmation_store_path, resolve_root
@@ -56,13 +58,18 @@ CORE_COMMANDS = [
     "repair",
     "diff",
     "dashboard",
+    "rules",
+    "kill",
+    "enable",
+    "quarantine",
+    "health",
     "run",
     "demo",
     "rename",
 ]
 
 
-class CaskGroup(click.Group):
+class ToolwrightGroup(click.Group):
     """Custom group with sectioned help output and interactive flow dispatch."""
 
     def invoke(self, ctx: click.Context) -> None:
@@ -150,7 +157,7 @@ def _show_help_all(
     ctx.exit()
 
 
-@click.group(cls=CaskGroup, invoke_without_command=True)
+@click.group(cls=ToolwrightGroup, invoke_without_command=True)
 @click.version_option(version=__version__, prog_name=CLI_PRIMARY_COMMAND)
 @click.option("-v", "--verbose", is_flag=True, help="Enable verbose output")
 @click.option(
@@ -1277,6 +1284,67 @@ def demo(
 register_mcp_commands(cli=cli, run_with_lock=_run_with_lock)
 register_approval_commands(cli=cli, run_with_lock=_run_with_lock)
 register_workflow_commands(cli=cli)
+register_rules_commands(cli=cli)
+register_kill_commands(cli=cli)
+
+
+# ---------------------------------------------------------------------------
+# HEAL: Health check command
+# ---------------------------------------------------------------------------
+
+
+@cli.command()
+@click.option(
+    "--tools",
+    required=True,
+    type=click.Path(exists=True),
+    help="Path to tools.json manifest.",
+)
+def health(tools: str) -> None:
+    """Probe endpoint health for all tools in a manifest.
+
+    Sends non-mutating probes (HEAD/OPTIONS) to each endpoint and
+    reports status, response time, and failure classification.
+
+    Exits 0 if all healthy, 1 if any unhealthy.
+
+    \\b
+    Examples:
+      toolwright health --tools output/tools.json
+      toolwright health --tools my-api/tools.json
+    """
+    import asyncio
+    import json as _json
+
+    manifest = _json.loads(Path(tools).read_text())
+    actions = manifest.get("actions", [])
+
+    if not actions:
+        click.echo("No actions found in manifest.")
+        return
+
+    from toolwright.core.health.checker import HealthChecker
+
+    checker = HealthChecker()
+    results = asyncio.run(checker.check_all(actions))
+
+    any_unhealthy = False
+    for r in results:
+        status = "healthy" if r.healthy else "UNHEALTHY"
+        if not r.healthy:
+            any_unhealthy = True
+        fc = f"  [{r.failure_class.value}]" if r.failure_class else ""
+        code = f"  {r.status_code}" if r.status_code is not None else ""
+        click.echo(
+            f"  {r.tool_id:<30} {status:<12}{code}{fc}  {r.response_time_ms:.0f}ms"
+        )
+
+    click.echo()
+    if any_unhealthy:
+        click.echo("Some tools are unhealthy.")
+        raise SystemExit(1)
+    else:
+        click.echo("All tools healthy.")
 
 
 # ---------------------------------------------------------------------------

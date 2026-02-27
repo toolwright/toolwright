@@ -4,7 +4,9 @@ This server allows AI agents to use Toolwright capabilities directly:
 - List actions from a manifest
 - Evaluate policy for actions
 - Check approval status
-- Detect drift between captures
+- Diagnose and repair tools (HEAL)
+- Kill, enable, and quarantine tools (KILL)
+- Add, list, and remove behavioral rules (CORRECT)
 
 Use this when you want agents to have governance capabilities over tools.
 """
@@ -42,6 +44,9 @@ class ToolwrightMetaMCPServer:
     - Check if actions would be allowed by policy
     - View approval status of tools
     - Detect drift between API versions
+    - Diagnose and repair tools (HEAL)
+    - Kill, enable, and quarantine tools (KILL)
+    - Add, list, and remove behavioral rules (CORRECT)
 
     This enables agents to be governance-aware and make informed decisions
     about which tools to use.
@@ -53,6 +58,8 @@ class ToolwrightMetaMCPServer:
         tools_path: str | Path | None = None,
         policy_path: str | Path | None = None,
         lockfile_path: str | Path | None = None,
+        circuit_breaker_path: str | Path | None = None,
+        rules_path: str | Path | None = None,
     ) -> None:
         """Initialize the meta MCP server.
 
@@ -61,6 +68,8 @@ class ToolwrightMetaMCPServer:
             tools_path: Path to tools.json (overrides artifacts_dir)
             policy_path: Path to policy.yaml (overrides artifacts_dir)
             lockfile_path: Path to lockfile (default: ./toolwright.lock.yaml)
+            circuit_breaker_path: Path to circuit breaker state file (KILL pillar)
+            rules_path: Path to behavioral rules JSON file (CORRECT pillar)
         """
         self.artifacts_dir = Path(artifacts_dir) if artifacts_dir else None
 
@@ -100,6 +109,22 @@ class ToolwrightMetaMCPServer:
             audit_logger = AuditLogger(MemoryAuditBackend())
             self.enforcer = Enforcer.from_file(str(self.policy_path), audit_logger)
 
+        # KILL pillar: circuit breaker (optional)
+        self.circuit_breaker: Any | None = None
+        if circuit_breaker_path is not None:
+            from toolwright.core.kill.breaker import CircuitBreakerRegistry
+
+            self.circuit_breaker = CircuitBreakerRegistry(
+                state_path=Path(circuit_breaker_path)
+            )
+
+        # CORRECT pillar: rule engine (optional)
+        self.rule_engine: Any | None = None
+        if rules_path is not None:
+            from toolwright.core.correct.engine import RuleEngine
+
+            self.rule_engine = RuleEngine(rules_path=Path(rules_path))
+
         # Create MCP server
         self.server = Server("toolwright-meta")
 
@@ -108,131 +133,300 @@ class ToolwrightMetaMCPServer:
 
         logger.info("Initialized Toolwright Meta MCP server")
 
+    # ------------------------------------------------------------------
+    # Public handler methods (used by MCP protocol and tests)
+    # ------------------------------------------------------------------
+
+    async def _handle_list_tools(self) -> list[types.Tool]:
+        """Return all meta tools."""
+        tools = [
+            # --- GOVERN ---
+            types.Tool(
+                name="toolwright_list_actions",
+                description="List all available actions from the Toolwright manifest with their risk tiers and approval status",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "filter_risk": {
+                            "type": "string",
+                            "enum": ["low", "medium", "high", "critical"],
+                            "description": "Filter actions by risk tier",
+                        },
+                        "filter_method": {
+                            "type": "string",
+                            "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+                            "description": "Filter actions by HTTP method",
+                        },
+                        "filter_status": {
+                            "type": "string",
+                            "enum": ["pending", "approved", "rejected"],
+                            "description": "Filter actions by approval status",
+                        },
+                    },
+                },
+            ),
+            types.Tool(
+                name="toolwright_check_policy",
+                description="Check if an action would be allowed by the current policy",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "action_name": {
+                            "type": "string",
+                            "description": "Name of the action to check",
+                        },
+                    },
+                    "required": ["action_name"],
+                },
+            ),
+            types.Tool(
+                name="toolwright_get_approval_status",
+                description="Get the approval status of an action",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "action_name": {
+                            "type": "string",
+                            "description": "Name of the action to check",
+                        },
+                    },
+                    "required": ["action_name"],
+                },
+            ),
+            types.Tool(
+                name="toolwright_list_pending_approvals",
+                description="List all actions pending approval",
+                inputSchema={
+                    "type": "object",
+                    "properties": {},
+                },
+            ),
+            types.Tool(
+                name="toolwright_get_action_details",
+                description="Get detailed information about a specific action",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "action_name": {
+                            "type": "string",
+                            "description": "Name of the action",
+                        },
+                    },
+                    "required": ["action_name"],
+                },
+            ),
+            types.Tool(
+                name="toolwright_risk_summary",
+                description="Get a summary of actions by risk tier",
+                inputSchema={
+                    "type": "object",
+                    "properties": {},
+                },
+            ),
+            types.Tool(
+                name="toolwright_get_flows",
+                description="Get detected API flow sequences (dependencies between endpoints).",
+                inputSchema={
+                    "type": "object",
+                    "properties": {},
+                },
+            ),
+            # --- HEAL ---
+            types.Tool(
+                name="toolwright_diagnose_tool",
+                description="Diagnose a tool by searching audit logs for DENY entries and returning a diagnosis.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "tool_id": {
+                            "type": "string",
+                            "description": "ID of the tool to diagnose",
+                        },
+                    },
+                    "required": ["tool_id"],
+                },
+            ),
+            types.Tool(
+                name="toolwright_health_check",
+                description="Check if a tool exists in the manifest and is approved.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "tool_id": {
+                            "type": "string",
+                            "description": "ID of the tool to check",
+                        },
+                    },
+                    "required": ["tool_id"],
+                },
+            ),
+            # --- KILL ---
+            types.Tool(
+                name="toolwright_kill_tool",
+                description="Force a tool's circuit breaker open (kill switch).",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "tool_id": {
+                            "type": "string",
+                            "description": "ID of the tool to kill",
+                        },
+                        "reason": {
+                            "type": "string",
+                            "description": "Reason for killing the tool",
+                        },
+                    },
+                    "required": ["tool_id"],
+                },
+            ),
+            types.Tool(
+                name="toolwright_enable_tool",
+                description="Re-enable a killed tool by closing its circuit breaker.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "tool_id": {
+                            "type": "string",
+                            "description": "ID of the tool to enable",
+                        },
+                    },
+                    "required": ["tool_id"],
+                },
+            ),
+            types.Tool(
+                name="toolwright_quarantine_report",
+                description="List all tools with tripped or manually killed circuit breakers.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {},
+                },
+            ),
+            # --- CORRECT ---
+            types.Tool(
+                name="toolwright_add_rule",
+                description="Create a behavioral rule for tool usage.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "enum": [
+                                "prerequisite",
+                                "prohibition",
+                                "parameter",
+                                "sequence",
+                                "rate",
+                                "approval",
+                            ],
+                            "description": "Rule type",
+                        },
+                        "target_tool_id": {
+                            "type": "string",
+                            "description": "Tool ID this rule applies to",
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "Human-readable description of the rule",
+                        },
+                        "required_tool_ids": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "Required prerequisite tool IDs (for prerequisite rules)",
+                        },
+                    },
+                    "required": ["kind", "target_tool_id", "description"],
+                },
+            ),
+            types.Tool(
+                name="toolwright_list_rules",
+                description="List all behavioral rules with optional kind filter.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "kind": {
+                            "type": "string",
+                            "enum": [
+                                "prerequisite",
+                                "prohibition",
+                                "parameter",
+                                "sequence",
+                                "rate",
+                                "approval",
+                            ],
+                            "description": "Filter by rule kind",
+                        },
+                    },
+                },
+            ),
+            types.Tool(
+                name="toolwright_remove_rule",
+                description="Remove a behavioral rule by ID.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "rule_id": {
+                            "type": "string",
+                            "description": "ID of the rule to remove",
+                        },
+                    },
+                    "required": ["rule_id"],
+                },
+            ),
+        ]
+        return tools
+
+    async def _handle_call_tool(
+        self, name: str, arguments: dict[str, Any] | None
+    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        """Dispatch a meta tool call."""
+        arguments = arguments or {}
+
+        dispatch: dict[str, Any] = {
+            "toolwright_list_actions": lambda: self._list_actions(arguments),
+            "toolwright_check_policy": lambda: self._check_policy(arguments),
+            "toolwright_get_approval_status": lambda: self._get_approval_status(arguments),
+            "toolwright_list_pending_approvals": lambda: self._list_pending_approvals(),
+            "toolwright_get_action_details": lambda: self._get_action_details(arguments),
+            "toolwright_risk_summary": lambda: self._risk_summary(),
+            "toolwright_get_flows": lambda: self._get_flows(arguments),
+            # HEAL
+            "toolwright_diagnose_tool": lambda: self._diagnose_tool(arguments),
+            "toolwright_health_check": lambda: self._health_check(arguments),
+            # KILL
+            "toolwright_kill_tool": lambda: self._kill_tool(arguments),
+            "toolwright_enable_tool": lambda: self._enable_tool(arguments),
+            "toolwright_quarantine_report": lambda: self._quarantine_report(),
+            # CORRECT
+            "toolwright_add_rule": lambda: self._add_rule(arguments),
+            "toolwright_list_rules": lambda: self._list_rules(arguments),
+            "toolwright_remove_rule": lambda: self._remove_rule(arguments),
+        }
+
+        handler = dispatch.get(name)
+        if handler:
+            return await handler()
+
+        return [types.TextContent(
+            type="text",
+            text=json.dumps({"error": f"Unknown tool: {name}"})
+        )]
+
     def _register_handlers(self) -> None:
         """Register MCP protocol handlers."""
 
         @self.server.list_tools()  # type: ignore
         async def handle_list_tools() -> list[types.Tool]:
-            """Return Toolwright meta tools."""
-            return [
-                types.Tool(
-                    name="toolwright_list_actions",
-                    description="List all available actions from the Toolwright manifest with their risk tiers and approval status",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {
-                            "filter_risk": {
-                                "type": "string",
-                                "enum": ["low", "medium", "high", "critical"],
-                                "description": "Filter actions by risk tier",
-                            },
-                            "filter_method": {
-                                "type": "string",
-                                "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"],
-                                "description": "Filter actions by HTTP method",
-                            },
-                            "filter_status": {
-                                "type": "string",
-                                "enum": ["pending", "approved", "rejected"],
-                                "description": "Filter actions by approval status",
-                            },
-                        },
-                    },
-                ),
-                types.Tool(
-                    name="toolwright_check_policy",
-                    description="Check if an action would be allowed by the current policy",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {
-                            "action_name": {
-                                "type": "string",
-                                "description": "Name of the action to check",
-                            },
-                        },
-                        "required": ["action_name"],
-                    },
-                ),
-                types.Tool(
-                    name="toolwright_get_approval_status",
-                    description="Get the approval status of an action",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {
-                            "action_name": {
-                                "type": "string",
-                                "description": "Name of the action to check",
-                            },
-                        },
-                        "required": ["action_name"],
-                    },
-                ),
-                types.Tool(
-                    name="toolwright_list_pending_approvals",
-                    description="List all actions pending approval",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {},
-                    },
-                ),
-                types.Tool(
-                    name="toolwright_get_action_details",
-                    description="Get detailed information about a specific action",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {
-                            "action_name": {
-                                "type": "string",
-                                "description": "Name of the action",
-                            },
-                        },
-                        "required": ["action_name"],
-                    },
-                ),
-                types.Tool(
-                    name="toolwright_risk_summary",
-                    description="Get a summary of actions by risk tier",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {},
-                    },
-                ),
-                types.Tool(
-                    name="toolwright_get_flows",
-                    description="Get detected API flow sequences (dependencies between endpoints).",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {},
-                    },
-                ),
-            ]
+            return await self._handle_list_tools()
 
         @self.server.call_tool()  # type: ignore
         async def handle_call_tool(
             name: str, arguments: dict[str, Any] | None
         ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
-            """Handle meta tool execution."""
-            arguments = arguments or {}
+            return await self._handle_call_tool(name, arguments)
 
-            if name == "toolwright_list_actions":
-                return await self._list_actions(arguments)
-            elif name == "toolwright_check_policy":
-                return await self._check_policy(arguments)
-            elif name == "toolwright_get_approval_status":
-                return await self._get_approval_status(arguments)
-            elif name == "toolwright_list_pending_approvals":
-                return await self._list_pending_approvals()
-            elif name == "toolwright_get_action_details":
-                return await self._get_action_details(arguments)
-            elif name == "toolwright_risk_summary":
-                return await self._risk_summary()
-            elif name == "toolwright_get_flows":
-                return await self._get_flows(arguments)
-            else:
-                return [types.TextContent(
-                    type="text",
-                    text=json.dumps({"error": f"Unknown tool: {name}"})
-                )]
+    # ------------------------------------------------------------------
+    # GOVERN handlers (existing)
+    # ------------------------------------------------------------------
 
     async def _list_actions(
         self, arguments: dict[str, Any]
@@ -594,6 +788,356 @@ class ToolwrightMetaMCPServer:
             }, indent=2)
         )]
 
+    # ------------------------------------------------------------------
+    # HEAL handlers
+    # ------------------------------------------------------------------
+
+    async def _diagnose_tool(
+        self, arguments: dict[str, Any]
+    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        """Diagnose a tool by checking manifest, approval state, and endpoint."""
+        tool_id = arguments.get("tool_id")
+        if not tool_id:
+            return [types.TextContent(
+                type="text",
+                text=json.dumps({"error": "tool_id is required"})
+            )]
+
+        diagnosis: dict[str, Any] = {"tool_id": tool_id, "issues": []}
+
+        # Check if tool exists in manifest
+        found = False
+        action_entry: dict[str, Any] | None = None
+        if self.manifest:
+            for action in self.manifest.get("actions", []):
+                if action["name"] == tool_id:
+                    found = True
+                    action_entry = action
+                    break
+
+        if not found:
+            diagnosis["issues"].append("Tool not found in manifest")
+        else:
+            diagnosis["in_manifest"] = True
+
+        # Check approval status
+        manager = LockfileManager(self.lockfile_path)
+        if manager.exists():
+            manager.load()
+            tool = manager.get_tool(tool_id)
+            if tool:
+                diagnosis["approval_status"] = tool.status.value
+                if tool.status == ApprovalStatus.REJECTED:
+                    diagnosis["issues"].append(
+                        f"Tool rejected: {tool.rejection_reason or 'no reason given'}"
+                    )
+                elif tool.status == ApprovalStatus.PENDING:
+                    diagnosis["issues"].append("Tool pending approval")
+            else:
+                diagnosis["issues"].append("Tool not in lockfile")
+
+        # Check circuit breaker
+        if self.circuit_breaker is not None:
+            allowed, reason = self.circuit_breaker.should_allow(tool_id)
+            if not allowed:
+                diagnosis["circuit_breaker"] = "open"
+                diagnosis["issues"].append(f"Circuit breaker open: {reason}")
+
+        # Probe endpoint if tool exists in manifest
+        if found and action_entry is not None:
+            from toolwright.core.health.checker import HealthChecker
+
+            checker = HealthChecker()
+            probe = await checker.check_tool(action_entry)
+            diagnosis["endpoint_reachable"] = probe.healthy
+            if not probe.healthy:
+                fc = probe.failure_class.value if probe.failure_class else "unknown"
+                diagnosis["issues"].append(
+                    f"Endpoint unreachable: {probe.status_code or 'N/A'} {fc}"
+                )
+
+        diagnosis["healthy"] = len(diagnosis["issues"]) == 0
+
+        return [types.TextContent(
+            type="text",
+            text=json.dumps(diagnosis, indent=2)
+        )]
+
+    async def _health_check(
+        self, arguments: dict[str, Any]
+    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        """Check if a tool exists, is approved, and its endpoint is reachable."""
+        tool_id = arguments.get("tool_id")
+        if not tool_id:
+            return [types.TextContent(
+                type="text",
+                text=json.dumps({"error": "tool_id is required"})
+            )]
+
+        exists = False
+        approved = False
+        action_entry: dict[str, Any] | None = None
+
+        if self.manifest:
+            for action in self.manifest.get("actions", []):
+                if action["name"] == tool_id:
+                    exists = True
+                    action_entry = action
+                    break
+
+        if exists:
+            manager = LockfileManager(self.lockfile_path)
+            if manager.exists():
+                manager.load()
+                tool = manager.get_tool(tool_id)
+                if tool and tool.status == ApprovalStatus.APPROVED:
+                    approved = True
+
+        result: dict[str, Any] = {
+            "tool_id": tool_id,
+            "exists": exists,
+            "approved": approved,
+        }
+
+        # Probe endpoint if tool exists in manifest
+        if exists and action_entry is not None:
+            from toolwright.core.health.checker import HealthChecker
+
+            checker = HealthChecker()
+            probe = await checker.check_tool(action_entry)
+            result["endpoint_reachable"] = probe.healthy
+            result["status_code"] = probe.status_code
+            result["response_time_ms"] = probe.response_time_ms
+            if probe.failure_class is not None:
+                result["failure_class"] = probe.failure_class.value
+
+        result["healthy"] = exists and approved and result.get("endpoint_reachable", False)
+
+        return [types.TextContent(
+            type="text",
+            text=json.dumps(result, indent=2)
+        )]
+
+    # ------------------------------------------------------------------
+    # KILL handlers
+    # ------------------------------------------------------------------
+
+    async def _kill_tool(
+        self, arguments: dict[str, Any]
+    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        """Kill a tool by forcing its circuit breaker open."""
+        tool_id = arguments.get("tool_id")
+        if not tool_id:
+            return [types.TextContent(
+                type="text",
+                text=json.dumps({"error": "tool_id is required"})
+            )]
+
+        if self.circuit_breaker is None:
+            return [types.TextContent(
+                type="text",
+                text=json.dumps({"error": "Circuit breaker not configured"})
+            )]
+
+        reason = arguments.get("reason", "killed via meta-tool")
+        self.circuit_breaker.kill_tool(tool_id, reason)
+
+        return [types.TextContent(
+            type="text",
+            text=json.dumps({
+                "tool_id": tool_id,
+                "state": "open",
+                "reason": reason,
+            }, indent=2)
+        )]
+
+    async def _enable_tool(
+        self, arguments: dict[str, Any]
+    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        """Enable a tool by closing its circuit breaker."""
+        tool_id = arguments.get("tool_id")
+        if not tool_id:
+            return [types.TextContent(
+                type="text",
+                text=json.dumps({"error": "tool_id is required"})
+            )]
+
+        if self.circuit_breaker is None:
+            return [types.TextContent(
+                type="text",
+                text=json.dumps({"error": "Circuit breaker not configured"})
+            )]
+
+        self.circuit_breaker.enable_tool(tool_id)
+
+        return [types.TextContent(
+            type="text",
+            text=json.dumps({
+                "tool_id": tool_id,
+                "state": "closed",
+            }, indent=2)
+        )]
+
+    async def _quarantine_report(
+        self,
+    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        """List all quarantined tools."""
+        if self.circuit_breaker is None:
+            return [types.TextContent(
+                type="text",
+                text=json.dumps({"total": 0, "tools": [], "message": "Circuit breaker not configured"})
+            )]
+
+        report = self.circuit_breaker.quarantine_report()
+        tools = [
+            {
+                "tool_id": b.tool_id,
+                "state": b.state.value,
+                "failure_count": b.failure_count,
+                "kill_reason": b.kill_reason,
+                "last_failure_error": b.last_failure_error,
+            }
+            for b in report
+        ]
+
+        return [types.TextContent(
+            type="text",
+            text=json.dumps({
+                "total": len(tools),
+                "tools": tools,
+            }, indent=2)
+        )]
+
+    # ------------------------------------------------------------------
+    # CORRECT handlers
+    # ------------------------------------------------------------------
+
+    async def _add_rule(
+        self, arguments: dict[str, Any]
+    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        """Add a behavioral rule."""
+        kind = arguments.get("kind")
+        if not kind:
+            return [types.TextContent(
+                type="text",
+                text=json.dumps({"error": "kind is required"})
+            )]
+
+        if self.rule_engine is None:
+            return [types.TextContent(
+                type="text",
+                text=json.dumps({"error": "Rule engine not configured"})
+            )]
+
+        from uuid import uuid4
+
+        from toolwright.models.rule import BehavioralRule, RuleKind
+
+        target = arguments.get("target_tool_id", "")
+        description = arguments.get("description", "")
+
+        # Build config based on kind
+        config: dict[str, Any] = {}
+        if kind == "prerequisite":
+            config["required_tool_ids"] = arguments.get("required_tool_ids", [])
+        elif kind == "prohibition":
+            config["always"] = True
+        elif kind == "parameter":
+            config["param_name"] = arguments.get("param_name", "")
+        elif kind == "sequence":
+            config["required_order"] = arguments.get("required_order", [])
+        elif kind == "rate":
+            config["max_calls"] = arguments.get("max_calls", 10)
+
+        rule = BehavioralRule(
+            rule_id=str(uuid4()),
+            kind=RuleKind(kind),
+            description=description,
+            target_tool_ids=[target] if target else [],
+            config=config,
+        )
+
+        self.rule_engine.add_rule(rule)
+
+        return [types.TextContent(
+            type="text",
+            text=json.dumps({
+                "rule_id": rule.rule_id,
+                "kind": rule.kind.value,
+                "description": rule.description,
+                "target_tool_ids": rule.target_tool_ids,
+            }, indent=2)
+        )]
+
+    async def _list_rules(
+        self, arguments: dict[str, Any]
+    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        """List behavioral rules."""
+        if self.rule_engine is None:
+            return [types.TextContent(
+                type="text",
+                text=json.dumps({"total": 0, "rules": [], "message": "Rule engine not configured"})
+            )]
+
+        kind_filter = arguments.get("kind")
+        rules = self.rule_engine.list_rules()
+        if kind_filter:
+            rules = [r for r in rules if r.kind.value == kind_filter]
+
+        result = [
+            {
+                "rule_id": r.rule_id,
+                "kind": r.kind.value,
+                "description": r.description,
+                "target_tool_ids": r.target_tool_ids,
+                "enabled": r.enabled,
+            }
+            for r in rules
+        ]
+
+        return [types.TextContent(
+            type="text",
+            text=json.dumps({
+                "total": len(result),
+                "rules": result,
+            }, indent=2)
+        )]
+
+    async def _remove_rule(
+        self, arguments: dict[str, Any]
+    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+        """Remove a behavioral rule by ID."""
+        rule_id = arguments.get("rule_id")
+        if not rule_id:
+            return [types.TextContent(
+                type="text",
+                text=json.dumps({"error": "rule_id is required"})
+            )]
+
+        if self.rule_engine is None:
+            return [types.TextContent(
+                type="text",
+                text=json.dumps({"error": "Rule engine not configured"})
+            )]
+
+        try:
+            self.rule_engine.remove_rule(rule_id)
+            removed = True
+        except KeyError:
+            removed = False
+
+        return [types.TextContent(
+            type="text",
+            text=json.dumps({
+                "rule_id": rule_id,
+                "removed": removed,
+            }, indent=2)
+        )]
+
+    # ------------------------------------------------------------------
+    # Server lifecycle
+    # ------------------------------------------------------------------
+
     async def run_stdio(self) -> None:
         """Run the server using stdio transport."""
         async with mcp_stdio.stdio_server() as (read_stream, write_stream):
@@ -616,6 +1160,8 @@ def run_meta_server(
     tools_path: str | None = None,
     policy_path: str | None = None,
     lockfile_path: str | None = None,
+    circuit_breaker_path: str | None = None,
+    rules_path: str | None = None,
 ) -> None:
     """Run the Toolwright Meta MCP server.
 
@@ -624,12 +1170,16 @@ def run_meta_server(
         tools_path: Path to tools.json (overrides artifacts_dir)
         policy_path: Path to policy.yaml (overrides artifacts_dir)
         lockfile_path: Path to lockfile
+        circuit_breaker_path: Path to circuit breaker state file
+        rules_path: Path to behavioral rules JSON file
     """
     server = ToolwrightMetaMCPServer(
         artifacts_dir=artifacts_dir,
         tools_path=tools_path,
         policy_path=policy_path,
         lockfile_path=lockfile_path,
+        circuit_breaker_path=circuit_breaker_path,
+        rules_path=rules_path,
     )
 
     asyncio.run(server.run_stdio())
