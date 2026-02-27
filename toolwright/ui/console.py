@@ -26,7 +26,7 @@ from rich.theme import Theme
 # Theme
 # ---------------------------------------------------------------------------
 
-CASK_THEME = Theme(
+TOOLWRIGHT_THEME = Theme(
     {
         # Base
         "info": "cyan",
@@ -67,7 +67,7 @@ CASK_THEME = Theme(
 )
 
 # All TUI chrome goes to stderr.
-err_console = Console(stderr=True, theme=CASK_THEME)
+err_console = Console(stderr=True, theme=TOOLWRIGHT_THEME)
 
 
 # ---------------------------------------------------------------------------

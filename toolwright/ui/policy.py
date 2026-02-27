@@ -11,8 +11,8 @@ should_interact() rules (checked in order):
 
 resolve_ui_mode() rules:
 1. input_stream is not None → "plain" (test injection).
-2. CASK_UI=plain → "plain".
-3. CASK_UI=fancy or auto/unset → terminal reality check:
+2. TOOLWRIGHT_UI=plain → "plain".
+3. TOOLWRIGHT_UI=fancy or auto/unset → terminal reality check:
    - prompt-toolkit not importable → "plain"
    - stdin not TTY → "plain"
    - stderr not terminal → "plain" (prompt-toolkit renders to stderr)
@@ -40,7 +40,7 @@ _CI_ENV_VARS = frozenset({
     "BUILDKITE",
     "CIRCLECI",
     "TRAVIS",
-    "CASK_NON_INTERACTIVE",
+    "TOOLWRIGHT_NON_INTERACTIVE",
 })
 
 
@@ -127,14 +127,14 @@ def resolve_ui_mode(
 
     Resolution:
     1. input_stream provided (test injection) → "plain"
-    2. CASK_UI=plain → "plain"
-    3. CASK_UI=fancy → "fancy" only if terminal supports it, else "plain"
-    4. CASK_UI=auto or unset → auto-detect via terminal reality checks
+    2. TOOLWRIGHT_UI=plain → "plain"
+    3. TOOLWRIGHT_UI=fancy → "fancy" only if terminal supports it, else "plain"
+    4. TOOLWRIGHT_UI=auto or unset → auto-detect via terminal reality checks
     """
     if input_stream is not None:
         return "plain"
 
-    ui_env = os.environ.get("CASK_UI", "auto").lower().strip()
+    ui_env = os.environ.get("TOOLWRIGHT_UI", "auto").lower().strip()
 
     if ui_env == "plain":
         return "plain"

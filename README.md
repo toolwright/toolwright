@@ -200,8 +200,8 @@ toolwright serve --toolpack ... --dry-run
        │
        ▼
   ┌─────────────┐
-  │  MCP Server  │  ← toolwright serve
-  │  (governed)  │
+  │  MCP Server │  ← toolwright serve
+  │  (governed) │
   └──────┬──────┘
          │
   ┌──────┴──────┐

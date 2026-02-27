@@ -340,7 +340,7 @@ class SymbolSet:
     active: str      # >> or >>
 ```
 
-**Expanded CASK_THEME:**
+**Expanded TOOLWRIGHT_THEME:**
 ```python
 "seal": "bold green",
 "drift.breaking": "bold red",

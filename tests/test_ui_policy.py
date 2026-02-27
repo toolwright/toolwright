@@ -31,7 +31,7 @@ def _interactive_env(monkeypatch: pytest.MonkeyPatch) -> None:
         "BUILDKITE",
         "CIRCLECI",
         "TRAVIS",
-        "CASK_NON_INTERACTIVE",
+        "TOOLWRIGHT_NON_INTERACTIVE",
     ):
         monkeypatch.delenv(var, raising=False)
     monkeypatch.delenv("TERM", raising=False)
@@ -80,7 +80,7 @@ class TestCIDetection:
             "BUILDKITE",
             "CIRCLECI",
             "TRAVIS",
-            "CASK_NON_INTERACTIVE",
+            "TOOLWRIGHT_NON_INTERACTIVE",
         ],
     )
     def test_returns_false_in_ci(self, var: str, monkeypatch: pytest.MonkeyPatch) -> None:

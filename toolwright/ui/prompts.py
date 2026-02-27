@@ -37,7 +37,7 @@ def select_one(
     """Display a menu and return the selected choice value.
 
     Routes to arrow-key (fancy) or numbered-input (plain) based on
-    terminal capabilities and CASK_UI env var.
+    terminal capabilities and TOOLWRIGHT_UI env var.
 
     Raises ``KeyboardInterrupt`` on EOF / cancel.
     """
@@ -187,7 +187,7 @@ def select_many(
     """Display a checklist and return selected choice values.
 
     Routes to arrow-key (fancy) or numbered-input (plain) based on
-    terminal capabilities and CASK_UI env var.
+    terminal capabilities and TOOLWRIGHT_UI env var.
 
     Raises ``KeyboardInterrupt`` on EOF / cancel.
     """

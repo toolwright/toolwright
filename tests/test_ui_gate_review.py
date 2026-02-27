@@ -34,9 +34,9 @@ def _make_tool(
 
 @pytest.fixture
 def mock_console() -> Console:
-    from toolwright.ui.console import CASK_THEME
+    from toolwright.ui.console import TOOLWRIGHT_THEME
 
-    return Console(file=StringIO(), force_terminal=False, theme=CASK_THEME)
+    return Console(file=StringIO(), force_terminal=False, theme=TOOLWRIGHT_THEME)
 
 
 class TestGateReviewNoLockfiles:

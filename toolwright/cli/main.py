@@ -171,8 +171,8 @@ def _show_help_all(
 @click.option(
     "--no-interactive",
     is_flag=True,
-    envvar="CASK_NON_INTERACTIVE",
-    help="Disable interactive prompts (same as CASK_NON_INTERACTIVE=1)",
+    envvar="TOOLWRIGHT_NON_INTERACTIVE",
+    help="Disable interactive prompts (same as TOOLWRIGHT_NON_INTERACTIVE=1)",
 )
 @click.pass_context
 def cli(ctx: click.Context, verbose: bool, root: Path, no_interactive: bool) -> None:

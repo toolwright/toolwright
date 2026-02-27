@@ -9,12 +9,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 from rich.console import Console
 
-from toolwright.ui.console import CASK_THEME
+from toolwright.ui.console import TOOLWRIGHT_THEME
 
 
 @pytest.fixture
 def mock_console() -> Console:
-    return Console(file=StringIO(), force_terminal=False, theme=CASK_THEME)
+    return Console(file=StringIO(), force_terminal=False, theme=TOOLWRIGHT_THEME)
 
 
 # ---------------------------------------------------------------------------
@@ -300,7 +300,7 @@ class TestDashboardFallback:
 
         from toolwright.ui.dashboard import _fallback
 
-        mock_con = Console(file=StringIO(), force_terminal=False, theme=CASK_THEME)
+        mock_con = Console(file=StringIO(), force_terminal=False, theme=TOOLWRIGHT_THEME)
 
         with patch("toolwright.ui.console.err_console", mock_con):
             _fallback("some/toolpack.yaml", ".toolwright")

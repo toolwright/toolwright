@@ -9,13 +9,13 @@ from unittest.mock import MagicMock, patch
 import pytest
 from rich.console import Console
 
-from toolwright.ui.console import CASK_THEME
+from toolwright.ui.console import TOOLWRIGHT_THEME
 from toolwright.ui.ops import PreflightCheck, PreflightResult
 
 
 @pytest.fixture
 def mock_console() -> Console:
-    return Console(file=StringIO(), force_terminal=False, theme=CASK_THEME)
+    return Console(file=StringIO(), force_terminal=False, theme=TOOLWRIGHT_THEME)
 
 
 def _preflight(*checks: tuple[str, bool, str]) -> PreflightResult:
@@ -217,7 +217,7 @@ class TestRepairFlowRegistration:
         """repair_flow accepts ctx and missing_param for InteractiveFlow protocol."""
         from toolwright.ui.flows.repair import repair_flow
 
-        mock_con = Console(file=StringIO(), force_terminal=False, theme=CASK_THEME)
+        mock_con = Console(file=StringIO(), force_terminal=False, theme=TOOLWRIGHT_THEME)
 
         with (
             patch("toolwright.ui.flows.repair.err_console", mock_con),

@@ -10,12 +10,12 @@ import pytest
 from click.testing import CliRunner
 from rich.console import Console
 
-from toolwright.ui.console import CASK_THEME
+from toolwright.ui.console import TOOLWRIGHT_THEME
 
 
 @pytest.fixture
 def mock_console() -> Console:
-    return Console(file=StringIO(), force_terminal=False, theme=CASK_THEME)
+    return Console(file=StringIO(), force_terminal=False, theme=TOOLWRIGHT_THEME)
 
 
 class TestWizardLaunch:
