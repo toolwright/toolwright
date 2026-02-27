@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Run CaskMCP mint against multiple real ecommerce sites for E2E testing.
+# Run Toolwright mint against multiple real ecommerce sites for E2E testing.
 # Usage: ./tests/e2e/run_all_captures.sh [site_name]
 # If site_name is provided, only that site is tested.
 set -euo pipefail
 
 VENV=".venv/bin/python"
-CASKMCP="$VENV -m caskmcp.cli.main"
+TOOLWRIGHT="$VENV -m toolwright.cli.main"
 
 SITES=(
     "amazon:https://www.amazon.com:*.amazon.com,*.media-amazon.com"
@@ -37,7 +37,7 @@ for site_entry in "${SITES[@]}"; do
     mkdir -p "$OUT_DIR"
 
     # Run mint with verbose output, capture both stdout and stderr
-    $CASKMCP --verbose mint "$url" \
+    $TOOLWRIGHT --verbose mint "$url" \
         -a "$allowed" \
         --scope first_party_only \
         --script "$SCRIPT" \
@@ -50,7 +50,7 @@ for site_entry in "${SITES[@]}"; do
     echo "SUCCESS" > "$OUT_DIR/status.txt"
 
     # Find the most recent toolpack
-    LATEST_TOOLPACK=$(ls -td .caskmcp/toolpacks/*/toolpack.yaml 2>/dev/null | head -1)
+    LATEST_TOOLPACK=$(ls -td .toolwright/toolpacks/*/toolpack.yaml 2>/dev/null | head -1)
     if [ -n "$LATEST_TOOLPACK" ]; then
         TOOLPACK_DIR=$(dirname "$LATEST_TOOLPACK")
         cp -r "$TOOLPACK_DIR" "$OUT_DIR/toolpack_copy" 2>/dev/null || true

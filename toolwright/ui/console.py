@@ -1,4 +1,4 @@
-"""Shared Rich Console, theme, and SymbolSet for the Cask TUI.
+"""Shared Rich Console, theme, and SymbolSet for the Toolwright TUI.
 
 All interactive output goes to stderr via ``err_console``.
 Flows never write to stdout.

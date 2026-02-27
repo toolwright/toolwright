@@ -1,16 +1,17 @@
-"""FlowContext and shared exceptions for the Cask TUI narrative engine.
+"""FlowContext and shared exceptions for the Toolwright TUI narrative engine.
 
 FlowContext is threaded through all interactive flows, carrying selected
 state (toolpack, lockfile, etc.) and output preferences.  It is frozen
 — flows that need to update it create a new instance via ``replace()``.
 
-CaskCancelled is raised by the progress system on Ctrl-C.  Top-level
+ToolwrightCancelled is raised by the progress system on Ctrl-C.  Top-level
 Click commands catch it and exit with code 130.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace as _dc_replace
+from dataclasses import dataclass
+from dataclasses import replace as _dc_replace
 from pathlib import Path
 from typing import Any, Literal
 
@@ -42,7 +43,7 @@ class FlowContext:
         return _dc_replace(self, **changes)
 
 
-class CaskCancelled(Exception):
+class ToolwrightCancelled(Exception):
     """Raised on Ctrl-C during progress.
 
     Caught by the top-level Click command handler which prints

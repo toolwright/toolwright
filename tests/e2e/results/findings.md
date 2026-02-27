@@ -1,7 +1,7 @@
 # E2E Real Ecommerce Site Testing — Findings
 
 **Date**: 2026-02-12
-**CaskMCP Version**: 0.2.0b1
+**Toolwright Version**: 0.2.0b1
 **Capture Mode**: Headless Playwright with scripted URL navigation
 
 ## Summary

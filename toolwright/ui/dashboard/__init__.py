@@ -1,4 +1,4 @@
-"""Optional Textual dashboard for Cask.
+"""Optional Textual dashboard for Toolwright.
 
 Requires ``toolwright[tui]`` (textual).  If Textual is not installed,
 ``toolwright dashboard`` prints an install hint and falls back to
@@ -28,9 +28,9 @@ def run_dashboard(toolpack_path: str, root: str = ".toolwright") -> None:
         _fallback(toolpack_path, root)
         return
 
-    from toolwright.ui.dashboard.app import CaskDashboardApp
+    from toolwright.ui.dashboard.app import ToolwrightDashboardApp
 
-    app = CaskDashboardApp(toolpack_path=toolpack_path, root=root)
+    app = ToolwrightDashboardApp(toolpack_path=toolpack_path, root=root)
     app.run()
 
 

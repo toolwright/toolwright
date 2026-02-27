@@ -211,14 +211,14 @@ class _MCPClient:
         self.proc.wait(timeout=5)
 
 
-def _find_cask_exe() -> str:
+def _find_toolwright_exe() -> str:
     """Find the toolwright executable in the venv."""
     import shutil
 
     # Prefer venv toolwright
-    venv_cask = Path(__file__).resolve().parent.parent / ".venv" / "bin" / "toolwright"
-    if venv_cask.exists():
-        return str(venv_cask)
+    venv_tw = Path(__file__).resolve().parent.parent / ".venv" / "bin" / "toolwright"
+    if venv_tw.exists():
+        return str(venv_tw)
     found = shutil.which("toolwright")
     if found:
         return found
@@ -236,11 +236,11 @@ def test_confirmation_lifecycle_over_mcp_stdio(tmp_path: Path) -> None:
     """
     toolpack_path = _write_post_toolpack(tmp_path)
     confirm_db = tmp_path / "confirmations.db"
-    cask_exe = _find_cask_exe()
+    tw_exe = _find_toolwright_exe()
 
     proc = subprocess.Popen(
         [
-            cask_exe,
+            tw_exe,
             "serve",
             "--toolpack",
             str(toolpack_path),

@@ -186,7 +186,7 @@ class TestStatusModelDisplayName:
 
 
 
-class TestCaskRenameCommand:
+class TestToolwrightRenameCommand:
     """toolwright rename updates display_name in toolpack.yaml."""
 
     def _make_toolpack_file(self, tmp_path: Path) -> Path:

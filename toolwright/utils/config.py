@@ -12,7 +12,7 @@ from typing import Any
 import yaml
 
 
-def _resolve_cask_command() -> str:
+def _resolve_toolwright_command() -> str:
     """Return an absolute ``toolwright`` command path when possible.
 
     Claude Desktop often does not inherit a shell PATH (especially virtualenv PATH),
@@ -71,7 +71,7 @@ def build_mcp_config_payload(
     return {
         "mcpServers": {
             server_name: {
-                "command": _resolve_cask_command(),
+                "command": _resolve_toolwright_command(),
                 "args": [
                     "--root",
                     str(state_root),

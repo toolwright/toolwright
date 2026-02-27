@@ -1,4 +1,4 @@
-"""Command echo utilities for the Cask TUI.
+"""Command echo utilities for the Toolwright TUI.
 
 Both functions output to stderr — never stdout.
 """

@@ -1,6 +1,6 @@
 """Bounded path discovery for toolpacks and lockfiles.
 
-Scans only within the Cask root — never walks above root or follows
+Scans only within the Toolwright root — never walks above root or follows
 symlinks outside root.
 """
 

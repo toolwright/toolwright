@@ -12,18 +12,16 @@ Three renderers:
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
-from rich.console import Console, RenderableType
+from rich.console import RenderableType
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from toolwright.ui.console import err_console, get_symbols
+from toolwright.ui.console import get_symbols
 from toolwright.ui.ops import StatusModel
 from toolwright.ui.views.next_steps import NextStepsInput, compute_next_steps
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -166,7 +164,7 @@ def render_rich(model: StatusModel) -> RenderableType:
 
     group = Group(*group_items)
 
-    title = "[heading]Cask Status[/heading]"
+    title = "[heading]Toolwright Status[/heading]"
     return Panel(group, title=title, expand=False, padding=(1, 2))
 
 
@@ -177,9 +175,8 @@ def render_rich(model: StatusModel) -> RenderableType:
 
 def render_plain(model: StatusModel) -> str:
     """Build plain-text status output (no ANSI, no Unicode box drawing)."""
-    sym = get_symbols()
     lines: list[str] = []
-    lines.append("Cask Status")
+    lines.append("Toolwright Status")
     lines.append("-" * 40)
 
     plain_icon = {

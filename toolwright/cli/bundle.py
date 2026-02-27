@@ -128,7 +128,7 @@ def _write_zip_file(zf: zipfile.ZipFile, arcname: str, data: bytes, mode: int) -
 
 def _render_run_md(_toolpack_id: str) -> str:
     return (
-        "# Cask Bundle\n\n"
+        "# Toolwright Bundle\n\n"
         "Run this toolpack:\n\n"
         "  toolwright run --toolpack ./toolpack.yaml\n"
     )

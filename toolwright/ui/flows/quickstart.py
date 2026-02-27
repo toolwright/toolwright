@@ -27,7 +27,7 @@ from toolwright.ui.prompts import confirm, input_text, select_one
 
 
 def _is_first_run(root: Path) -> bool:
-    """Check if this is the first time the user is using Cask.
+    """Check if this is the first time the user is using Toolwright.
 
     True if the .toolwright directory doesn't exist or has no toolpacks.
     """
@@ -101,7 +101,7 @@ def _render_health_bar(statuses: list[Any], con: Any) -> None:
 _ALWAYS_AVAILABLE = [
     ("doctor", "Check toolpack health"),
     ("config", "Generate MCP client config"),
-    ("init", "Initialize Cask in this project"),
+    ("init", "Initialize Toolwright in this project"),
     ("exit", "Exit"),
 ]
 
@@ -206,7 +206,7 @@ def _first_run_flow(*, root: Path, verbose: bool) -> None:
 
     render_rich_header(console=con)
 
-    con.print("  [heading]Welcome to Cask[/heading]")
+    con.print("  [heading]Welcome to Toolwright[/heading]")
     con.print("  [muted]Turn any web API into a governed, agent-ready MCP server.[/muted]")
     con.print()
 
@@ -232,7 +232,7 @@ def _first_run_flow(*, root: Path, verbose: bool) -> None:
     first_run_menu = [
         ("quickstart", f"Quick Start {sym.arrow} capture & govern an API in minutes"),
         ("ship", f"Ship Secure Agent {sym.arrow} end-to-end governed deployment"),
-        ("init", f"Initialize Cask {sym.arrow} set up .toolwright/ in this project"),
+        ("init", f"Initialize Toolwright {sym.arrow} set up .toolwright/ in this project"),
         ("exit", "Exit"),
     ]
 
@@ -468,9 +468,9 @@ def _quickstart_flow(
 
     # Execute mint with progress
     try:
-        from toolwright.ui.views.progress import cask_progress
+        from toolwright.ui.views.progress import toolwright_progress
 
-        with cask_progress("Capturing API surface..."):
+        with toolwright_progress("Capturing API surface..."):
             from toolwright.cli.mint import run_mint
 
             run_mint(

@@ -1,4 +1,4 @@
-"""Reusable prompt primitives for the Cask TUI.
+"""Reusable prompt primitives for the Toolwright TUI.
 
 Every function accepts an optional *console* (for output) and *input_stream*
 (for deterministic test input) so that tests never need to monkeypatch stdin.

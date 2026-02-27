@@ -33,7 +33,7 @@ class TestWizardLaunch:
 
         output = mock_console.file.getvalue()  # type: ignore[attr-defined]
         # Should show branding
-        assert "Cask" in output
+        assert "Toolwright" in output
 
     def test_shows_help_in_non_interactive_mode(self) -> None:
         """When --no-interactive is set, toolwright shows help instead of wizard."""

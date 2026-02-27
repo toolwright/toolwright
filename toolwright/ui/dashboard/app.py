@@ -1,4 +1,4 @@
-"""Textual full-screen dashboard for Cask.
+"""Textual full-screen dashboard for Toolwright.
 
 Read-only, toolpack-scoped. Only reads cached artifacts (toolpack +
 lockfile + last drift/verify reports). Never runs drift/verify.
@@ -90,10 +90,10 @@ class ToolsTable(DataTable):
             self.add_row("Error", "Could not load tools", "", "", "", "")
 
 
-class CaskDashboardApp(App):
-    """Read-only Cask governance dashboard."""
+class ToolwrightDashboardApp(App):
+    """Read-only Toolwright governance dashboard."""
 
-    TITLE = "Cask Dashboard"
+    TITLE = "Toolwright Dashboard"
     CSS = """
     StatusWidget {
         dock: top;

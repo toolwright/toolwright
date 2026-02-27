@@ -85,8 +85,6 @@ def test_demo_smoke_runs_from_installed_wheel(tmp_path: Path) -> None:
 
     pip_bin = _venv_bin(venv_dir, "pip")
     toolwright_bin = _venv_bin(venv_dir, "toolwright")
-    cask_bin = _venv_bin(venv_dir, "toolwright")
-
     subprocess.run([str(pip_bin), "install", "--no-deps", str(wheel)], check=True)
     env = _dependency_env()
 
@@ -101,18 +99,8 @@ def test_demo_smoke_runs_from_installed_wheel(tmp_path: Path) -> None:
     )
     assert "Usage:" in help_toolwright.stdout
 
-    help_cask = subprocess.run(
-        [str(cask_bin), "--help"],
-        cwd=tmp_path,
-        env=env,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    assert "Usage:" in help_cask.stdout
-
     result = subprocess.run(
-        [str(cask_bin), "demo", "--out", str(output_root)],
+        [str(toolwright_bin), "demo", "--out", str(output_root)],
         cwd=tmp_path,
         env=env,
         check=True,

@@ -1,4 +1,4 @@
-"""Stable operations layer for the Cask TUI.
+"""Stable operations layer for the Toolwright TUI.
 
 Functions here call domain logic directly and return frozen dataclasses
 or Pydantic models.  They are the **only** bridge between the UI layer

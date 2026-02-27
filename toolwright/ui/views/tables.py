@@ -1,4 +1,4 @@
-"""Enhanced Rich table formatters for the Cask TUI.
+"""Enhanced Rich table formatters for the Toolwright TUI.
 
 SymbolSet-aware: uses Unicode or ASCII glyphs based on terminal capability.
 All functions accept optional console for test injection.
@@ -15,8 +15,8 @@ from rich.table import Table
 from toolwright.ui.console import get_symbols
 
 if TYPE_CHECKING:
-    from toolwright.ui.ops import DoctorCheck, PreflightCheck
     from toolwright.core.approval.lockfile import ToolApproval
+    from toolwright.ui.ops import PreflightCheck
 
 _RISK_STYLES = {
     "low": "risk.low",

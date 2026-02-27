@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from importlib.metadata import version as _pkg_version
 
-from rich.console import Console, RenderableType
+from rich.console import Console
 from rich.text import Text
 
 from toolwright.ui.console import err_console, get_symbols

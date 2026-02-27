@@ -1,4 +1,4 @@
-"""Cancel-safe progress display for long-running Cask operations.
+"""Cancel-safe progress display for long-running Toolwright operations.
 
 One implementation, three modes:
 - **Spinner**: indeterminate (e.g., "Capturing browser traffic...")
@@ -7,7 +7,7 @@ One implementation, three modes:
 
 Cancel safety
 -------------
-On Ctrl-C the progress display is cleaned up and a ``CaskCancelled``
+On Ctrl-C the progress display is cleaned up and a ``ToolwrightCancelled``
 exception is raised.  The top-level Click command catches it, prints
 "Aborted." to stderr, and exits with code 130.
 
@@ -18,27 +18,27 @@ partial state.
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Generator
 
 from rich.console import Console
 from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
     Progress,
     SpinnerColumn,
     TextColumn,
-    BarColumn,
-    MofNCompleteColumn,
     TimeElapsedColumn,
 )
 
 from toolwright.ui.console import err_console
-from toolwright.ui.context import CaskCancelled
+from toolwright.ui.context import ToolwrightCancelled
 
 
-class CaskProgress:
+class ToolwrightProgress:
     """Wrapper around Rich Progress with cancel-safe semantics.
 
-    Use via the ``cask_progress`` context manager.
+    Use via the ``toolwright_progress`` context manager.
     """
 
     def __init__(
@@ -120,33 +120,33 @@ class CaskProgress:
 
 
 @contextmanager
-def cask_progress(
+def toolwright_progress(
     description: str,
     steps: list[str] | None = None,
     *,
     console: Console | None = None,
-) -> Generator[CaskProgress, None, None]:
+) -> Generator[ToolwrightProgress, None, None]:
     """Cancel-safe progress context manager.
 
     Usage::
 
-        with cask_progress("Compiling", ["Parse", "Normalize", "Generate"]) as p:
+        with toolwright_progress("Compiling", ["Parse", "Normalize", "Generate"]) as p:
             do_parse()
             p.advance("Normalize")
             do_normalize()
             p.advance("Generate")
             do_generate()
 
-    On Ctrl-C: cleans up the progress display and raises ``CaskCancelled``.
+    On Ctrl-C: cleans up the progress display and raises ``ToolwrightCancelled``.
     """
     con = console or err_console
-    prog = CaskProgress(description, steps, con)
+    prog = ToolwrightProgress(description, steps, con)
     prog.start()
     try:
         yield prog
     except KeyboardInterrupt:
         prog.stop()
         con.print("[warning]Aborted.[/warning]")
-        raise CaskCancelled() from None
+        raise ToolwrightCancelled() from None
     else:
         prog.stop()

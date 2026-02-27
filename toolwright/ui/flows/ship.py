@@ -1,6 +1,6 @@
 """Ship Secure Agent — flagship guided lifecycle.
 
-The narrative engine for Cask: guides the user through every stage of
+The narrative engine for Toolwright: guides the user through every stage of
 governed agent deployment.  Each stage follows plan-first (show → confirm →
 execute → summary) and never dead-ends.
 
