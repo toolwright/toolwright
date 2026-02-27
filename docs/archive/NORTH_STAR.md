@@ -18,7 +18,7 @@ Everything below is a concrete implementation plan that gets you:
 
 ### The <5 minute wow moment (realistic)
 
-You already have the right move: **offline demo** first-run, no browser, no network. `pip install toolwright` then `cask demo`. 
+You already have the right move: **offline demo** first-run, no browser, no network. `pip install toolwright` then `toolwright demo`. 
 That is how you meet the 5-minute constraint without lying about Playwright downloads.
 
 ### The 15 to 30 minute “real mint” moment (until you add a container runner)
@@ -30,9 +30,9 @@ Do not claim this is <5 minutes today. Make it brutally explicit.
 
 You get that only by shipping one of these:
 
-1. **Prebuilt container runner** with browsers included (pull image, run `cask mint ...`).
+1. **Prebuilt container runner** with browsers included (pull image, run `toolwright mint ...`).
 2. **Remote capture runner** (hosted browsers) with a local control plane and strict egress constraints.
-3. **HAR-only onboarding** (export from DevTools, `cask capture import`, then compile). This can be <5 minutes but less magical.
+3. **HAR-only onboarding** (export from DevTools, `toolwright capture import`, then compile). This can be <5 minutes but less magical.
 
 ---
 
@@ -58,7 +58,7 @@ Must hold in tests and docs:
 
 ### v1 verification contract
 
-`cask verify` modes and provenance rules must match the spec.  
+`toolwright verify` modes and provenance rules must match the spec.  
 
 ### v1 limitations you must state up front
 
@@ -118,7 +118,7 @@ Support the MCP client ecosystem by keeping your server “boring”:
 
 1. wright storageState)**
 
-   * `cask auth login --profile X --url ...`
+   * `toolwright auth login --profile X --url ...`
    * store at `<root>/:contentReference[oaicite:40]{index=40}tate.json`. 
    * Treat as a secret. Playwright storage state contains cookies and local storage, so it must be handled like credentials and not committed. ([Playwright][3])
 
@@ -423,11 +423,11 @@ Goal: no doc lies, no surprising defaults.
 
 * Make README + user guide the canonical workflow surface (you already state this). 
 * Add “Real mint takes longer due to browsers/MFA” as explicit text near quickstart.
-* Ensure `cask demo` is always the first suggested command. 
+* Ensure `toolwright demo` is always the first suggested command. 
 
 Acceptance:
 
-* fresh venv: `pip install toolwright` then `cask demo` succeeds.
+* fresh venv: `pip install toolwright` then `toolwright demo` succeeds.
 * packaging smoke in CI stays green. 
 
 ### Phase 1: v1 hardening pass (1 to 2 weeks)
@@ -446,7 +446,7 @@ Goal: the wedge is unbreakable and boring.
 3. **Auth profile safety**
 
    * guarantee auth state is local-only and excluded from bundles 
-   * add `cask auth doctor` that checks file perms and warns lou  - make diffs include: host changes, write surface changes, scope changes, schema deltas, verify deltas
+   * add `toolwright auth doctor` that checks file perms and warns lou  - make diffs include: host changes, write surface changes, scope changes, schema deltas, verify deltas
    * keep `--format github-md` stable *Verify and provenance**
    * implement full report contract, status rules, exit codes olds from docs 
 
@@ -482,7 +482,7 @@ Pic-to-end:
 
 1. **Container runner** (simplest to shiuilt image with browsers
 
-   * `cask mint --runner docker ...`
+   * `toolwright mint --runner docker ...`
 
 2. **Remote capture runner** (best UX, more security work)
 
@@ -494,7 +494,7 @@ Pic-to-end:
    * you already have “token handler BFF” planned as a runtime adapter concept 
    * implement it only after you havt critique you should accept
      If you chase “fully autonomous browsing to discover hidden APIs” in v1, you will lose. It explodes scope, incown threat model says it is out of scope. 
-     The winning path is what you already wrote: deterministic drafting + diff + signatures + fail-closed runtime. CLI help output for `cask mint` and `cask auth` and I’ll turn this spec into a concrete “exact flags, exact defaults, exact error strings” contract that you can hard-gate in tests.
+     The winning path is what you already wrote: deterministic drafting + diff + signatures + fail-closed runtime. CLI help output for `toolwright mint` and `toolwright auth` and I’ll turn this spec into a concrete “exact flags, exact defaults, exact error strings” contract that you can hard-gate in tests.
 
 
 
@@ -570,17 +570,17 @@ From install to “agent calls a governed tool through MCP” in under 5 minutes
 ### The path (must be copy/paste, no surprises)
 
 1. `pip install toolwright`
-2. `cask demo` (offline, deterministic)
-3. `cask mcp serve --toolpack <demo>` (or `cask serve`)
+2. `toolwright demo` (offline, deterministic)
+3. `toolwright mcp serve --toolpack <demo>` (or `toolwright serve`)
 4. User adds one generated MCP config to their agent client (Cursor/Claude)
-5. Agent successfully calls a tool, and Cask prints DecisionTrace proof
+5. Agent successfully calls a tool, and Toolwright prints DecisionTrace proof
 
 This lines up with your intent: demo exists to avoid Playwright friction, MCP configs are generated by init, and runtime is fail-closed by default.   
 
 ### What the wow should feel like
 
 * The agent calls a tool.
-* Cask shows: allowed because lockfile + scope digest + host allowlist.
+* Toolwright shows: allowed because lockfile + scope digest + host allowlist.
 * Any disallowed attempt returns a structured “MissingCapability” object (not a vague error), which can feed the draft loop later. 
 
 ---
@@ -596,8 +596,8 @@ v1 is not “everything.” v1 is the governance wedge end-to-end, with a clean 
 
 2. **Auth profiles for capture-time only (no runtime tokens yet)**
 
-* `cask auth login/status/clear/list`
-* `cask mint --auth-profile X`
+* `toolwright auth login/status/clear/list`
+* `toolwright mint --auth-profile X`
 * Explicit rule: auth state excluded from toolpacks/bundles/evidence/baselines 
 
 3. **Scopes ownership + merge**
@@ -626,7 +626,7 @@ v1 is not “everything.” v1 is the governance wedge end-to-end, with a clean 
 
 ## 5) Ecommerce dogfooding pack (v1.1, but design now)
 
-### The “Cask Commerce Pack” (read-only by default)
+### The “Toolwright Commerce Pack” (read-only by default)
 
 You want a preset scope pack that reliably finds:
 
@@ -705,7 +705,7 @@ This is already in your changelog.
 
 **UX requirements**
 
-* `cask aut:contentReference[oaicite:34]{index=34}ain>` launches a guided browser session.
+* `toolwright aut:contentReference[oaicite:34]{index=34}ain>` launches a guided browser session.
 * On success, store `storage_state.json` locally with tight permissions (you’re already doing 0600). 
 * Never include it in toolpacks/eady your rule). 
   Playwright storage state containlaywright’s docs warn it should be treated as sensitive.
@@ -713,7 +713,7 @@ This is already in your changelog.
 **Reauth flow (v1)**
 
 * Detect likely auth failure during capture (401/403, redirect to login) and pause with a “reauth needed” prompt. 
-* Run `cask auth login --profile record an “auth regained” proof step (an authenticated endpoint returning 200, or a known logged-in UI assertion).
+* Run `toolwright auth login --profile record an “auth regained” proof step (an authenticated endpoint returning 200, or a known logged-in UI assertion).
 
 ### Full vision: runtime token handling (v2)
 
@@ -816,9 +816,9 @@ When runtime denies an action:
   * conservative risk guess
   * `required_human_review: true` 
 
-Then `cask propose create`:
+Then `toolwright propose create`:
 
-* produces a DraftExpansionBundle stored under `.cask/dion (runtime ignores drafts). 
+* produces a DraftExpansionBundle stored under `.toolwright/dion (runtime ignores drafts). 
 
 To make this *feel magical*:
 
@@ -867,8 +867,8 @@ You do not need to adopt all of these. But each maps cleanly to a stage in your 
 
 Acceptance criteria:
 
-* `cask demo` works offline
-* `cask serve` exposes MCP tools
+* `toolwright demo` works offline
+* `toolwright serve` exposes MCP tools
 * user guide steps match behavior exactly
 * DecisionTrace shows allow/deny receipts
 

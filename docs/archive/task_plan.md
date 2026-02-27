@@ -11,7 +11,7 @@ v1 contracts are largely in place, but adoption risk remains in two areas:
 2. Provenance false-confidence and ambiguous candidate selection.
 
 ## Success criteria
-1. New users can run one command (`cask start`) and immediately receive one valid next command toward a real mint run.
+1. New users can run one command (`toolwright start`) and immediately receive one valid next command toward a real mint run.
 2. Setup diagnostics return deterministic fix-it strings for common failures.
 3. Capture quality outputs are deterministic and auditable (`coverage_report.json`, `capture_quality.json`).
 4. Provenance “pass” is strict and stable; uncertain cases are explicitly `unknown`.
@@ -23,9 +23,9 @@ v1 contracts are largely in place, but adoption risk remains in two areas:
 3. Expanding runtime to a full gateway product.
 
 ## Locked v1.1 contracts (must hold)
-1. `cask start` default is non-interactive setup and readiness checks (unless browser installation requires interaction).
-2. `cask start --non-interactive` must never prompt.
-3. `cask start --json` emits machine-readable results including next-command output.
+1. `toolwright start` default is non-interactive setup and readiness checks (unless browser installation requires interaction).
+2. `toolwright start --non-interactive` must never prompt.
+3. `toolwright start --json` emits machine-readable results including next-command output.
 4. Auth artifacts are profile-scoped:
    - `<root>/state/auth/<profile>/auth_profile.yaml`
    - `<root>/state/auth/<profile>/storage_state.json`
@@ -52,7 +52,7 @@ v1 contracts are largely in place, but adoption risk remains in two areas:
 - [x] Confirm v1 baseline still intact before v1.1 work.
 
 ### Phase 1: Onboarding command and fix-it UX (in progress)
-- [ ] Add `start` command (`cask start`) with deterministic readiness checks.
+- [ ] Add `start` command (`toolwright start`) with deterministic readiness checks.
 - [ ] Add `--non-interactive`, `--json`, and `--skip-browser-install` behavior.
 - [ ] Emit one canonical next command (no multi-path branching by default).
 - [ ] Add fix-it mappings for: missing browsers, stale lock, auth required, unknown signer, weak permissions.
@@ -61,7 +61,7 @@ v1 contracts are largely in place, but adoption risk remains in two areas:
 ### Phase 2: Auth profile contract hardening (pending)
 - [ ] Implement versioned auth profile schema and validation.
 - [ ] Enforce profile-scoped storage paths.
-- [ ] Add `cask auth status` with `last_validated_at` and storage-state load status.
+- [ ] Add `toolwright auth status` with `last_validated_at` and storage-state load status.
 - [ ] Ensure auth subtree is excluded from export/bundle outputs.
 
 ### Phase 3: Deep deterministic capture v2 (pending)
@@ -96,7 +96,7 @@ v1 contracts are largely in place, but adoption risk remains in two areas:
 - [ ] Keep `diff --format github-md` and GitHub gate action coverage green.
 
 ### Phase 7: Docs/UX truth pass (pending)
-- [ ] Update README and user guide with `cask start` first-run path.
+- [ ] Update README and user guide with `toolwright start` first-run path.
 - [ ] Add explicit “local quick vs release strict” guidance.
 - [ ] Add auth profile + challenge + noise override docs.
 - [ ] Verify all “shipped” claims map to tests and CLI behavior.

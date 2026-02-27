@@ -76,7 +76,7 @@ Even under exceptions:
 - still run the full test suite after
 
 ## 4) Testing conventions
-- Tests live under: ./cask/tests/
+- Tests live under: ./tests/
 - Mirror source structure under tests
 - Naming: test_*.py (or repo language equivalent)
 - Test command: `python -m pytest tests/ -v`
@@ -107,7 +107,7 @@ Rules:
 - Style guide: PEP 8; format/lint via black/ruff
 - Dependency manager: pip + pyproject.toml
 - Lint/typecheck commands: ruff check, mypy
-- Primary architecture docs/diagrams live in: ./cask/ARCHITECTURE.md
+- Primary architecture docs/diagrams live in: ./CAPABILITIES.md
 
 ## 9) Design Principles
 - **Safe by default**: All capture/enforcement requires explicit allowlists

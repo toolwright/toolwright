@@ -40,3 +40,4 @@ htmlcov/
 
 # Jupyter
 .ipynb_checkpoints/
+demos/screenplays/.terminal_demo_studio_runs/

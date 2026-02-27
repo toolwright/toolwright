@@ -40,11 +40,11 @@
 | # | Test | Result | Notes |
 |---|------|--------|-------|
 | G.1 | `pip install toolwright` | PASS | Installs without Playwright requirement |
-| G.2 | `cask --version` | PASS | 0.2.0rc1 |
-| G.3 | `cask --help` | PASS | Commands in workflow order: init → mint → gate → serve → config |
-| G.4 | `cask init` | PASS | Shows all 3 entry paths (after F-001 fix) |
-| G.5 | `cask mint` (no Playwright) | PASS | "Install with: pip install toolwright[playwright]" |
-| G.6 | `cask demo` | PASS | Exit 0, governance enforced, no stack traces |
+| G.2 | `toolwright --version` | PASS | 0.2.0rc1 |
+| G.3 | `toolwright --help` | PASS | Commands in workflow order: init → mint → gate → serve → config |
+| G.4 | `toolwright init` | PASS | Shows all 3 entry paths (after F-001 fix) |
+| G.5 | `toolwright mint` (no Playwright) | PASS | "Install with: pip install toolwright[playwright]" |
+| G.6 | `toolwright demo` | PASS | Exit 0, governance enforced, no stack traces |
 | G.7 | Every error path | PASS | 18+ commands tested with bad/missing args, all user-friendly |
 
 ---
@@ -55,12 +55,12 @@
 
 | # | Step | Result | Notes |
 |---|------|--------|-------|
-| A0.1 | `cask init` | PASS | Guidance correct, 3 entry paths |
-| A0.2 | `cask capture import` OpenAPI | PASS | 19 operations from Petstore. F-003: URL not supported |
-| A0.3 | `cask compile` | PASS | tools.json, policy.yaml, toolsets.yaml, baseline.json + toolpack.yaml (F-004 fixed) |
-| A0.4 | `cask gate allow` | PASS | 19 tools approved via auto-created pending lockfile |
-| A0.5 | `cask gate snapshot` + `check` | PASS | Exit 0, no manual steps needed |
-| A0.6 | `cask config` | PASS | Valid MCP client JSON |
+| A0.1 | `toolwright init` | PASS | Guidance correct, 3 entry paths |
+| A0.2 | `toolwright capture import` OpenAPI | PASS | 19 operations from Petstore. F-003: URL not supported |
+| A0.3 | `toolwright compile` | PASS | tools.json, policy.yaml, toolsets.yaml, baseline.json + toolpack.yaml (F-004 fixed) |
+| A0.4 | `toolwright gate allow` | PASS | 19 tools approved via auto-created pending lockfile |
+| A0.5 | `toolwright gate snapshot` + `check` | PASS | Exit 0, no manual steps needed |
+| A0.6 | `toolwright config` | PASS | Valid MCP client JSON |
 | A0.7 | MCP client test | PASS | 6 tools (readonly), protocol 2024-11-05 |
 | A0.8 | Secrets scan | PASS | 0 matches (after scanner fix for policy.yaml) |
 
@@ -68,15 +68,15 @@
 
 | # | Step | Result | Notes |
 |---|------|--------|-------|
-| A1.1 | `cask init` | PASS | Guidance correct |
-| A1.2 | `cask mint` (scripted) | PASS | 15 endpoints, 14 OK + 1 auth detection (401) |
+| A1.1 | `toolwright init` | PASS | Guidance correct |
+| A1.2 | `toolwright mint` (scripted) | PASS | 15 endpoints, 14 OK + 1 auth detection (401) |
 | A1.3 | Inspect tools.json | PASS | Names readable, risk tiers correct (auth=critical, users=low, data=safe) |
 | A1.4 | Inspect policy.yaml | PASS | GET=allow first-party, default deny, redaction configured |
 | A1.5 | Inspect toolsets.yaml | PASS | readonly (14), write_ops (0), high_risk (1), operator (15) |
-| A1.6 | `cask diff` | N/A | Requires snapshot first (order dependency) |
-| A1.7 | `cask gate allow` + `check` | PASS | 15 tools approved, exit 0 |
-| A1.8 | `cask gate snapshot` | PASS | Snapshot materialized |
-| A1.9 | `cask doctor` + `cask lint` | PASS | Both exit 0 |
+| A1.6 | `toolwright diff` | N/A | Requires snapshot first (order dependency) |
+| A1.7 | `toolwright gate allow` + `check` | PASS | 15 tools approved, exit 0 |
+| A1.8 | `toolwright gate snapshot` | PASS | Snapshot materialized |
+| A1.9 | `toolwright doctor` + `toolwright lint` | PASS | Both exit 0 |
 | A1.10 | MCP client test | PASS | 14 tools listed, get_products returns data |
 | A1.11 | Bundle portability | PASS | Bundle → extract → serve → MCP client connects |
 | A1.12 | Secrets scan | PASS | 0 matches in toolpack and bundle |
@@ -112,8 +112,8 @@
 | # | Step | Result | Notes |
 |---|------|--------|-------|
 | B4.1 | Fresh pending lockfile | PASS | Gate check: exit 1, lists all pending tools |
-| B4.2 | `cask gate block <tool>` | PASS | Tool rejected, gate fails correctly |
-| B4.5 | `cask serve --dry-run` | PASS | Returns `{"status": "dry_run"}`, no upstream HTTP |
+| B4.2 | `toolwright gate block <tool>` | PASS | Tool rejected, gate fails correctly |
+| B4.5 | `toolwright serve --dry-run` | PASS | Returns `{"status": "dry_run"}`, no upstream HTTP |
 
 ### B3: Confirmation Flow (Integration Tests)
 
@@ -162,9 +162,9 @@
 
 | # | Step | Result | Notes |
 |---|------|--------|-------|
-| C4.1 | `cask verify --mode contracts` | PASS | Status: pass |
-| C4.2 | `cask verify --mode baseline-check` | PASS | Status: pass |
-| C4.3 | `cask compliance report` | PASS | JSON report with human_oversight, tool_inventory sections |
+| C4.1 | `toolwright verify --mode contracts` | PASS | Status: pass |
+| C4.2 | `toolwright verify --mode baseline-check` | PASS | Status: pass |
+| C4.3 | `toolwright compliance report` | PASS | JSON report with human_oversight, tool_inventory sections |
 
 ---
 
@@ -172,7 +172,7 @@
 
 | ID | Severity | Description | Status |
 |----|----------|-------------|--------|
-| F-001 | P1 | `cask init` only shows mint path | **FIXED** (TDD) |
+| F-001 | P1 | `toolwright init` only shows mint path | **FIXED** (TDD) |
 | F-002 | P2 | `pytest-asyncio` missing from dev venv | **FIXED** |
 | F-003 | P2 | `capture import` doesn't support URLs | **FIXED** (TDD) |
 | F-004 | P1 | `compile` doesn't create toolpack.yaml | **FIXED** (TDD) |
@@ -212,7 +212,7 @@
 
 ### Recommendations
 1. Add URL fetching to `capture import` for OpenAPI specs (P2)
-2. Make bundle paths relative or use `$CASK_ROOT` placeholders
+2. Make bundle paths relative or use `$TOOLWRIGHT_ROOT` placeholders
 3. Test auth profile management and live API confirmation flow with GitHub PAT before v1
 
 ---

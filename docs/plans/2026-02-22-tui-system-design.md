@@ -1,8 +1,8 @@
-# Cask TUI System — Design & Implementation Plan
+# Toolwright TUI System — Design & Implementation Plan
 
 ## Context
 
-Cask is a governance layer for AI agent tools. The core value proposition is the lifecycle loop: **capture → compile → review → approve → serve → verify → drift detect → repair**. The current TUI uses Rich with basic numbered menus, no progress feedback, and no unified narrative flow. The goal is to make the TUI experience **magical** — every command knows what came before and what comes next, the lifecycle loop feels inevitable and effortless, and the demo experience ("fail → diagnose → diff → approve → verify → resume") lands immediately with staff engineers and platform teams.
+Toolwright is a governance layer for AI agent tools. The core value proposition is the lifecycle loop: **capture → compile → review → approve → serve → verify → drift detect → repair**. The current TUI uses Rich with basic numbered menus, no progress feedback, and no unified narrative flow. The goal is to make the TUI experience **magical** — every command knows what came before and what comes next, the lifecycle loop feels inevitable and effortless, and the demo experience ("fail → diagnose → diff → approve → verify → resume") lands immediately with staff engineers and platform teams.
 
 The TUI is a **narrative engine**, not a collection of screens.
 
@@ -27,12 +27,12 @@ toolwright/ui/
 │                       #   May write artifacts within root-managed dirs only
 │                       #   Never prints, never prompts, never logs to console
 │                       #   Uses transactional writes (temp then rename)
-├── context.py          # FlowContext + CaskCancelled exception
+├── context.py          # FlowContext + ToolwrightCancelled exception
 ├── views/
 │   ├── __init__.py
 │   ├── tables.py       # Enhanced tool/approval/doctor tables
 │   ├── diff.py         # Visual diff rendering (drift, plan, repair)
-│   ├── status.py       # `cask status` builder
+│   ├── status.py       # `toolwright status` builder
 │   ├── progress.py     # Cancel-safe live progress (spinner/step/feed modes)
 │   ├── branding.py     # Compact ASCII header (2 lines max, portal commands only)
 │   └── next_steps.py   # Pure function: NextStepsInput → NextStepsOutput
@@ -65,7 +65,7 @@ toolwright/ui/
 
 5. **Dashboard** is read-only, toolpack-scoped, reads cached artifacts only (never runs drift/verify), calls `ops.py` for all data. Never implements logic that doesn't exist in CLI ops.
 
-6. **Progress** is cancel-safe: catches `KeyboardInterrupt`, raises `CaskCancelled`, cleans up Live display, exit code 130. One implementation with three modes (spinner, step, feed). Operations write to temp dir, atomically rename on success.
+6. **Progress** is cancel-safe: catches `KeyboardInterrupt`, raises `ToolwrightCancelled`, cleans up Live display, exit code 130. One implementation with three modes (spinner, step, feed). Operations write to temp dir, atomically rename on success.
 
 7. **SymbolSet** — chosen once in `console.py` based on terminal capability. Rich mode uses Unicode if supported, else ASCII fallback. Plain mode is always ASCII-safe (no box drawing, no Unicode symbols, uses `*` `-` `[TAG]` prefixes). Respects `NO_COLOR` and `CLICOLOR=0`.
 
@@ -76,7 +76,7 @@ toolwright/ui/
 - **Rich** (already required) — all CLI flow enhancements
 - **prompt-toolkit** (add as required dep) — single-letter action prompts in fancy mode, cross-platform key handling
 - **Textual** (optional: `toolwright[tui]`) — dashboard only
-- If Textual not installed: `cask dashboard` prints install hint and shows `cask status` at appropriate output tier
+- If Textual not installed: `toolwright dashboard` prints install hint and shows `toolwright status` at appropriate output tier
 
 ### Output Tiers
 
@@ -85,13 +85,13 @@ toolwright/ui/
 | Rich Interactive | TTY stderr | Full colors, panels, tables, progress, Live displays, Unicode symbols (if terminal supports) |
 | Rich Plain | non-TTY, `TERM=dumb`, `NO_COLOR`, `CLICOLOR=0` | ASCII-safe only: no box drawing, no Unicode, `[TAG]` prefixes, aligned columns without borders |
 | JSON | `--json` flag | stdout: JSON only. stderr: only fatal errors and single-line warnings. Never render tables/progress to stderr. |
-| Textual | `cask dashboard` | Full-screen app, graceful fallback to status at appropriate tier |
+| Textual | `toolwright dashboard` | Full-screen app, graceful fallback to status at appropriate tier |
 
 ---
 
 ## Component Designs
 
-### 1. `cask status` Command
+### 1. `toolwright status` Command
 
 The **compass** — always-available orientation point. Not a flow (no interactive sequence), just a command calling `views/status.py` + `views/next_steps.py`.
 
@@ -140,8 +140,8 @@ The **compass** — always-available orientation point. Not a flow (no interacti
 **Phase 2: Diagnosis** — human-readable explanations per issue (not codes), source attribution ("Detected from: audit log")
 
 **Phase 3: Repair Plan** — patches grouped by safety:
-- **Safe** (green): auto-applicable. Example: `cask gate sync`
-- **Approval required** (yellow): need review. Example: `cask gate allow delete_user`
+- **Safe** (green): auto-applicable. Example: `toolwright gate sync`
+- **Approval required** (yellow): need review. Example: `toolwright gate allow delete_user`
 - **Manual** (red): can't automate. Example: "API endpoint removed — investigate upstream"
 
 **Phase 4: Guided Resolution** — apply safe fixes with single confirmation + progress, dispatch to gate_review for approval-required, show guidance for manual
@@ -183,7 +183,7 @@ The **compass** — always-available orientation point. Not a flow (no interacti
 **API:**
 ```python
 @contextmanager
-def cask_progress(description: str, steps: list[str] | None = None) -> CaskProgress:
+def toolwright_progress(description: str, steps: list[str] | None = None) -> ToolwrightProgress:
     # One implementation, three modes:
     # - Spinner: indeterminate (e.g., "Capturing browser traffic...")
     # - Step: n of m (e.g., "Compiling [2/5] Normalizing endpoints...")
@@ -193,7 +193,7 @@ def cask_progress(description: str, steps: list[str] | None = None) -> CaskProgr
 **Cancel safety:**
 - Catches `KeyboardInterrupt`
 - Cleans up Rich Live display
-- Raises `CaskCancelled` (caught by top-level Click command)
+- Raises `ToolwrightCancelled` (caught by top-level Click command)
 - Exit code 130
 - Does not leave partial state — operations write to temp dir, atomically rename on success
 
@@ -224,7 +224,7 @@ def cask_progress(description: str, steps: list[str] | None = None) -> CaskProgr
 
 Compact 2-line header, portal commands only (status, ship, demo, dashboard):
 ```
-  cask v0.2.0  ·  governed agent tools
+  toolwright v0.2.0  ·  governed agent tools
 ```
 (Exact mark TBD — ASCII-safe in plain mode, can use a small Unicode mark in rich mode via SymbolSet)
 
@@ -248,7 +248,7 @@ class FlowContext:
     intent: str | None                    # "quickstart", "repair", "gate-review", "ship"
     interactive: bool
 
-class CaskCancelled(Exception):
+class ToolwrightCancelled(Exception):
     """Raised on Ctrl-C during progress. Caught by top-level Click command."""
     pass
 ```
@@ -275,7 +275,7 @@ class NextStepsInput:
 
 @dataclass(frozen=True)
 class NextStep:
-    command: str       # e.g., "cask gate allow --toolpack stripe-api"
+    command: str       # e.g., "toolwright gate allow --toolpack stripe-api"
     label: str         # e.g., "Approve pending tools"
     why: str           # e.g., "2 tools awaiting approval before serving"
 
@@ -286,23 +286,23 @@ class NextStepsOutput:
 ```
 
 **Priority tree:**
-1. Lockfile missing → `cask gate sync`
-2. Pending tools → `cask gate allow`
-3. Verification failed → `cask repair`
+1. Lockfile missing → `toolwright gate sync`
+2. Pending tools → `toolwright gate allow`
+3. Verification failed → `toolwright repair`
 4. Drift breaking → investigate drift
-5. No baseline → `cask gate snapshot`
-6. No MCP config → `cask config`
-7. Drift not checked → `cask drift`
-8. All green → `cask serve`
+5. No baseline → `toolwright gate snapshot`
+6. No MCP config → `toolwright config`
+7. Drift not checked → `toolwright drift`
+8. All green → `toolwright serve`
 
 ### 10. Minimal Textual Dashboard
 
-**Toolpack-scoped:** `cask dashboard --toolpack <path>` (interactive picker if missing in TTY)
+**Toolpack-scoped:** `toolwright dashboard --toolpack <path>` (interactive picker if missing in TTY)
 
 **Read-only.** Only reads cached artifacts (toolpack + lockfile + last drift/verify reports). Never runs drift/verify. If reports are missing, shows "not run" state and the next recommended CLI command.
 
 **Layout:**
-1. **Header**: Cask branding + root path + toolpack ID
+1. **Header**: Toolwright branding + root path + toolpack ID
 2. **Status grid**: lockfile state, drift state, verify state, pending count
 3. **Tools DataTable**: sortable, filterable (`/`), columns: Status, Name, Risk, Method, Path, Host
 4. **Recent audit**: last 10 decisions with timestamps
@@ -311,7 +311,7 @@ class NextStepsOutput:
 
 **Refresh**: safe and fast — reads cached artifacts only, no heavy computation.
 
-**Fallback:** If Textual not installed, print install hint and show `cask status` at the appropriate output tier (rich or plain depending on TTY/env).
+**Fallback:** If Textual not installed, print install hint and show `toolwright status` at the appropriate output tier (rich or plain depending on TTY/env).
 
 ### 11. Enhanced Prompts (`prompts.py`)
 
@@ -383,7 +383,7 @@ All return frozen dataclasses or Pydantic models. Serializable for JSON mode.
 ## Implementation Order
 
 ### Phase 1: Foundation (do first, everything else depends on it)
-1. `context.py` — FlowContext + CaskCancelled exception
+1. `context.py` — FlowContext + ToolwrightCancelled exception
 2. `views/next_steps.py` — pure NextSteps function with tests
 3. `ops.py` — rename runner.py, add `get_status()`, `run_repair_preflight()`, `compute_fingerprint()`, keep existing ops. Enforce transactional write pattern.
 4. `console.py` — expand theme palette + SymbolSet with capability detection
@@ -394,7 +394,7 @@ All return frozen dataclasses or Pydantic models. Serializable for JSON mode.
 7. `views/status.py` — status builder with render_rich/render_plain/render_json
 8. `views/tables.py` — enhance existing tables, add risk explanations, risk grouping
 9. `views/diff.py` — drift/plan diff rendering with stable categories, plain fallback
-10. `cask status` command — wire up views/status + views/next_steps in `cli/main.py`
+10. `toolwright status` command — wire up views/status + views/next_steps in `cli/main.py`
 
 ### Phase 3: Enhanced Flows
 11. `prompts.py` — add `prompt_action()` with prompt-toolkit in fancy mode, readline fallback
@@ -406,7 +406,7 @@ All return frozen dataclasses or Pydantic models. Serializable for JSON mode.
 15. `dashboard/` — minimal Textual dashboard (read-only, toolpack-scoped, calls ops.py)
 16. `--json` output mode across all commands (views already have render_json)
 17. Shell completions (Click built-in)
-18. Update demos (cask-studio screenplays) to match new TUI output
+18. Update demos (tui-studio screenplays) to match new TUI output
 19. `pyproject.toml` — add prompt-toolkit to deps, Textual to `[tui]` optional dep
 
 ---
@@ -424,11 +424,11 @@ All return frozen dataclasses or Pydantic models. Serializable for JSON mode.
 | `toolwright/ui/flows/ship.py` | Rewrite | Single Live context, ShipRenderer, fingerprint-based stages |
 | `toolwright/ui/flows/__init__.py` | Update | New flow registrations |
 | `toolwright/cli/main.py` | Add `status` + `dashboard` commands | New commands wired to views |
-| `toolwright/ui/context.py` | New | FlowContext + CaskCancelled |
+| `toolwright/ui/context.py` | New | FlowContext + ToolwrightCancelled |
 | `toolwright/ui/views/*.py` | New | All view modules (6 files) |
 | `toolwright/ui/dashboard/*.py` | New | Textual dashboard (4 files) |
 | `pyproject.toml` | Add deps | prompt-toolkit required, Textual in `[tui]` |
-| `cask-studio/screenplays/*.yaml` | Update | Match new TUI output |
+| `tui-studio/screenplays/*.yaml` | Update | Match new TUI output |
 
 ---
 
@@ -438,11 +438,11 @@ All return frozen dataclasses or Pydantic models. Serializable for JSON mode.
 2. **Integration tests**: Each flow tested with `input_stream` injection via prompt primitives
 3. **Plain mode tests**: Verify ASCII-safe output — no Unicode, no box drawing, no color codes
 4. **JSON mode tests**: Verify valid JSON to stdout, stderr has only fatal errors / single-line warnings
-5. **Cancel tests**: Verify Ctrl-C raises CaskCancelled, returns exit code 130, no partial state (temp files cleaned)
+5. **Cancel tests**: Verify Ctrl-C raises ToolwrightCancelled, returns exit code 130, no partial state (temp files cleaned)
 6. **Fingerprint tests**: Verify deterministic fingerprinting, stage-skip correctness
 7. **SymbolSet tests**: Verify ASCII fallback when terminal doesn't support Unicode
 8. **Cross-platform**: Test on macOS + Linux. Plain mode verified on Windows terminal.
 9. **Visual verification**: Run each command manually, compare output against design
-10. **Demo verification**: Re-record cask-studio screenplays, verify 1:1 with actual output
+10. **Demo verification**: Re-record tui-studio screenplays, verify 1:1 with actual output
 11. **Lint/typecheck**: `ruff check`, `mypy` pass
 12. **Existing tests**: `python -m pytest tests/ -v` all pass — no regressions

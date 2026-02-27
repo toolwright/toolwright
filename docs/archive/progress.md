@@ -12,8 +12,8 @@ Set up a clean, executable v1.1 plan focused on plug-and-play onboarding and rob
 2. Re-read `AGENTS.md` and confirmed mandatory workflow and quality gates.
 3. Verified current CLI reality:
    - `toolwright --help` and `--help-all` behavior confirmed.
-   - `cask` alias confirmed.
-   - `cask start` missing.
+   - `toolwright` alias confirmed.
+   - `toolwright start` missing.
 4. Re-grounded on strategy docs:
    - `OPENAI_VIEWPOINTS.md`
    - `SPEC_VIEWPOINTS.md`
@@ -27,7 +27,7 @@ Set up a clean, executable v1.1 plan focused on plug-and-play onboarding and rob
 - Phase 1 (Onboarding command + fix-it UX) is in progress.
 
 ### Immediate next actions
-1. Add failing tests for `cask start` command behavior (non-interactive/json/next-command contract).
+1. Add failing tests for `toolwright start` command behavior (non-interactive/json/next-command contract).
 2. Implement minimal `start` command to satisfy those tests.
 3. Add tests and implementation for deterministic fix-it output mappings.
 

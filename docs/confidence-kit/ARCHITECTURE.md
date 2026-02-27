@@ -26,8 +26,8 @@ traffic (HAR/OTEL/OpenAPI) ──► capture + normalize
     drift (baseline → new capture delta)  ──►  repair (propose fixes)
 ```
 
-**One-command shortcut:** `cask mint` = capture + compile + toolpack + pending lockfile.
-**One-command proof:** `cask demo` = mint (offline fixture) + gate + serve (dry-run replay) + parity check.
+**One-command shortcut:** `toolwright mint` = capture + compile + toolpack + pending lockfile.
+**One-command proof:** `toolwright demo` = mint (offline fixture) + gate + serve (dry-run replay) + parity check.
 
 ## Module Boundaries
 

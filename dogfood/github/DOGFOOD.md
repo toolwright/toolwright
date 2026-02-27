@@ -47,7 +47,7 @@ To update the pinned SHA, edit `PINNED_SHA` in `curate_spec.py` and re-run.
 
 ## CI usage
 
-**PR gate:** `.github/workflows/gate-check.yaml` runs `cask diff` + `cask gate check`
+**PR gate:** `.github/workflows/gate-check.yaml` runs `toolwright diff` + `toolwright gate check`
 against the committed toolpack. Triggers on PRs that modify `toolwright/core/`,
 `toolwright/mcp/`, `toolwright/cli/`, or `dogfood/github/`.
 

@@ -972,7 +972,7 @@ def main(argv: list[str]) -> int:
         print("\nProve Twice complete.")
         print(f"- Tide run #1: {run_once_dir}")
         print(f"- Exported HAR: {har_out}")
-        print(f"- Cask root: {tw_root}")
+        print(f"- Toolwright root: {tw_root}")
         print(f"- Toolpack: {toolpack_path}")
         print(f"- Tide run #2: {run_replay_dir}")
         print(f"- Diff JSON: {workdir / 'prove_twice_diff.json'}")

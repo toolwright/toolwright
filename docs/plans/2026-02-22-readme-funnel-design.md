@@ -16,13 +16,13 @@
 
 ### 2. Hero GIF
 - Keep the existing side-by-side comparison GIF
-- **Add a caption:** "Without Cask: agents silently gain new powers. With Cask: every tool is approved, signed, and enforced fail-closed."
+- **Add a caption:** "Without Toolwright: agents silently gain new powers. With Toolwright: every tool is approved, signed, and enforced fail-closed."
 - The GIF doesn't load instantly for everyone; the caption anchors meaning
 
 ### 3. Three-Tier Quickstart
-- **Tier 1 — Prove it (30 sec):** `pip install toolwright && cask demo`
-- **Tier 2 — Govern your API (5 min):** `cask init && cask ship`
-- **Tier 3 — Other entry points:** OpenAPI import, HAR import, then `cask ship`
+- **Tier 1 — Prove it (30 sec):** `pip install toolwright && toolwright demo`
+- **Tier 2 — Govern your API (5 min):** `toolwright init && toolwright ship`
+- **Tier 3 — Other entry points:** OpenAPI import, HAR import, then `toolwright ship`
 - **Why ship:** It's the only command that actually delivers the "plug-and-play" promise without requiring manual capture-ID copying
 - **Why not leading with OpenAPI import:** `capture import` requires a manual `compile` step and capture ID copy — too fragile for a quickstart
 
@@ -32,9 +32,9 @@
 - **Why:** Scenario sells the outcome viscerally. Tree proves it's real and debuggable.
 - **What NOT to include:** Long terminal dumps, YAML blocks, or feature explanations
 
-### 5. "Why Cask" — Compact Differentiators
+### 5. "Why Toolwright" — Compact Differentiators
 - 5 bullets max: fail-closed, signed approvals, drift detection, self-repairing, audit trail
-- Replaces both "What Makes Cask Different" (5 sections) and "Runtime Enforcement" (7-point list)
+- Replaces both "What Makes Toolwright Different" (5 sections) and "Runtime Enforcement" (7-point list)
 - Key differentiators are already demonstrated in the proof section; this list is for skimmers
 - Link to docs for the full list
 
@@ -61,10 +61,10 @@
 | 1 | Badges | Trust signals | 4 |
 | 2 | Title + subtitle | Promise | 3 |
 | 3 | Hero GIF + caption | Visual proof | 5 |
-| 4 | Prove it (30 sec) | `pip install && cask demo` + demo GIF | 12 |
-| 5 | Quick Start (5 min) | `cask init && cask ship` + other entry points | 25 |
+| 4 | Prove it (30 sec) | `pip install && toolwright demo` + demo GIF | 12 |
+| 5 | Quick Start (5 min) | `toolwright init && toolwright ship` + other entry points | 25 |
 | 6 | What You Get | DENIED/ALLOWED scenario + artifact tree | 30 |
-| 7 | Why Cask | 5 bullets | 8 |
+| 7 | Why Toolwright | 5 bullets | 8 |
 | 8 | Drift in CI | GitHub Actions snippet | 15 |
 | 9 | Claude Code integration | MCP config | 15 |
 | 10 | Reference | Commands, capture paths, install, runtime | 80 |
@@ -78,7 +78,7 @@
 
 - **"The Problem" section** — The hero GIF IS the problem statement. The one-sentence subtitle covers it.
 - **"How It Works" pipeline diagram** — Replaced by the proof section showing what the pipeline produces
-- **"What Makes Cask Different" (5 subsections)** — Collapsed into 5 bullets
+- **"What Makes Toolwright Different" (5 subsections)** — Collapsed into 5 bullets
 - **"Runtime Enforcement" (7-point list)** — Inlined into proof + bullets, details moved to reference
 
 ---
@@ -86,7 +86,7 @@
 ## What Gets Added (new content)
 
 - Hero GIF caption (1 sentence)
-- `cask ship` as the primary quickstart path (replaces the current 5-step manual path)
+- `toolwright ship` as the primary quickstart path (replaces the current 5-step manual path)
 - "What You Get" proof section (DENIED/ALLOWED scenario + artifact tree)
 - GitHub Actions drift snippet
 
@@ -120,7 +120,7 @@ This is a separate implementation task from the README rewrite.
 
 - **Hero comparison GIF** — already exists, keep as-is
 - **Demo GIF** — already exists, keep as-is
-- **Ship flow GIF** — NEW. Should show `cask ship` walking through the full lifecycle with the stage tracker. Use `tui-studio` skill to generate.
+- **Ship flow GIF** — NEW. Should show `toolwright ship` walking through the full lifecycle with the stage tracker. Use `tui-studio` skill to generate.
 - **Quickstart GIF** — Consider replacing demo GIF location with a ship flow GIF to show the real adoption experience
 
 ---
@@ -130,7 +130,7 @@ This is a separate implementation task from the README rewrite.
 - Celebration messages at milestones
 - Universal next-step guidance
 - Prompt friction reduction
-- `cask ship` accepting `--openapi`, `--har`, `--url` flags for non-interactive use
-- `cask compile --latest` for auto-discovering most recent capture
-- `cask watch install --github` as plug-and-play drift story
+- `toolwright ship` accepting `--openapi`, `--har`, `--url` flags for non-interactive use
+- `toolwright compile --latest` for auto-discovering most recent capture
+- `toolwright watch install --github` as plug-and-play drift story
 - Repair flow output restructuring (diagnosis headline + safe fix + advanced view)

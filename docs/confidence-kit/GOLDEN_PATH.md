@@ -29,7 +29,7 @@ pip install -e "/path/to/Toolwright[mcp]"
 ### 2. Generate a fixture toolpack (offline)
 
 ```bash
-cask --no-interactive demo --generate-only --out "$WORKDIR"
+toolwright --no-interactive demo --generate-only --out "$WORKDIR"
 ```
 
 This imports the bundled `sample.har` fixture, compiles 8 API tools, and produces:
@@ -55,7 +55,7 @@ Pending:      8 tools awaiting approval
 TP_COUNT=$(ls -1d "$WORKDIR"/toolpacks/tp_* 2>/dev/null | wc -l)
 [[ "$TP_COUNT" -eq 1 ]] || { echo "Expected 1 toolpack, found $TP_COUNT"; exit 1; }
 TOOLPACK_DIR=$(ls -1d "$WORKDIR"/toolpacks/tp_*)
-cask --no-interactive --root "$WORKDIR" gate allow --all \
+toolwright --no-interactive --root "$WORKDIR" gate allow --all \
   --lockfile "$TOOLPACK_DIR/lockfile/toolwright.lock.pending.yaml"
 ```
 
@@ -69,7 +69,7 @@ This creates `$TOOLPACK_DIR/lockfile/toolwright.lock.yaml` (the approved lockfil
 ### 4. Verify the gate passes
 
 ```bash
-cask --no-interactive --root "$WORKDIR" gate check \
+toolwright --no-interactive --root "$WORKDIR" gate check \
   --lockfile "$TOOLPACK_DIR/lockfile/toolwright.lock.yaml"
 ```
 
@@ -89,7 +89,7 @@ python3 -c "
 import json, subprocess, sys, os, time, select
 
 proc = subprocess.Popen(
-    ['cask', '--no-interactive', '--root', os.environ['WORKDIR'],
+    ['toolwright', '--no-interactive', '--root', os.environ['WORKDIR'],
      'serve', '--toolpack', os.environ['TOOLPACK_DIR'] + '/toolpack.yaml',
      '--lockfile', os.environ['APPROVED_LOCK'], '--dry-run'],
     stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -150,7 +150,7 @@ except subprocess.TimeoutExpired:
 "
 ```
 
-> **Debugging:** If this step fails, run the automated script (`scripts/cleanroom_golden_path.sh`) with `CASK_KEEP_WORKDIR=1` — it captures server stderr to `$WORKDIR/mcp_serve_stderr.log`.
+> **Debugging:** If this step fails, run the automated script (`scripts/cleanroom_golden_path.sh`) with `TOOLWRIGHT_KEEP_WORKDIR=1` — it captures server stderr to `$WORKDIR/mcp_serve_stderr.log`.
 
 **Expected output:**
 ```
@@ -163,7 +163,7 @@ Reason:      allowed_policy
 ### 6. Verify contracts
 
 ```bash
-cask --no-interactive --root "$WORKDIR" verify \
+toolwright --no-interactive --root "$WORKDIR" verify \
   --toolpack "$TOOLPACK_DIR/toolpack.yaml" --mode contracts
 ```
 
@@ -207,19 +207,19 @@ Run the entire golden path with a single command:
 Or from a local dev checkout:
 
 ```bash
-CASK_DEV=1 ./scripts/cleanroom_golden_path.sh
+TOOLWRIGHT_DEV=1 ./scripts/cleanroom_golden_path.sh
 ```
 
 To pin a specific version (for reproducible CI):
 
 ```bash
-CASK_VERSION=0.2.0rc1 ./scripts/cleanroom_golden_path.sh
+TOOLWRIGHT_VERSION=0.2.0rc1 ./scripts/cleanroom_golden_path.sh
 ```
 
 To keep the workspace for debugging failures:
 
 ```bash
-CASK_KEEP_WORKDIR=1 CASK_DEV=1 ./scripts/cleanroom_golden_path.sh
+TOOLWRIGHT_KEEP_WORKDIR=1 TOOLWRIGHT_DEV=1 ./scripts/cleanroom_golden_path.sh
 ```
 
 The workspace path is printed in the Result Summary. All artifacts (toolpack, lockfile, verify report, MCP server stderr log) remain in the workspace for inspection.

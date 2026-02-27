@@ -8,8 +8,8 @@
    - Flagship commands in default help.
    - Advanced commands only in `--help-all`.
 2. Compatibility aliases are present (`plan`, `approve`, `mcp meta`).
-3. `cask` alias works.
-4. `cask start` is not implemented yet (`No such command 'start'`).
+3. `toolwright` alias works.
+4. `toolwright start` is not implemented yet (`No such command 'start'`).
 5. v1 docs/spec artifacts for verification/redaction/CI/scopes already exist under `docs/`.
 
 ## Key gaps for v1.1 (adoption-critical)
@@ -26,7 +26,7 @@
 
 ## Decisions locked for this execution
 1. v1 wedge remains unchanged; v1.1 is robustness and UX hardening.
-2. `cask start` becomes the primary first-run entrypoint.
+2. `toolwright start` becomes the primary first-run entrypoint.
 3. Provenance keeps conservative posture: prefer `unknown` over unsafe pass.
 4. Deterministic outputs and auditable rule IDs are mandatory for suppression/classification.
 5. CI split remains explicit:

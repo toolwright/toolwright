@@ -57,7 +57,7 @@ Write endpoints require human confirmation at runtime:
 ```
 1. AI agent calls create_issue tool
 2. Toolwright returns: confirmation required, token=cfrmv1.xxx
-3. Human runs: cask confirm grant cfrmv1.xxx
+3. Human runs: toolwright confirm grant cfrmv1.xxx
 4. AI agent retries with token -- request proceeds
 ```
 
@@ -70,7 +70,7 @@ python3 dogfood/jira/curate_spec.py --refresh
 
 ## CI usage
 
-**PR gate:** `.github/workflows/gate-check.yaml` runs `cask gate check`
+**PR gate:** `.github/workflows/gate-check.yaml` runs `toolwright gate check`
 against the committed toolpack. Triggers on PRs that modify `toolwright/core/`,
 `toolwright/mcp/`, `toolwright/cli/`, or `dogfood/jira/`.
 

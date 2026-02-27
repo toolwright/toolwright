@@ -46,9 +46,18 @@ Classify tools by risk tier (low/medium/high/critical) based on HTTP method, pat
 Automatically detect and extract auth patterns (Bearer, OAuth, API keys) from captured traffic.
 
 - `toolwright/core/auth/detector.py` -> `AuthDetector`
-- `toolwright/core/auth/provider.py` -> `AuthProvider`
+- `toolwright/core/auth/provider.py` -> `TokenProvider` (protocol)
 - `toolwright/core/auth/profiles.py` -> Auth profiles
 - CLI: `toolwright auth`
+
+### CAP-CONNECT-011: OAuth2 Credential Provider
+
+Per-host OAuth2 client-credentials token manager with automatic refresh, proactive expiry margin, and in-memory caching.
+
+- `toolwright/core/auth/oauth.py` -> `OAuthCredentialProvider`, `OAuthConfig`, `OAuthError`
+- Methods: `configure(host, config)`, `get_token(host)`, `refresh_token(host)`, `clear_tokens()`, `configured_hosts()`
+- Optional dependency: `pip install "toolwright[oauth]"`
+- Token lifecycle: fetch → cache → proactive refresh (configurable `expiry_margin_seconds`)
 
 ### CAP-CONNECT-006: One-Command API Onboarding (Mint)
 
@@ -59,11 +68,13 @@ Single command to capture API traffic via browser, compile tools, and publish a 
 
 ### CAP-CONNECT-007: MCP Server Provisioning
 
-Start a governed MCP server on stdio transport serving compiled tools.
+Start a governed MCP server on stdio transport serving compiled tools. Supports auth via env vars, per-host auth, and CLI flag.
 
-- `toolwright/mcp/server.py` -> `ToolwrightMCPServer`
+- `toolwright/mcp/server.py` -> `ToolwrightMCPServer`, `_resolve_auth_for_host()`
 - `toolwright/cli/mcp.py` -> `run_mcp_serve()`
-- CLI: `toolwright serve --toolpack <path>`
+- CLI: `toolwright serve --toolpack <path> [--auth "Bearer <token>"]`
+- Auth priority: `--auth` flag > `TOOLWRIGHT_AUTH_<NORMALIZED_HOST>` env var > `TOOLWRIGHT_AUTH_HEADER` env var > None
+- Per-host env var naming: replace dots/hyphens with underscores, uppercase (e.g., `api.github.com` -> `TOOLWRIGHT_AUTH_API_GITHUB_COM`)
 
 ### CAP-CONNECT-008: Toolset Scoping
 
@@ -110,17 +121,17 @@ Maintain persistent approval state (pending/approved/rejected) with signatures a
 
 ### CAP-GOVERN-003: Tool Approval Workflow (Gate)
 
-Review, approve, block, or conditionally approve tools before use.
+Review, approve, block, or conditionally approve tools before use. All gate commands accept `--toolpack` for unified path resolution.
 
-- `toolwright/cli/approve.py` -> Approval logic
-- `toolwright/cli/commands_approval.py` -> Gate command group
+- `toolwright/cli/approve.py` -> Approval logic, `_resolve_gate_paths()` for toolpack resolution
+- `toolwright/cli/commands_approval.py` -> Gate command group with `--toolpack` option on all subcommands
 - `toolwright/ui/flows/gate_review.py` -> Interactive approval flow
 - CLI:
-  - `toolwright gate sync` -- Sync lockfile with manifest
-  - `toolwright gate status` -- List approval states
-  - `toolwright gate allow` -- Approve tools
-  - `toolwright gate block` -- Block tools
-  - `toolwright gate check` -- CI gate (exit 0 if all approved)
+  - `toolwright gate sync --toolpack <path>` -- Sync lockfile with manifest
+  - `toolwright gate status --toolpack <path>` -- List approval states
+  - `toolwright gate allow --toolpack <path>` -- Approve tools
+  - `toolwright gate block --toolpack <path>` -- Block tools
+  - `toolwright gate check --toolpack <path>` -- CI gate (exit 0 if all approved, suggests approval command on failure)
 
 ### CAP-GOVERN-004: Policy-Based Enforcement
 
@@ -237,6 +248,19 @@ Generate repair proposals based on detected failures.
 - `toolwright/core/proposal/publisher.py` -> Proposal publishing
 - CLI: `toolwright propose`
 
+### CAP-HEAL-007: Endpoint Health Checker
+
+Non-mutating health probes for API endpoints. Uses HEAD for GET endpoints and OPTIONS for write endpoints to avoid side effects. Classifies failures into 7 categories with concurrent multi-tool probing. Integrated into the meta-server (`toolwright_health_check` and `toolwright_diagnose_tool` meta-tools) and available as a standalone CLI command.
+
+- `toolwright/core/health/__init__.py` -> Package init
+- `toolwright/core/health/checker.py` -> `HealthChecker`, `HealthResult`, `FailureClass`
+- `toolwright/mcp/meta_server.py` -> `_health_check()`, `_diagnose_tool()` (endpoint probing integration)
+- `toolwright/cli/main.py` -> `health` command (CLI entry point)
+- Methods: `check_tool(action)`, `check_all(actions)`, `classify_failure(status_code, error)`
+- Failure classes: `auth_expired`, `endpoint_gone`, `rate_limited`, `server_error`, `network_unreachable`, `schema_changed`, `unknown`
+- Configurable: `scheme`, `timeout_seconds`, `max_concurrent`
+- CLI: `toolwright health --tools <path>` — probes all endpoints, exits 0 if all healthy, 1 if any unhealthy
+
 ---
 
 ## KILL -- Circuit Breakers & Safety Gates
@@ -262,10 +286,11 @@ Evaluate policy and simulate calls without executing upstream HTTP requests.
 
 ### CAP-KILL-004: Response Size Limits
 
-Block excessively large responses to prevent memory exhaustion.
+Block responses exceeding a configurable byte limit to prevent memory exhaustion.
 
-- `toolwright/models/decision.py` -> `ReasonCode.denied_response_too_large`
-- ENV: `TOOLWRIGHT_MAX_RESPONSE_BYTES`
+- `toolwright/mcp/server.py` -> `_check_response_size()`, `get_max_response_bytes()`, `DEFAULT_MAX_RESPONSE_BYTES`
+- `toolwright/models/decision.py` -> `ReasonCode.DENIED_RESPONSE_TOO_LARGE`
+- ENV: `TOOLWRIGHT_MAX_RESPONSE_BYTES` (default 10 MB, 0 = unlimited)
 
 ### CAP-KILL-005: Path Blocklist
 
@@ -273,9 +298,48 @@ Block known non-API paths (static assets, health checks, etc.) from tool discove
 
 - `toolwright/core/capture/path_blocklist.py` -> Path blocklist patterns
 
+### CAP-KILL-006: Circuit Breaker State Machine
+
+Per-tool circuit breaker (CLOSED / OPEN / HALF_OPEN) that trips after consecutive failures and auto-recovers after a timeout.
+
+- `toolwright/core/kill/breaker.py` -> `CircuitBreakerRegistry`, `ToolCircuitBreaker`, `BreakerState`
+- State persisted to `.toolwright/state/circuit_breakers.json` (atomic writes)
+- Configurable: `failure_threshold` (default 5), `recovery_timeout_seconds` (default 60), `success_threshold` (default 3)
+
+### CAP-KILL-007: Manual Kill / Enable
+
+Force a tool's circuit breaker OPEN (kill) or CLOSED (enable) via CLI or API, with manual overrides that never auto-recover.
+
+- `toolwright/core/kill/breaker.py` -> `kill_tool()`, `enable_tool()`
+- CLI:
+  - `toolwright kill <tool_id> --reason "..."`
+  - `toolwright enable <tool_id>`
+
+### CAP-KILL-008: Quarantine Report
+
+List all tools with tripped or manually killed circuit breakers.
+
+- `toolwright/core/kill/breaker.py` -> `quarantine_report()`
+- CLI: `toolwright quarantine`
+
+### CAP-KILL-009: Circuit Breaker MCP Integration
+
+Integrate circuit breaker checks into the MCP server request pipeline -- block tool calls when breaker is OPEN, record successes/failures after execution.
+
+- `toolwright/mcp/server.py` -> Circuit breaker check in `handle_call_tool`, success/failure recording
+- `toolwright/models/decision.py` -> `ReasonCode.DENIED_CIRCUIT_BREAKER_OPEN`
+- CLI: `toolwright serve --circuit-breaker-path <path>`
+
+### CAP-KILL-010: Breaker Status Inspection
+
+View the current state of a specific tool's circuit breaker (state, failure count, last error).
+
+- `toolwright/cli/commands_kill.py` -> `breaker_status()`
+- CLI: `toolwright breaker-status <tool_id>`
+
 ---
 
-## CORRECT -- Compile-Time Policy Rules
+## CORRECT -- Behavioral Rules & Runtime Constraints
 
 ### CAP-CORRECT-001: Compile-Time Policy Rules
 
@@ -284,6 +348,55 @@ Define static access control rules (allow/deny/confirm/budget/audit/redact) that
 - `toolwright/core/compile/policy.py` -> Policy generation
 - `toolwright/models/policy.py` -> Policy models
 - Files: `policy.yaml`
+
+### CAP-CORRECT-002: Behavioral Rule Engine
+
+Evaluate runtime tool invocations against 6 rule types (prerequisite, prohibition, parameter, sequence, rate, approval) with hot-reload, CRUD, and JSON persistence.
+
+- `toolwright/core/correct/engine.py` -> `RuleEngine`
+- `toolwright/models/rule.py` -> `BehavioralRule`, `RuleKind`, `RuleViolation`, `RuleEvaluation`
+- Files: `.toolwright/rules.json`
+
+### CAP-CORRECT-003: Session History Tracking
+
+Track tool invocations within a session for prerequisite, sequence, and rate rule evaluation.
+
+- `toolwright/core/correct/session.py` -> `SessionHistory`
+- Methods: `record()`, `has_called()`, `calls_since()`, `call_count()`
+
+### CAP-CORRECT-004: Rule Conflict Detection
+
+Detect contradictions between rules before adding them (circular prerequisites, parameter whitelist/blacklist overlap, contradictory sequences).
+
+- `toolwright/core/correct/conflicts.py` -> `detect_conflicts()`
+- `toolwright/models/rule.py` -> `RuleConflict`
+
+### CAP-CORRECT-005: Violation Feedback Generation
+
+Generate structured, agent-consumable feedback when behavioral rules are violated, with numbered violations and remediation suggestions.
+
+- `toolwright/core/correct/feedback.py` -> `generate_feedback()`
+
+### CAP-CORRECT-006: MCP Server Rule Enforcement
+
+Integrate behavioral rule checks into the MCP server request pipeline (between policy ALLOW and HTTP execution), with session recording after successful calls.
+
+- `toolwright/mcp/server.py` -> Rule check in `handle_call_tool`, session recording after `_execute_request`
+- `toolwright/models/decision.py` -> `ReasonCode.DENIED_BEHAVIORAL_RULE`
+- CLI: `toolwright serve --rules-path <path>`
+
+### CAP-CORRECT-007: Rules CLI Management
+
+CLI commands for creating, listing, removing, inspecting, exporting, and importing behavioral rules.
+
+- `toolwright/cli/commands_rules.py` -> `register_rules_commands()`
+- CLI:
+  - `toolwright rules add --kind <kind> --target <tool_id> --description "..."`
+  - `toolwright rules list [--kind <kind>]`
+  - `toolwright rules remove <rule_id>`
+  - `toolwright rules show <rule_id>`
+  - `toolwright rules export --output <file>`
+  - `toolwright rules import --input <file>`
 
 ---
 
@@ -330,8 +443,12 @@ Rich terminal interface for approval review, repair flows, initialization, and s
 Governance-aware MCP server exposing Toolwright metadata as tools for agent self-service.
 
 - `toolwright/mcp/meta_server.py` -> `ToolwrightMetaMCPServer`
-- Tools: `toolwright_list_actions`, `toolwright_check_policy`, `toolwright_get_approval_status`, `toolwright_list_pending_approvals`, `toolwright_get_action_details`, `toolwright_risk_summary`, `toolwright_get_flows`
+- GOVERN tools: `toolwright_list_actions`, `toolwright_check_policy`, `toolwright_get_approval_status`, `toolwright_list_pending_approvals`, `toolwright_get_action_details`, `toolwright_risk_summary`, `toolwright_get_flows`
+- HEAL tools: `toolwright_diagnose_tool`, `toolwright_health_check`
+- KILL tools: `toolwright_kill_tool`, `toolwright_enable_tool`, `toolwright_quarantine_report`
+- CORRECT tools: `toolwright_add_rule`, `toolwright_list_rules`, `toolwright_remove_rule`
 - CLI: `toolwright inspect --tools <path>`
+- Params: `circuit_breaker_path`, `rules_path` (optional, enable KILL/CORRECT meta-tools)
 
 ### CAP-CROSS-007: Workflow Runner (Tide Integration)
 

@@ -4,7 +4,7 @@
 
 **Goal:** Rewrite the README from a spec/reference document into a funnel that gets users to value in 90 seconds.
 
-**Architecture:** Replace the current README (218 lines) with a funnel-structured version (same length) that leads with outcome promise, proof, guided quickstart (`cask ship`), tangible artifacts, and compact differentiators. Move reference tables to the bottom.
+**Architecture:** Replace the current README (218 lines) with a funnel-structured version (same length) that leads with outcome promise, proof, guided quickstart (`toolwright ship`), tangible artifacts, and compact differentiators. Move reference tables to the bottom.
 
 **Tech Stack:** Markdown, tui-studio for GIF generation
 
@@ -25,18 +25,18 @@ Write the new README with this exact structure. The content below is the complet
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/toolwright/Toolwright/actions/workflows/ci.yaml/badge.svg)](https://github.com/toolwright/Toolwright/actions/workflows/ci.yaml)
 
-# Cask — Fail-closed tools for AI agents
+# Toolwright — Fail-closed tools for AI agents
 
-<!-- mcp-name: io.github.toolwright/cask -->
+<!-- mcp-name: io.github.toolwright/toolwright -->
 
 Turn any API into a governed MCP server in minutes. Approved tools are signed, enforced, and auditable.
 
 <!-- hero-start -->
 <p align="center">
-  <img src="docs/assets/hero-comparison.gif" alt="Without Cask vs With Cask — side-by-side comparison" width="100%">
+  <img src="docs/assets/hero-comparison.gif" alt="Without Toolwright vs With Toolwright — side-by-side comparison" width="100%">
 </p>
 
-*Without Cask: agents silently gain new powers. With Cask: every tool is approved, signed, and enforced fail-closed.*
+*Without Toolwright: agents silently gain new powers. With Toolwright: every tool is approved, signed, and enforced fail-closed.*
 
 <!-- hero-end -->
 
@@ -44,11 +44,11 @@ Turn any API into a governed MCP server in minutes. Approved tools are signed, e
 
 ```bash
 pip install toolwright
-cask demo
+toolwright demo
 ```
 
 <p align="center">
-  <img src="docs/assets/toolwright-demo.gif" alt="cask demo — governance proof in 30 seconds" width="80%">
+  <img src="docs/assets/toolwright-demo.gif" alt="toolwright demo — governance proof in 30 seconds" width="80%">
 </p>
 
 Builds a governed toolpack from bundled traffic, proves fail-closed enforcement, and writes an auditable decision log. Exit `0` means every gate held.
@@ -58,27 +58,27 @@ Builds a governed toolpack from bundled traffic, proves fail-closed enforcement,
 **Prerequisites:** Python 3.11+
 
 ```bash
-cask init
-cask ship
+toolwright init
+toolwright ship
 ```
 
-`cask ship` walks you through the full lifecycle interactively: capture, review, approve, snapshot, verify, serve. If you already have a toolpack, it detects it and skips ahead.
+`toolwright ship` walks you through the full lifecycle interactively: capture, review, approve, snapshot, verify, serve. If you already have a toolpack, it detects it and skips ahead.
 
 <p align="center">
-  <img src="docs/assets/toolwright-ship.gif" alt="cask ship — guided lifecycle" width="80%">
+  <img src="docs/assets/toolwright-ship.gif" alt="toolwright ship — guided lifecycle" width="80%">
 </p>
 
 ### Other entry points
 
 ```bash
 # Have an OpenAPI spec?
-cask capture import openapi.yaml -a api.example.com
+toolwright capture import openapi.yaml -a api.example.com
 
 # Have HAR/OTEL traffic files?
-cask capture import traffic.har -a api.example.com
+toolwright capture import traffic.har -a api.example.com
 
 # Then continue with:
-cask ship
+toolwright ship
 ```
 
 All paths converge to the same governed runtime.
@@ -113,18 +113,18 @@ Every decision is logged. Every approval is Ed25519-signed. Unapproved tools nev
 └── contracts.yaml      # verification assertions (replay, provenance)
 ```
 
-## Why Cask
+## Why Toolwright
 
 - **Fail-closed** — no lockfile, no runtime. Unapproved tools never execute.
 - **Signed approvals** — Ed25519 signatures on every lockfile entry.
 - **Drift detection** — detect API surface changes against a baseline snapshot.
-- **Self-repairing** — `cask repair` diagnoses issues and proposes classified fixes (safe, approval-required, manual).
+- **Self-repairing** — `toolwright repair` diagnoses issues and proposes classified fixes (safe, approval-required, manual).
 - **Full audit trail** — every governance decision is logged with structured traces and evidence bundles.
 
 ## Drift Detection in CI
 
 ```yaml
-# .github/workflows/cask-drift.yaml
+# .github/workflows/toolwright-drift.yaml
 name: API Drift Check
 on:
   schedule:
@@ -140,7 +140,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install toolwright
-      - run: cask drift --toolpack .toolwright/toolpacks/*/toolpack.yaml --format markdown
+      - run: toolwright drift --toolpack .toolwright/toolpacks/*/toolpack.yaml --format markdown
 ```
 
 ## Claude Code / MCP Client Config
@@ -148,7 +148,7 @@ jobs:
 Generate a config snippet for your AI client:
 
 ```bash
-cask config --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
+toolwright config --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
 ```
 
 Or add directly to Claude Desktop (`~/.claude/claude_desktop_config.json`):
@@ -157,7 +157,7 @@ Or add directly to Claude Desktop (`~/.claude/claude_desktop_config.json`):
 {
   "mcpServers": {
     "my-api": {
-      "command": "cask",
+      "command": "toolwright",
       "args": ["serve", "--toolpack", ".toolwright/toolpacks/my-api/toolpack.yaml"]
     }
   }
@@ -172,34 +172,34 @@ Or add directly to Claude Desktop (`~/.claude/claude_desktop_config.json`):
 
 | Command | What it does |
 | --- | --- |
-| `cask` | Interactive guided menu (run with no arguments) |
-| `cask ship` | Guided end-to-end lifecycle: capture, review, approve, verify, serve |
-| `cask status` | Show governance status and recommended next action |
-| `cask init` | Initialize Cask in your project |
-| `cask mint <url>` | Capture traffic and compile a governed toolpack |
-| `cask gate allow\|block\|check\|status` | Approve, block, or audit tools via signed lockfile |
-| `cask serve` | Start the governed MCP server (stdio) |
-| `cask diff` | Generate a risk-classified change report |
-| `cask drift` | Detect API surface changes against a baseline |
-| `cask verify` | Run verification contracts (replay, outcomes, provenance) |
-| `cask repair` | Diagnose issues and propose classified fixes |
-| `cask rename` | Rename a toolpack's display name |
-| `cask propose` | Manage agent draft proposals for new capabilities |
-| `cask inspect` | Start read-only Meta MCP for agent introspection |
-| `cask config` | Generate MCP client config (Claude Desktop, Codex) |
-| `cask dashboard` | Full-screen Textual dashboard (`toolwright[tui]`) |
-| `cask demo` | Prove governance works (offline, 30 seconds) |
+| `toolwright` | Interactive guided menu (run with no arguments) |
+| `toolwright ship` | Guided end-to-end lifecycle: capture, review, approve, verify, serve |
+| `toolwright status` | Show governance status and recommended next action |
+| `toolwright init` | Initialize Toolwright in your project |
+| `toolwright mint <url>` | Capture traffic and compile a governed toolpack |
+| `toolwright gate allow\|block\|check\|status` | Approve, block, or audit tools via signed lockfile |
+| `toolwright serve` | Start the governed MCP server (stdio) |
+| `toolwright diff` | Generate a risk-classified change report |
+| `toolwright drift` | Detect API surface changes against a baseline |
+| `toolwright verify` | Run verification contracts (replay, outcomes, provenance) |
+| `toolwright repair` | Diagnose issues and propose classified fixes |
+| `toolwright rename` | Rename a toolpack's display name |
+| `toolwright propose` | Manage agent draft proposals for new capabilities |
+| `toolwright inspect` | Start read-only Meta MCP for agent introspection |
+| `toolwright config` | Generate MCP client config (Claude Desktop, Codex) |
+| `toolwright dashboard` | Full-screen Textual dashboard (`toolwright[tui]`) |
+| `toolwright demo` | Prove governance works (offline, 30 seconds) |
 
-> Use `cask --help-all` to see all 25+ commands including `compliance`, `bundle`, `enforce`, `confirm`, and more.
+> Use `toolwright --help-all` to see all 25+ commands including `compliance`, `bundle`, `enforce`, `confirm`, and more.
 
 ### Traffic Capture
 
 | You have | Command | Best for |
 | --- | --- | --- |
-| Nothing (exploring) | `cask demo` | Fastest first run, no credentials |
-| A web app | `cask mint https://app.example.com -a api.example.com` | Capturing real behavior |
-| HAR/OTEL files | `cask capture import traffic.har -a api.example.com` | Adopting without recapturing |
-| An OpenAPI spec | `cask capture import openapi.yaml -a api.example.com` | Generating tools from specs |
+| Nothing (exploring) | `toolwright demo` | Fastest first run, no credentials |
+| A web app | `toolwright mint https://app.example.com -a api.example.com` | Capturing real behavior |
+| HAR/OTEL files | `toolwright capture import traffic.har -a api.example.com` | Adopting without recapturing |
+| An OpenAPI spec | `toolwright capture import openapi.yaml -a api.example.com` | Generating tools from specs |
 
 ### Runtime Enforcement
 
@@ -247,7 +247,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, TDD policy, and pu
 
 ```bash
 git clone https://github.com/toolwright/Toolwright.git
-cd Toolwright/cask
+cd Toolwright
 pip install -e ".[dev,packaging-test]"
 pytest tests/ -v
 ```
@@ -259,7 +259,7 @@ pytest tests/ -v
 
 **Step 2: Verify the README renders correctly**
 
-Run: `cd /Users/thomasallicino/oss/cask && wc -l README.md`
+Run: `cd /Users/thomasallicino/oss/toolwright && wc -l README.md`
 Expected: ~220 lines (similar to original)
 
 Manually review for:
@@ -275,7 +275,7 @@ Manually review for:
 git add README.md
 git commit -m "docs: restructure README into a funnel
 
-Lead with outcome promise, proof, and guided quickstart (cask ship).
+Lead with outcome promise, proof, and guided quickstart (toolwright ship).
 Move reference tables to the bottom. Add 'What You Get' proof section
 with DENIED/ALLOWED scenario and artifact tree.
 
@@ -284,14 +284,14 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 
 ---
 
-### Task 2: Generate cask ship GIF
+### Task 2: Generate toolwright ship GIF
 
 **Files:**
 - Create: `docs/assets/toolwright-ship.gif`
 
 **Step 1: Use tui-studio skill to generate the ship flow GIF**
 
-The GIF should show the `cask ship` experience:
+The GIF should show the `toolwright ship` experience:
 1. Stage tracker: `✓ capture ── >> review ── ○ approve ── ○ snapshot ── ○ verify ── ○ serve`
 2. Tool preview (risk tier breakdown)
 3. Approval flow (batch approve low-risk, individual review high-risk)
@@ -311,7 +311,7 @@ Expected: File exists, size < 5MB
 
 ```bash
 git add docs/assets/toolwright-ship.gif
-git commit -m "docs: add cask ship flow GIF for README quickstart
+git commit -m "docs: add toolwright ship flow GIF for README quickstart
 
 Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ```
@@ -327,8 +327,8 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 
 Rewrite `docs/user-guide.md` with this outline:
 
-1. **Getting Started** — install, `cask demo`, `cask init`
-2. **Golden Path: Your First Governed API** — narrative walkthrough using `cask ship`
+1. **Getting Started** — install, `toolwright demo`, `toolwright init`
+2. **Golden Path: Your First Governed API** — narrative walkthrough using `toolwright ship`
 3. **Common Entry Points** — OpenAPI import, HAR import, live capture (with exact commands and expected output)
 4. **Understanding Governance** — what fail-closed means, how approvals work, lockfile structure
 5. **Day-2 Operations** — drift detection, repair, rename, audit log review
@@ -363,8 +363,8 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 **Step 1: Use tui-studio skill to regenerate the hero comparison GIF**
 
 The GIF should show side-by-side:
-- **Left (Without Cask):** Agent calls `delete_user` → silently succeeds, no audit, no control
-- **Right (With Cask):** Agent calls `delete_user` → DENIED, audit logged, fail-closed
+- **Left (Without Toolwright):** Agent calls `delete_user` → silently succeeds, no audit, no control
+- **Right (With Toolwright):** Agent calls `delete_user` → DENIED, audit logged, fail-closed
 
 Use the latest TUI styling (arrow-key menus, display names, etc.).
 
@@ -393,7 +393,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 **Step 1: Add/update entries for new features**
 
 Ensure CAPABILITIES.md includes:
-- `CAP-UI-rename` — `cask rename` command
+- `CAP-UI-rename` — `toolwright rename` command
 - `CAP-UI-display-name` — display name resolution in all UI surfaces
 - Update any README references in capability entries
 
@@ -412,11 +412,11 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 
 **Step 1: Run lint on all changed Python files (if any)**
 
-Run: `cd /Users/thomasallicino/oss/cask && .venv/bin/ruff check toolwright/ tests/`
+Run: `cd /Users/thomasallicino/oss/toolwright && .venv/bin/ruff check toolwright/ tests/`
 
 **Step 2: Run full test suite**
 
-Run: `cd /Users/thomasallicino/oss/cask && .venv/bin/python -m pytest tests/ -v 2>&1 | tail -10`
+Run: `cd /Users/thomasallicino/oss/toolwright && .venv/bin/python -m pytest tests/ -v 2>&1 | tail -10`
 Expected: All pass, 0 failures
 
 **Step 3: Verify README renders**

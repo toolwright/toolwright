@@ -4,7 +4,7 @@
 
 **Goal:** Let users name their toolpacks with a friendly display name at capture time and rename them later, with the name shown across all UI surfaces.
 
-**Architecture:** Add an optional `display_name` field to the `Toolpack` model. A `resolve_display_name()` helper provides fallback resolution (display_name → origin.name → host slug → toolpack_id). All UI surfaces call this helper. A new `cask rename` CLI command updates the field in toolpack.yaml.
+**Architecture:** Add an optional `display_name` field to the `Toolpack` model. A `resolve_display_name()` helper provides fallback resolution (display_name → origin.name → host slug → toolpack_id). All UI surfaces call this helper. A new `toolwright rename` CLI command updates the field in toolpack.yaml.
 
 **Tech Stack:** Python 3.11+, Pydantic models, Click CLI, Rich TUI, pytest
 
@@ -112,7 +112,7 @@ class TestToolpackDisplayNameField:
 
 **Step 2: Run test to verify it fails**
 
-Run: `cd /Users/thomasallicino/oss/cask && .venv/bin/python -m pytest tests/test_toolpack_display_name.py -v`
+Run: `cd /Users/thomasallicino/oss/toolwright && .venv/bin/python -m pytest tests/test_toolpack_display_name.py -v`
 Expected: FAIL — `display_name` field not recognized by Pydantic
 
 **Step 3: Write minimal implementation**
@@ -131,7 +131,7 @@ class Toolpack(BaseModel):
     artifact_id: str
     scope: str
     allowed_hosts: list[str] = Field(default_factory=list)
-    display_name: str | None = None  # user-facing name, mutable via cask rename
+    display_name: str | None = None  # user-facing name, mutable via toolwright rename
     origin: ToolpackOrigin
     paths: ToolpackPaths
     runtime: ToolpackRuntime | None = None
@@ -139,7 +139,7 @@ class Toolpack(BaseModel):
 
 **Step 4: Run test to verify it passes**
 
-Run: `cd /Users/thomasallicino/oss/cask && .venv/bin/python -m pytest tests/test_toolpack_display_name.py -v`
+Run: `cd /Users/thomasallicino/oss/toolwright && .venv/bin/python -m pytest tests/test_toolpack_display_name.py -v`
 Expected: 4 PASS
 
 **Step 5: Commit**
@@ -230,7 +230,7 @@ class TestResolveDisplayName:
 
 **Step 2: Run test to verify it fails**
 
-Run: `cd /Users/thomasallicino/oss/cask && .venv/bin/python -m pytest tests/test_toolpack_display_name.py::TestResolveDisplayName -v`
+Run: `cd /Users/thomasallicino/oss/toolwright && .venv/bin/python -m pytest tests/test_toolpack_display_name.py::TestResolveDisplayName -v`
 Expected: FAIL — `resolve_display_name` not importable
 
 **Step 3: Write minimal implementation**
@@ -286,7 +286,7 @@ Add the import at the top of `ops.py` if not already present — `Toolpack` is a
 
 **Step 4: Run test to verify it passes**
 
-Run: `cd /Users/thomasallicino/oss/cask && .venv/bin/python -m pytest tests/test_toolpack_display_name.py -v`
+Run: `cd /Users/thomasallicino/oss/toolwright && .venv/bin/python -m pytest tests/test_toolpack_display_name.py -v`
 Expected: 10 PASS
 
 **Step 5: Commit**
@@ -358,7 +358,7 @@ To:
 
 **Step 3: Run full test suite to verify no regressions**
 
-Run: `cd /Users/thomasallicino/oss/cask && .venv/bin/python -m pytest tests/ -v 2>&1 | tail -5`
+Run: `cd /Users/thomasallicino/oss/toolwright && .venv/bin/python -m pytest tests/ -v 2>&1 | tail -5`
 Expected: All pass
 
 **Step 4: Commit**
@@ -405,7 +405,7 @@ To:
 
 **Step 2: Run wizard tests to verify no regressions**
 
-Run: `cd /Users/thomasallicino/oss/cask && .venv/bin/python -m pytest tests/test_wizard_flow.py tests/test_ui_wizard.py -v`
+Run: `cd /Users/thomasallicino/oss/toolwright && .venv/bin/python -m pytest tests/test_wizard_flow.py tests/test_ui_wizard.py -v`
 Expected: All pass
 
 **Step 3: Commit**
@@ -446,7 +446,7 @@ In `toolwright/cli/mint.py`, change the Toolpack construction (around line 257) 
 
 **Step 2: Run tests**
 
-Run: `cd /Users/thomasallicino/oss/cask && .venv/bin/python -m pytest tests/ -v 2>&1 | tail -5`
+Run: `cd /Users/thomasallicino/oss/toolwright && .venv/bin/python -m pytest tests/ -v 2>&1 | tail -5`
 Expected: All pass
 
 **Step 3: Commit**
@@ -458,7 +458,7 @@ git commit -m "feat: store display_name in toolpack.yaml during mint"
 
 ---
 
-### Task 6: Add `cask rename` command
+### Task 6: Add `toolwright rename` command
 
 **Files:**
 - Modify: `toolwright/cli/main.py` (add command)
@@ -473,8 +473,8 @@ import yaml
 from click.testing import CliRunner
 
 
-class TestCaskRenameCommand:
-    """cask rename updates display_name in toolpack.yaml."""
+class TestToolwrightRenameCommand:
+    """toolwright rename updates display_name in toolpack.yaml."""
 
     def test_rename_updates_display_name(self, tmp_path: Path) -> None:
         from toolwright.cli.main import cli
@@ -576,10 +576,10 @@ class TestCaskRenameCommand:
 
 **Step 2: Run tests to verify they fail**
 
-Run: `cd /Users/thomasallicino/oss/cask && .venv/bin/python -m pytest tests/test_toolpack_display_name.py::TestCaskRenameCommand -v`
+Run: `cd /Users/thomasallicino/oss/toolwright && .venv/bin/python -m pytest tests/test_toolpack_display_name.py::TestToolwrightRenameCommand -v`
 Expected: FAIL — `rename` command not found
 
-**Step 3: Implement the `cask rename` command**
+**Step 3: Implement the `toolwright rename` command**
 
 In `toolwright/cli/main.py`, add the command (near the other simple commands like `init`):
 
@@ -599,8 +599,8 @@ def rename(ctx: click.Context, new_name: str, toolpack: str | None) -> None:
     Does not change toolpack_id, tool IDs, lockfile, or signatures.
 
     Examples:
-      cask rename my-stripe-api
-      cask rename production-api --toolpack .toolwright/toolpacks/api/toolpack.yaml
+      toolwright rename my-stripe-api
+      toolwright rename production-api --toolpack .toolwright/toolpacks/api/toolpack.yaml
     """
     import yaml
 
@@ -627,19 +627,19 @@ def rename(ctx: click.Context, new_name: str, toolpack: str | None) -> None:
 
 **Step 4: Run tests to verify they pass**
 
-Run: `cd /Users/thomasallicino/oss/cask && .venv/bin/python -m pytest tests/test_toolpack_display_name.py -v`
+Run: `cd /Users/thomasallicino/oss/toolwright && .venv/bin/python -m pytest tests/test_toolpack_display_name.py -v`
 Expected: All pass
 
 **Step 5: Run full test suite**
 
-Run: `cd /Users/thomasallicino/oss/cask && .venv/bin/python -m pytest tests/ -v 2>&1 | tail -5`
+Run: `cd /Users/thomasallicino/oss/toolwright && .venv/bin/python -m pytest tests/ -v 2>&1 | tail -5`
 Expected: All pass
 
 **Step 6: Commit**
 
 ```bash
 git add toolwright/cli/main.py tests/test_toolpack_display_name.py
-git commit -m "feat: add cask rename command for toolpack display names"
+git commit -m "feat: add toolwright rename command for toolpack display names"
 ```
 
 ---
@@ -648,12 +648,12 @@ git commit -m "feat: add cask rename command for toolpack display names"
 
 **Step 1: Lint all changed files**
 
-Run: `cd /Users/thomasallicino/oss/cask && .venv/bin/ruff check toolwright/core/toolpack.py toolwright/ui/ops.py toolwright/ui/flows/quickstart.py toolwright/cli/mint.py toolwright/cli/main.py tests/test_toolpack_display_name.py`
+Run: `cd /Users/thomasallicino/oss/toolwright && .venv/bin/ruff check toolwright/core/toolpack.py toolwright/ui/ops.py toolwright/ui/flows/quickstart.py toolwright/cli/mint.py toolwright/cli/main.py tests/test_toolpack_display_name.py`
 Fix any issues.
 
 **Step 2: Full test suite**
 
-Run: `cd /Users/thomasallicino/oss/cask && .venv/bin/python -m pytest tests/ -v 2>&1 | tail -10`
+Run: `cd /Users/thomasallicino/oss/toolwright && .venv/bin/python -m pytest tests/ -v 2>&1 | tail -10`
 Expected: All pass, 0 failures
 
 **Step 3: Manual verification**

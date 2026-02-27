@@ -5,9 +5,9 @@
 #   demo --generate-only → gate allow → gate check → serve (dry-run tool call) → verify
 #
 # Environment variables:
-#   CASK_DEV=1       Install from local repo checkout (editable) instead of PyPI.
+#   TOOLWRIGHT_DEV=1       Install from local repo checkout (editable) instead of PyPI.
 #   TOOLWRIGHT_VERSION     Pin toolwright version for PyPI install (e.g. 0.2.0).
-#   CASK_PYTHON      Python binary to use (default: python3).
+#   TOOLWRIGHT_PYTHON      Python binary to use (default: python3).
 #   TOOLWRIGHT_EXTRA_PIP   Extra pip install args (e.g. --index-url for private PyPI).
 #
 # Exit codes:
@@ -18,7 +18,7 @@ set -euo pipefail
 # --------------------------------------------------------------------------- #
 # Configuration
 # --------------------------------------------------------------------------- #
-PYTHON="${CASK_PYTHON:-python3}"
+PYTHON="${TOOLWRIGHT_PYTHON:-python3}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 TMPBASE="${TMPDIR:-/tmp}"
@@ -30,7 +30,7 @@ FAILED=0
 # Cleanup
 # --------------------------------------------------------------------------- #
 cleanup() {
-  if [[ "${CASK_KEEP_WORKDIR:-}" == "1" ]]; then
+  if [[ "${TOOLWRIGHT_KEEP_WORKDIR:-}" == "1" ]]; then
     echo ""
     echo "Keeping workdir: $WORKDIR"
   else
@@ -97,7 +97,7 @@ source "$VENV_DIR/bin/activate"
 # Upgrade pip silently
 pip install --upgrade pip --quiet 2>/dev/null || true
 
-if [[ "${CASK_DEV:-}" == "1" ]]; then
+if [[ "${TOOLWRIGHT_DEV:-}" == "1" ]]; then
   echo "  Installing from local checkout: $REPO_DIR"
   pip install --quiet -e "${REPO_DIR}[mcp]"
 else

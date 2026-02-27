@@ -64,22 +64,22 @@ By the end of vNext, Toolwright must support:
 
 1. **Deterministic supply chain**
 
-* `cask mint` compiles raw captures (HAR, Playwright traces, optional OpenAPI) into a runnable toolpack with stable IDs and canonical schemas.
+* `toolwright mint` compiles raw captures (HAR, Playwright traces, optional OpenAPI) into a runnable toolpack with stable IDs and canonical schemas.
 
 2. **Lockfile governance loop**
 
-* `cask diff` shows exactly what changed and classifies risk.
-* `cask gate allow` writes an immutable governance decision into `toolwright.lock`.
+* `toolwright diff` shows exactly what changed and classifies risk.
+* `toolwright gate allow` writes an immutable governance decision into `toolwright.lock`.
 * Any capability expansion requires explicit approval.
 
 3. **Verification contracts**
 
-* `cask verify` runs assertion-based verification against multi-signal post-conditions (API state, UI semantics, optional event signals).
+* `toolwright verify` runs assertion-based verification against multi-signal post-conditions (API state, UI semantics, optional event signals).
 * Verification produces a structured report and evidence bundle that humans can audit and CI can gate on.
 
 4. **Drift gates tied to verification**
 
-* `cask drift` detects changes in tool surface and verification contract behavior.
+* `toolwright drift` detects changes in tool surface and verification contract behavior.
 * Drift fails CI by default for high-risk changes or contract breaks.
 
 5. **Runtime parity for enforcement decisions**
@@ -397,8 +397,8 @@ Purpose:
 
 **CLI and API**
 
-* `cask evidence purge --older-than <days>` must exist and be safe by default.
-* `cask evidence hold --bundle <id>` requires explicit operator action.
+* `toolwright evidence purge --older-than <days>` must exist and be safe by default.
+* `toolwright evidence hold --bundle <id>` requires explicit operator action.
 
 #### 5.2.3 VerificationContract (new first-class) [ALPHA]
 
@@ -643,9 +643,9 @@ Rules:
 
 CI should support:
 
-* `cask diff --fail-on-broaden`
-* `cask verify --contract <contract>`
-* `cask drift --baseline <baseline>`
+* `toolwright diff --fail-on-broaden`
+* `toolwright verify --contract <contract>`
+* `toolwright drift --baseline <baseline>`
 
 ---
 
@@ -802,35 +802,35 @@ This is the updated list, removing any implication of agent privilege negotiatio
 
 ### 9.1 Introspection (read-only)
 
-* `cask_list_toolpacks(filters?)`
-* `cask_get_toolpack(toolpack_id)`
-* `cask_list_tools(toolpack_id, filters?)`
-* `cask_get_tool_details(tool_id)`
-* `cask_get_capability_map(toolpack_id)` (intents, risk, dependencies)
+* `toolwright_list_toolpacks(filters?)`
+* `toolwright_get_toolpack(toolpack_id)`
+* `toolwright_list_tools(toolpack_id, filters?)`
+* `toolwright_get_tool_details(tool_id)`
+* `toolwright_get_capability_map(toolpack_id)` (intents, risk, dependencies)
 
 ### 9.2 Diff and approval (human/CI only)
 
-* `cask_diff(toolpack_a, toolpack_b) -> DiffReport`
-* `cask_approve(diff_ref, signer_ref, notes?) -> LockfileUpdate`
+* `toolwright_diff(toolpack_a, toolpack_b) -> DiffReport`
+* `toolwright_approve(diff_ref, signer_ref, notes?) -> LockfileUpdate`
 
 No “approve” tool should be exposed to agents. This API is for local operator tooling.
 
 ### 9.3 Verify and drift [PLANNED]
 
-* `cask_verify_run(toolpack_id, contract_ref, options?) -> VerificationReport`
-* `cask_verify_get(report_id) -> VerificationReport`
-* `cask_drift_run(toolpack_id, baseline_ref) -> DriftReport`
-* `cask_drift_get(report_id) -> DriftReport`
+* `toolwright_verify_run(toolpack_id, contract_ref, options?) -> VerificationReport`
+* `toolwright_verify_get(report_id) -> VerificationReport`
+* `toolwright_drift_run(toolpack_id, baseline_ref) -> DriftReport`
+* `toolwright_drift_get(report_id) -> DriftReport`
 
 ### 9.4 Explainability (read-only) [PLANNED]
 
-* `cask_policy_dry_run(tool_id, params, context?) -> DecisionTrace`
-* `cask_explain_denial(decision_id) -> DecisionTrace`
+* `toolwright_policy_dry_run(tool_id, params, context?) -> DecisionTrace`
+* `toolwright_explain_denial(decision_id) -> DecisionTrace`
 
 ### 9.5 Draft-only helpers (never auto-executed) [PLANNED]
 
-* `cask_ui_locator_suggest(evidence_ref, description) -> LocatorDraft`
-* `cask_scope_suggest(capture_ref, guardrails) -> ScopeDraft`
+* `toolwright_ui_locator_suggest(evidence_ref, description) -> LocatorDraft`
+* `toolwright_scope_suggest(capture_ref, guardrails) -> ScopeDraft`
 
 Rules:
 
@@ -847,16 +847,16 @@ This rewrite moves discovery to “human-led by default,” with a safe path for
 
 Current state clarification:
 
-* Draft proposal queue tooling (`cask propose ...`) is shipped for human review workflows.
-* Proposal bundle publication is shipped (`cask propose publish`) to convert reviewed proposal artifacts into runtime-ready tools/policy/toolsets and optional lockfile sync.
+* Draft proposal queue tooling (`toolwright propose ...`) is shipped for human review workflows.
+* Proposal bundle publication is shipped (`toolwright propose publish`) to convert reviewed proposal artifacts into runtime-ready tools/policy/toolsets and optional lockfile sync.
 * Fully autonomous draft expansion (agent-triggered capture/mint/verify orchestration) is still planned and intentionally out of scope for current runtime behavior.
 
 ### 10.1 vNext: human-led discovery only
 
 * humans run capture in sandbox
-* `cask mint` compiles a draft toolpack
-* `cask verify` attaches evidence
-* `cask gate allow` publishes to lockfile
+* `toolwright mint` compiles a draft toolpack
+* `toolwright verify` attaches evidence
+* `toolwright gate allow` publishes to lockfile
 
 ### 10.2 Autonomous Draft Expansion - Agent Tool Discovery and Drafting (after vNext)
 
@@ -925,21 +925,21 @@ Split operations into two lanes:
 
 **Agent-visible (read-only / draft-only):**
 
-* `cask_capabilities_list(toolpack_ref)`
-* `cask_propose_expansion(missing_capability, constraints) -> DraftExpansionBundle`
-* `cask_explain_denial(decision_id)`
+* `toolwright_capabilities_list(toolpack_ref)`
+* `toolwright_propose_expansion(missing_capability, constraints) -> DraftExpansionBundle`
+* `toolwright_explain_denial(decision_id)`
 
 **Operator/CI only (never agent-callable):**
 
-* `cask_run_capture(capture_plan)` (sandboxed)
-* `cask_mint_from_capture(capture_ref)`
-* `cask_diff(toolpack_a, toolpack_b)`
-* `cask_approve(diff_ref, signer_ref)`
-* `cask_publish(lockfile_ref)`
+* `toolwright_run_capture(capture_plan)` (sandboxed)
+* `toolwright_mint_from_capture(capture_ref)`
+* `toolwright_diff(toolpack_a, toolpack_b)`
+* `toolwright_approve(diff_ref, signer_ref)`
+* `toolwright_publish(lockfile_ref)`
 
 ### 10.2.4 Sandbox constraints (mandatory)
 
-`cask_run_capture` must enforce:
+`toolwright_run_capture` must enforce:
 
 * strict host allowlist and egress deny-by-default
 * no credential exfiltration (redaction enforced)
@@ -968,7 +968,7 @@ Draft artifacts must be physically separated from published artifacts.
 
 Directories:
 
-* `.cask/drafts/<draft_id>/`
+* `.toolwright/drafts/<draft_id>/`
 
   * `capture_plan.json`
   * `toolpack_delta/`
@@ -976,15 +976,15 @@ Directories:
   * `verification_contract_delta.json`
   * `diff_report.json`
   * `evidence_refs.json`
-* `.cask/published/`
+* `.toolwright/published/`
 
   * published toolpack and lockfile references
 
 Rules:
 
-1. Runtime and serve modes MUST ignore `.cask/drafts/` entirely.
-2. Only `cask gate allow` may promote drafts to published state.
-3. Promotion is a copy operation into `.cask/published/` plus lockfile update.
+1. Runtime and serve modes MUST ignore `.toolwright/drafts/` entirely.
+2. Only `toolwright gate allow` may promote drafts to published state.
+3. Promotion is a copy operation into `.toolwright/published/` plus lockfile update.
 4. Drafts may be committed to git, but must not be referenced by default configs.
 5. Provide `.gitignore` guidance:
 
@@ -992,7 +992,7 @@ Rules:
    * allow committing contracts and diffs if desired
 
 **Approval promotion contract**
-`cask gate allow --draft <draft_id>` must:
+`toolwright gate allow --draft <draft_id>` must:
 
 * validate draft artifacts are internally consistent
 * run `verify` for any new write/admin/auth surfaces (or require an explicit bypass)
@@ -1043,27 +1043,27 @@ Optional later:
 
 ### 12.1 Core commands
 
-* `cask init` -- initialize project
-* `cask mint <url>` -- capture + compile in one shot
-* `cask diff` -- risk-classified change report
-* `cask gate sync|allow|block|check|status|snapshot|reseal` -- approval workflow
-* `cask serve` -- MCP server (stdio) under lockfile enforcement
-* `cask run` -- execute toolpack with policy enforcement
-* `cask drift` -- detect capability surface changes
-* `cask verify` -- run verification contracts
-* `cask demo` -- offline governance proof loop
+* `toolwright init` -- initialize project
+* `toolwright mint <url>` -- capture + compile in one shot
+* `toolwright diff` -- risk-classified change report
+* `toolwright gate sync|allow|block|check|status|snapshot|reseal` -- approval workflow
+* `toolwright serve` -- MCP server (stdio) under lockfile enforcement
+* `toolwright run` -- execute toolpack with policy enforcement
+* `toolwright drift` -- detect capability surface changes
+* `toolwright verify` -- run verification contracts
+* `toolwright demo` -- offline governance proof loop
 
 ### 12.2 More commands
 
-* `cask capture import|record` -- traffic capture from HAR, OTEL, OpenAPI, or browser
-* `cask workflow init|run|replay|diff|report|pack|export|doctor` -- verification workflows
-* `cask auth login|status|clear|list` -- auth profile management
+* `toolwright capture import|record` -- traffic capture from HAR, OTEL, OpenAPI, or browser
+* `toolwright workflow init|run|replay|diff|report|pack|export|doctor` -- verification workflows
+* `toolwright auth login|status|clear|list` -- auth profile management
 
 ### 12.3 Advanced commands (behind `--help-all`)
 
-* `cask compile`, `cask bundle`, `cask lint`, `cask doctor`, `cask config`
-* `cask inspect`, `cask enforce`, `cask migrate`
-* `cask confirm`, `cask propose`, `cask scope`, `cask compliance`, `cask state`
+* `toolwright compile`, `toolwright bundle`, `toolwright lint`, `toolwright doctor`, `toolwright config`
+* `toolwright inspect`, `toolwright enforce`, `toolwright migrate`
+* `toolwright confirm`, `toolwright propose`, `toolwright scope`, `toolwright compliance`, `toolwright state`
 
 ---
 
@@ -1144,15 +1144,15 @@ Persona:
 Flow:
 
 1. Capture a sandbox workflow with Playwright.
-2. Run `cask mint` to produce a draft toolpack.
-3. Run `cask verify` using a verification contract:
+2. Run `toolwright mint` to produce a draft toolpack.
+3. Run `toolwright verify` using a verification contract:
 
    * API post-condition (state changed)
    * UI semantic assertion (role/label)
    * optional webhook fired
-4. Review `cask diff`, then `cask gate allow`.
+4. Review `toolwright diff`, then `toolwright gate allow`.
 5. Serve toolpack under lockfile enforcement.
-6. CI runs `cask drift` nightly. If drift breaks contract, deployment blocks.
+6. CI runs `toolwright drift` nightly. If drift breaks contract, deployment blocks.
 
 Outcome:
 
