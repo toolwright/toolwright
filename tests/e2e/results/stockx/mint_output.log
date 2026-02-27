@@ -1,0 +1,45 @@
+Mint step 1/4: capturing traffic...
+  Start URL: https://stockx.com
+  Allowed hosts: *.stockx.com, *.stockx.io
+  Headless: True
+  Script: tests/e2e/stockx_capture.py
+
+Navigating to: https://stockx.com
+Running scripted capture: tests/e2e/stockx_capture.py
+
+Stopping capture...
+Mint step 2/4: compiling artifacts...
+Loaded capture: cap_20260212_8a6fd21f
+  Exchanges: 0
+Aggregating endpoints...
+  Endpoints: 0
+  After scope filter: 0
+Mint step 3/4: creating toolpack...
+
+Mint complete: tp_53a0b60a95a8
+  Capture: cap_20260212_8a6fd21f
+  Capture location: .caskmcp/captures/cap_20260212_8a6fd21f
+  Artifact: art_6db8e692d3aa
+  Toolpack: .caskmcp/toolpacks/tp_53a0b60a95a8/toolpack.yaml
+  Pending approvals: 0
+
+Next commands:
+  caskmcp run --toolpack .caskmcp/toolpacks/tp_53a0b60a95a8/toolpack.yaml
+  caskmcp gate allow --all --toolset readonly --lockfile .caskmcp/toolpacks/tp_53a0b60a95a8/lockfile/caskmcp.lock.pending.yaml
+  caskmcp drift --baseline .caskmcp/toolpacks/tp_53a0b60a95a8/artifact/baseline.json --capture-path .caskmcp/captures/cap_20260212_8a6fd21f
+
+Connect to your AI agent:
+
+  Add to .mcp.json (works with any MCP client):
+    {
+      "mcpServers": {
+        "caskmcp": {
+          "command": "cask",
+          "args": ["run", "--toolpack", ".caskmcp/toolpacks/tp_53a0b60a95a8/toolpack.yaml"]
+        }
+      }
+    }
+
+  Or via Claude Code CLI:
+    claude mcp add caskmcp -- cask run --toolpack .caskmcp/toolpacks/tp_53a0b60a95a8/toolpack.yaml
+

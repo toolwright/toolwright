@@ -1,0 +1,8 @@
+# Full spec cache (large, downloaded on demand)
+.full-spec-cache.yaml
+
+# Local Toolwright state (approval snapshots, keys)
+.toolwright/
+
+# macOS metadata
+.DS_Store

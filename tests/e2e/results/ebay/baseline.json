@@ -1,0 +1,1623 @@
+{
+  "version": "1.0.0",
+  "schema_version": "1.0",
+  "generated_at": "2026-02-12T02:22:18.089212+00:00",
+  "endpoint_count": 22,
+  "endpoints": [
+    {
+      "stable_id": "5fe36664696f5f57",
+      "signature_id": "90ab6c9254ff8de0",
+      "tool_id": "create_customer",
+      "tool_version": 1,
+      "method": "POST",
+      "path": "/customer/v1/{id}",
+      "host": "backstory.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "ct",
+          "location": "query",
+          "type": "integer",
+          "required": false
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "activity": {
+            "type": "object",
+            "properties": {
+              "category": {
+                "type": "string"
+              },
+              "details": {
+                "type": "object",
+                "properties": {
+                  "ciid": {
+                    "type": "string"
+                  },
+                  "ePageId": {
+                    "type": "string"
+                  },
+                  "h": {
+                    "type": "string"
+                  },
+                  "history": {
+                    "type": "string"
+                  },
+                  "isTabSwitch": {
+                    "type": "boolean"
+                  },
+                  "loadTime": {
+                    "type": "integer"
+                  },
+                  "nPageId": {
+                    "type": "string"
+                  },
+                  "openTime": {
+                    "type": "string"
+                  },
+                  "pageId": {
+                    "type": "string"
+                  },
+                  "perf": {
+                    "type": "string"
+                  },
+                  "prevPageId": {
+                    "type": "string"
+                  },
+                  "pvKey": {
+                    "type": "string"
+                  },
+                  "rPageId": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "static": {
+                    "type": "boolean"
+                  },
+                  "viewcnt": {
+                    "type": "integer"
+                  },
+                  "w": {
+                    "type": "string"
+                  },
+                  "x": {
+                    "type": "string"
+                  },
+                  "y": {
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "isTabSwitch",
+                  "pvKey"
+                ]
+              },
+              "duration": {
+                "type": "integer"
+              },
+              "ratio": {
+                "type": "string"
+              },
+              "referer": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "integer"
+              },
+              "type": {
+                "type": "string"
+              },
+              "viewportHeight": {
+                "type": "integer"
+              },
+              "viewportWidth": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "category",
+              "details",
+              "timestamp",
+              "type",
+              "viewportHeight",
+              "viewportWidth"
+            ]
+          },
+          "agentVersion": {
+            "type": "string"
+          },
+          "context": {
+            "type": "object",
+            "properties": {
+              "others": {
+                "type": "object",
+                "properties": {
+                  "etbn": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "screenHeight": {
+                "type": "integer"
+              },
+              "screenWidth": {
+                "type": "integer"
+              },
+              "userAgent": {
+                "type": "string"
+              },
+              "userLang": {
+                "type": "string"
+              },
+              "utcOffset": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "others",
+              "screenHeight",
+              "screenWidth",
+              "userAgent",
+              "userLang",
+              "utcOffset"
+            ]
+          },
+          "eventFamily": {
+            "type": "string"
+          },
+          "guid": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "siteId": {
+            "type": "integer"
+          },
+          "trackable": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "entityId": {
+                "type": "string"
+              },
+              "entityType": {
+                "type": "string"
+              },
+              "instanceId": {
+                "type": "string"
+              },
+              "parentTrackableId": {
+                "type": "string"
+              },
+              "screenId": {
+                "type": "string"
+              },
+              "trackableId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "description",
+              "entityType",
+              "instanceId",
+              "trackableId"
+            ]
+          }
+        },
+        "required": [
+          "activity",
+          "agentVersion",
+          "eventFamily",
+          "guid",
+          "siteId",
+          "trackable"
+        ]
+      },
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "image/gif",
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": true,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "medium",
+      "observation_count": 6
+    },
+    {
+      "stable_id": "bbc742605d7355f9",
+      "signature_id": "99c588aade114f34",
+      "tool_id": "create_base_service",
+      "tool_version": 1,
+      "method": "POST",
+      "path": "/base/service/v1/{id}",
+      "host": "edgetrksvc.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "eventFamily": {
+                  "type": "string"
+                },
+                "eventType": {
+                  "type": "string"
+                },
+                "inputCorrelator": {
+                  "type": "string"
+                },
+                "pageId": {
+                  "type": "string"
+                },
+                "propertySets": {
+                  "type": "object",
+                  "properties": {
+                    "serviceProperties": {
+                      "type": "object",
+                      "properties": {
+                        "ciid": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "ciid"
+                      ]
+                    },
+                    "trackables": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "boundingBox": {
+                            "type": "object",
+                            "properties": {
+                              "height": {
+                                "type": "integer"
+                              },
+                              "topLeftX": {
+                                "type": "integer"
+                              },
+                              "topLeftY": {
+                                "type": "integer"
+                              },
+                              "width": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "height",
+                              "topLeftX",
+                              "topLeftY",
+                              "width"
+                            ]
+                          },
+                          "clientProvidedViewElement": {
+                            "type": "object",
+                            "properties": {
+                              "moduleId": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "moduleId"
+                            ]
+                          },
+                          "dwellTime": {
+                            "type": "integer"
+                          },
+                          "trackable": {
+                            "type": "object",
+                            "properties": {
+                              "tid": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "tid"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "boundingBox",
+                          "dwellTime",
+                          "trackable"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "serviceProperties",
+                    "trackables"
+                  ]
+                },
+                "timestamp": {
+                  "type": "string"
+                },
+                "timezoneName": {
+                  "type": "string"
+                },
+                "utcOffset": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "eventFamily",
+                "eventType",
+                "inputCorrelator",
+                "pageId",
+                "propertySets",
+                "timestamp",
+                "timezoneName",
+                "utcOffset"
+              ]
+            }
+          },
+          "globalContext": {
+            "type": "object",
+            "properties": {
+              "deviceContext": {
+                "type": "object",
+                "properties": {
+                  "browserContext": {
+                    "type": "object",
+                    "properties": {
+                      "domain": {
+                        "type": "string"
+                      },
+                      "userAgent": {
+                        "type": "string"
+                      },
+                      "windowHeight": {
+                        "type": "integer"
+                      },
+                      "windowWidth": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "domain",
+                      "userAgent",
+                      "windowHeight",
+                      "windowWidth"
+                    ]
+                  }
+                },
+                "required": [
+                  "browserContext"
+                ]
+              },
+              "trackingGuid": {
+                "type": "null"
+              },
+              "userPrefLang": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "deviceContext",
+              "trackingGuid",
+              "userPrefLang"
+            ]
+          }
+        },
+        "required": [
+          "events",
+          "globalContext"
+        ]
+      },
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": null,
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": true,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "medium",
+      "observation_count": 2
+    },
+    {
+      "stable_id": "faf0ba1cb38e34e3",
+      "signature_id": "ced57ea035bc6193",
+      "tool_id": "get_tag_madrona_loadscriptsjs",
+      "tool_version": 1,
+      "method": "GET",
+      "path": "/{id}/v1/tag/madrona_loadscripts.js",
+      "host": "mkttag.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/javascript",
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": false,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "safe",
+      "observation_count": 2
+    },
+    {
+      "stable_id": "9ea74ba10d560f44",
+      "signature_id": "d9f5d235c806c34d",
+      "tool_id": "get_tag_utag10js",
+      "tool_version": 1,
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.10.js",
+      "host": "mkttag.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "utv",
+          "location": "query",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/javascript",
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": false,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "safe",
+      "observation_count": 2
+    },
+    {
+      "stable_id": "b50be61c89c2911e",
+      "signature_id": "62009008b256a46e",
+      "tool_id": "get_tag_utag11js",
+      "tool_version": 1,
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.11.js",
+      "host": "mkttag.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "utv",
+          "location": "query",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/javascript",
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": false,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "safe",
+      "observation_count": 2
+    },
+    {
+      "stable_id": "0b85f7f98ed29009",
+      "signature_id": "60f217b75c9a88ce",
+      "tool_id": "get_tag_utag3js",
+      "tool_version": 1,
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.3.js",
+      "host": "mkttag.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "utv",
+          "location": "query",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/javascript",
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": false,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "safe",
+      "observation_count": 2
+    },
+    {
+      "stable_id": "00e74063f76b25e8",
+      "signature_id": "48b1a5c775871ddc",
+      "tool_id": "get_tag_utag37js",
+      "tool_version": 1,
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.37.js",
+      "host": "mkttag.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "utv",
+          "location": "query",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/javascript",
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": false,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "safe",
+      "observation_count": 2
+    },
+    {
+      "stable_id": "0a8d21ff46e846b0",
+      "signature_id": "e52e83db40e288b4",
+      "tool_id": "get_tag_utag48js",
+      "tool_version": 1,
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.48.js",
+      "host": "mkttag.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "utv",
+          "location": "query",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/javascript",
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": false,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "safe",
+      "observation_count": 2
+    },
+    {
+      "stable_id": "b0e270c6538274a5",
+      "signature_id": "3c3faf726afd940a",
+      "tool_id": "get_tag_utag50js",
+      "tool_version": 1,
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.50.js",
+      "host": "mkttag.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "utv",
+          "location": "query",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/javascript",
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": false,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "safe",
+      "observation_count": 2
+    },
+    {
+      "stable_id": "fbfca9a51e1fb209",
+      "signature_id": "0611eb472a2fc46c",
+      "tool_id": "get_tag_utag7js",
+      "tool_version": 1,
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.7.js",
+      "host": "mkttag.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "utv",
+          "location": "query",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/javascript",
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": false,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "safe",
+      "observation_count": 2
+    },
+    {
+      "stable_id": "d40c25f4b2e2a8d9",
+      "signature_id": "71203efd94b98488",
+      "tool_id": "get_tag_utag9js",
+      "tool_version": 1,
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.9.js",
+      "host": "mkttag.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "utv",
+          "location": "query",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/javascript",
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": false,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "safe",
+      "observation_count": 2
+    },
+    {
+      "stable_id": "75146cdddfed06fe",
+      "signature_id": "21be8c60d1b7b4c2",
+      "tool_id": "get_tag_utagjs",
+      "tool_version": 1,
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.js",
+      "host": "mkttag.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/javascript",
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": false,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "safe",
+      "observation_count": 2
+    },
+    {
+      "stable_id": "9bccc7a0a64a5b06",
+      "signature_id": "d9ec1c931a6b30dd",
+      "tool_id": "create_webresource",
+      "tool_version": 1,
+      "method": "POST",
+      "path": "/webresources",
+      "host": "monitor.ebay.com",
+      "parameters": [],
+      "request_content_type": null,
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "url"
+              ]
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "ts": {
+                "type": "integer"
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "ts",
+              "url"
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": null,
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": true,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "medium",
+      "observation_count": 2
+    },
+    {
+      "stable_id": "9e5e713ef297e2a1",
+      "signature_id": "4bf66fd4ee606e5b",
+      "tool_id": "create_plsr_mpe_dflt",
+      "tool_version": 1,
+      "method": "POST",
+      "path": "/plsr/mpe/{id}/DFLT/{id}",
+      "host": "pulsar.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "app": {
+            "type": "string"
+          },
+          "bh": {
+            "type": "integer"
+          },
+          "bw": {
+            "type": "integer"
+          },
+          "callingEF": {
+            "type": "string"
+          },
+          "ciid": {
+            "type": "string"
+          },
+          "clientTS": {
+            "type": "integer"
+          },
+          "difTS": {
+            "type": "integer"
+          },
+          "ea": {
+            "type": "string"
+          },
+          "ef": {
+            "type": "string"
+          },
+          "eventOrder": {
+            "type": "integer"
+          },
+          "hostingPageId": {
+            "type": "string"
+          },
+          "imp": {
+            "type": "integer"
+          },
+          "moduledtl": {
+            "type": "string"
+          },
+          "pageci": {
+            "type": "string"
+          },
+          "parentrq": {
+            "type": "string"
+          },
+          "pge": {
+            "type": "integer"
+          },
+          "plsUBT": {
+            "type": "integer"
+          },
+          "screenHeight": {
+            "type": "integer"
+          },
+          "screenWidth": {
+            "type": "integer"
+          },
+          "scrollbtm": {
+            "type": "integer"
+          },
+          "scrolltop": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "app",
+          "callingEF",
+          "ciid",
+          "difTS",
+          "ea",
+          "ef",
+          "eventOrder",
+          "pge",
+          "plsUBT"
+        ]
+      },
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": null,
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": true,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "medium",
+      "observation_count": 5
+    },
+    {
+      "stable_id": "1a228d983cabdb73",
+      "signature_id": "0b5421537557c9b0",
+      "tool_id": "create_plsr_mpe_sand",
+      "tool_version": 1,
+      "method": "POST",
+      "path": "/plsr/mpe/{id}/SAND/{id}",
+      "host": "pulsar.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "pld",
+          "location": "query",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": null,
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": true,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "medium",
+      "observation_count": 1
+    },
+    {
+      "stable_id": "bd80b691b85ba313",
+      "signature_id": "7b42f75369b21c00",
+      "tool_id": "get",
+      "tool_version": 1,
+      "method": "GET",
+      "path": "/{token}",
+      "host": "sherlock-events-sampler.ebay.com",
+      "parameters": [
+        {
+          "name": "token",
+          "location": "path",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "service",
+          "location": "query",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/json",
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "operationSampling": {
+            "type": "object",
+            "properties": {}
+          },
+          "probabilisticSampling": {
+            "type": "object",
+            "properties": {
+              "samplingRate": {
+                "oneOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "samplingRate"
+            ]
+          }
+        },
+        "required": [
+          "probabilisticSampling"
+        ]
+      },
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": false,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "safe",
+      "observation_count": 15
+    },
+    {
+      "stable_id": "bd67ca73431de073",
+      "signature_id": "51c3d0893e4bcb96",
+      "tool_id": "get_gh_useracquisition",
+      "tool_version": 1,
+      "method": "GET",
+      "path": "/gh/useracquisition",
+      "host": "www.ebay.com",
+      "parameters": [
+        {
+          "name": "_nkw",
+          "location": "query",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "correlation",
+          "location": "query",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "customReferer",
+          "location": "query",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "v",
+          "location": "query",
+          "type": "integer",
+          "required": false
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/json",
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "criticalJS": {
+            "type": "string"
+          },
+          "css": {
+            "type": "null"
+          },
+          "html": {
+            "type": "string"
+          },
+          "js": {
+            "type": "null"
+          },
+          "jsInline": {
+            "type": "null"
+          },
+          "onDemand": {
+            "type": "integer"
+          },
+          "renderedComponents": {
+            "type": "object",
+            "properties": {
+              "l": {
+                "type": "integer"
+              },
+              "r": {
+                "type": "string"
+              },
+              "t": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "w": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "f": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "f"
+                    ]
+                  }
+                }
+              }
+            },
+            "required": [
+              "l",
+              "r",
+              "t",
+              "w"
+            ]
+          }
+        },
+        "required": [
+          "criticalJS",
+          "css",
+          "html",
+          "js",
+          "jsInline",
+          "onDemand",
+          "renderedComponents"
+        ]
+      },
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": false,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "safe",
+      "observation_count": 8
+    },
+    {
+      "stable_id": "393839de5bac9345",
+      "signature_id": "475f12c6e1ad5db8",
+      "tool_id": "get_nap_napkinapi_ticketing_redeem",
+      "tool_version": 1,
+      "method": "GET",
+      "path": "/nap/napkinapi/v1/ticketing/redeem",
+      "host": "www.ebay.com",
+      "parameters": [
+        {
+          "name": "ticket",
+          "location": "query",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "text/plain",
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": false,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "safe",
+      "observation_count": 5
+    },
+    {
+      "stable_id": "346f2ded70e21082",
+      "signature_id": "53ada5df10fa0a79",
+      "tool_id": "get_sch_ajax_autocomplete",
+      "tool_version": 1,
+      "method": "GET",
+      "path": "/sch/ajax/autocomplete",
+      "host": "www.ebay.com",
+      "parameters": [],
+      "request_content_type": null,
+      "request_schema": null,
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/json",
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "activeFactors": {
+            "type": "object",
+            "properties": {}
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "activeFactors",
+          "url"
+        ]
+      },
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": false,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "safe",
+      "observation_count": 2
+    },
+    {
+      "stable_id": "8e5530e56779ae86",
+      "signature_id": "e2b9e135007c97cf",
+      "tool_id": "create_blueberry_ads_identity_pixel_url",
+      "tool_version": 1,
+      "method": "POST",
+      "path": "/blueberry/v1/ads/identity/pixelUrls",
+      "host": "www.ebay.com",
+      "parameters": [],
+      "request_content_type": null,
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "adChoice": {
+            "type": "string"
+          },
+          "guid": {
+            "type": "string"
+          },
+          "pageId": {
+            "type": "string"
+          },
+          "siteId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "adChoice",
+          "guid",
+          "pageId",
+          "siteId"
+        ]
+      },
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/json",
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "pixelUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "pixelUrls"
+        ]
+      },
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": true,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "medium",
+      "observation_count": 1
+    },
+    {
+      "stable_id": "c2e18325ec56890b",
+      "signature_id": "7672fddb71c146d3",
+      "tool_id": "create_gh_dfpsvc",
+      "tool_version": 1,
+      "method": "POST",
+      "path": "/gh/dfpsvc",
+      "host": "www.ebay.com",
+      "parameters": [
+        {
+          "name": "v",
+          "location": "query",
+          "type": "integer",
+          "required": false
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "fingerPrintData": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fingerPrintData",
+          "sessionId"
+        ]
+      },
+      "response_status_codes": [
+        204
+      ],
+      "response_content_type": null,
+      "response_schema": null,
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": true,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "medium",
+      "observation_count": 1
+    },
+    {
+      "stable_id": "c53e4c3945c4a65c",
+      "signature_id": "54a76ac55ec7a0b8",
+      "tool_id": "create_srv_app_csep",
+      "tool_version": 1,
+      "method": "POST",
+      "path": "/srv/app/v2/csep/{id}",
+      "host": "www.ebay.com",
+      "parameters": [
+        {
+          "name": "id",
+          "location": "path",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "request_content_type": null,
+      "request_schema": {
+        "type": "object",
+        "properties": {
+          "interceptContext": {
+            "type": "object",
+            "properties": {
+              "app_name": {
+                "type": "string"
+              },
+              "pageId": {
+                "type": "string"
+              },
+              "page_name": {
+                "type": "string"
+              },
+              "srcrlogid": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "app_name",
+              "pageId",
+              "page_name",
+              "srcrlogid"
+            ]
+          }
+        },
+        "required": [
+          "interceptContext"
+        ]
+      },
+      "response_status_codes": [
+        200
+      ],
+      "response_content_type": "application/json",
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "response": {
+            "type": "object",
+            "properties": {
+              "allClientSideEps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "dqt": {
+                      "type": "boolean"
+                    },
+                    "factors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "value": {
+                            "oneOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "value"
+                        ]
+                      }
+                    },
+                    "flagKey": {
+                      "type": "string"
+                    },
+                    "flagValue": {
+                      "type": "string"
+                    },
+                    "priority": {
+                      "type": "integer"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "treatmentId": {
+                      "type": "integer"
+                    },
+                    "value": {
+                      "type": "object",
+                      "properties": {
+                        "intercept": {
+                          "type": "boolean"
+                        },
+                        "page_ids": {
+                          "type": "string"
+                        },
+                        "survey_alias": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "intercept"
+                      ]
+                    },
+                    "variant": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "dqt",
+                    "factors",
+                    "flagKey",
+                    "flagValue",
+                    "priority",
+                    "reason",
+                    "treatmentId",
+                    "value",
+                    "variant"
+                  ]
+                }
+              },
+              "clientSideEps": {
+                "type": "array"
+              },
+              "qTags": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "type",
+                    "value"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "allClientSideEps",
+              "clientSideEps",
+              "qTags"
+            ]
+          },
+          "survey": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          }
+        },
+        "required": [
+          "response",
+          "survey"
+        ]
+      },
+      "auth_type": "none",
+      "is_first_party": true,
+      "is_state_changing": true,
+      "is_auth_related": false,
+      "has_pii": false,
+      "risk_tier": "medium",
+      "observation_count": 3
+    }
+  ],
+  "capture_id": "cap_20260212_ecf13c3b",
+  "scope": "first_party_only",
+  "summary": {
+    "host_count": 7,
+    "hosts": [
+      "backstory.ebay.com",
+      "edgetrksvc.ebay.com",
+      "mkttag.ebay.com",
+      "monitor.ebay.com",
+      "pulsar.ebay.com",
+      "sherlock-events-sampler.ebay.com",
+      "www.ebay.com"
+    ],
+    "methods": {
+      "GET": 14,
+      "POST": 8
+    },
+    "risk_tiers": {
+      "medium": 8,
+      "safe": 14
+    },
+    "state_changing_count": 8,
+    "auth_related_count": 0,
+    "pii_count": 0
+  }
+}

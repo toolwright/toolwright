@@ -1,0 +1,4686 @@
+{
+  "version": "1.0.0",
+  "schema_version": "1.0",
+  "name": "playwright_www_walmart_com_20260212_022327",
+  "generated_at": "2026-02-12T02:23:27.854816+00:00",
+  "allowed_hosts": [
+    "i5.walmartimages.com",
+    "www.walmart.com"
+  ],
+  "actions": [
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_components_ads_error_boundary_d14e2b39f7ed1386js",
+      "tool_id": "4354e369ef537916",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_components_ads_error_boundary_d14e2b39f7ed1386js",
+      "description": "List ads core components ads error boundary d14e2b39f7ed1386.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "cf6036cf5d99012c",
+      "signature_id": "4354e369ef537916",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_core_components_ads-error-boundary-d14e2b39f7ed1386.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_components_display_ad_wrapper_af9824b0d5275311js",
+      "tool_id": "62e92141d4b14882",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_components_display_ad_wrapper_af9824b0d5275311js",
+      "description": "List ads core components display ad wrapper af9824b0d5275311.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "890f2bbe534b46ef",
+      "signature_id": "62e92141d4b14882",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_core_components_display-ad-wrapper-af9824b0d5275311.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_components_remount_wrapper_3df0ea601cde4a12js",
+      "tool_id": "56b6035f6ee51b5e",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_components_remount_wrapper_3df0ea601cde4a12js",
+      "description": "List ads core components remount wrapper 3df0ea601cde4a12.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "ad932c75b58dcb04",
+      "signature_id": "56b6035f6ee51b5e",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_core_components_remount-wrapper-3df0ea601cde4a12.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_get_is_adblocked_976cfe7579276997js",
+      "tool_id": "9c6378ed6807293e",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_get_is_adblocked_976cfe7579276997js",
+      "description": "List ads core hooks get is adblocked 976cfe7579276997.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "3b989f09d416b4bb",
+      "signature_id": "9c6378ed6807293e",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_core_hooks_get-is-adblocked-976cfe7579276997.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_intersection_observable_172253fdd689999ajs",
+      "tool_id": "636980293a98e23b",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_intersection_observable_172253fdd689999ajs",
+      "description": "List ads core hooks use intersection observable 172253fdd689999a.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "4558cd4560c5192e",
+      "signature_id": "636980293a98e23b",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_core_hooks_use-intersection-observable-172253fdd689999a.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_is_sp_tracking_enable_8d248c31f1ce373djs",
+      "tool_id": "bb6119952fdbb359",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_is_sp_tracking_enable_8d248c31f1ce373djs",
+      "description": "List ads core hooks use is sp tracking enable 8d248c31f1ce373d.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "84ee855e44e84361",
+      "signature_id": "bb6119952fdbb359",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_core_hooks_use-is-sp-tracking-enable-8d248c31f1ce373d.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_is_tracking_enabled_111ba2b6ae9b88b9js",
+      "tool_id": "03a03d316943dde1",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_is_tracking_enabled_111ba2b6ae9b88b9js",
+      "description": "List ads core hooks use is tracking enabled 111ba2b6ae9b88b9.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "544bf7290b186de4",
+      "signature_id": "03a03d316943dde1",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_core_hooks_use-is-tracking-enabled-111ba2b6ae9b88b9.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_platform0fa7b4ac85cd1f63js",
+      "tool_id": "697ddac34ae8e0f9",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_platform0fa7b4ac85cd1f63js",
+      "description": "List ads core hooks use platform.0fa7b4ac85cd1f63.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "1822b3db49e65e0e",
+      "signature_id": "697ddac34ae8e0f9",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_core_hooks_use-platform.0fa7b4ac85cd1f63.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_should_not_render_cfe10e6f7bfb9fc7js",
+      "tool_id": "6b6a4dd059a40951",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_should_not_render_cfe10e6f7bfb9fc7js",
+      "description": "List ads core hooks use should not render cfe10e6f7bfb9fc7.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "65a72d9312888043",
+      "signature_id": "6b6a4dd059a40951",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_core_hooks_use-should-not-render-cfe10e6f7bfb9fc7.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_data_access_hooks_use_get_ad_query_d957efa514ec84cfjs",
+      "tool_id": "1b97bef099492134",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_data_access_hooks_use_get_ad_query_d957efa514ec84cfjs",
+      "description": "List ads data access hooks use get ad query d957efa514ec84cf.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "ce858aa8fdae8f88",
+      "signature_id": "1b97bef099492134",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_data-access_hooks_use-get-ad-query-d957efa514ec84cf.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_generic_utils_use_dom_element_event_0876806db51bd01bjs",
+      "tool_id": "f9bef61a2b077ebb",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_generic_utils_use_dom_element_event_0876806db51bd01bjs",
+      "description": "List ads generic utils use dom element event 0876806db51bd01b.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "4142c964b1e7eb27",
+      "signature_id": "f9bef61a2b077ebb",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_generic-utils_use-dom-element-event-0876806db51bd01b.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_provider_ads_context_ac3e02d69ee12598js",
+      "tool_id": "1264b149dec3552a",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_provider_ads_context_ac3e02d69ee12598js",
+      "description": "List ads provider ads context ac3e02d69ee12598.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "02eb9db66de038a7",
+      "signature_id": "1264b149dec3552a",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_provider_ads-context-ac3e02d69ee12598.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_provider_ads_context_provider_3d99ad87a15ed89cjs",
+      "tool_id": "a2692c3f365f3b3e",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_provider_ads_context_provider_3d99ad87a15ed89cjs",
+      "description": "List ads provider ads context provider 3d99ad87a15ed89c.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "dcd9b873d329cea1",
+      "signature_id": "a2692c3f365f3b3e",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_provider_ads-context-provider-3d99ad87a15ed89c.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_safeframe_ui_safeframe_wrapper_c27303b0dfd03ae8js",
+      "tool_id": "cf8e551f5b97360a",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_safeframe_ui_safeframe_wrapper_c27303b0dfd03ae8js",
+      "description": "List ads safeframe ui safeframe wrapper c27303b0dfd03ae8.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "511efcd2bd52132a",
+      "signature_id": "cf8e551f5b97360a",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_safeframe-ui_safeframe-wrapper-c27303b0dfd03ae8.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_sponsored_products_tracking_ad_click_beacon_504ce46bfaf4d05ejs",
+      "tool_id": "8d78a5fc78214dda",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_sponsored_products_tracking_ad_click_beacon_504ce46bfaf4d05ejs",
+      "description": "List ads sponsored products tracking ad click beacon 504ce46bfaf4d05e.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "055e50fae506450c",
+      "signature_id": "8d78a5fc78214dda",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_sponsored-products-tracking_ad-click-beacon-504ce46bfaf4d05e.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_btf_ads_btf_cmp62f5113be131a0f4js",
+      "tool_id": "aac6ae59394adf62",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_btf_ads_btf_cmp62f5113be131a0f4js",
+      "description": "List ads ui btf ads btf cmp.62f5113be131a0f4.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "f3e583cab7781d22",
+      "signature_id": "aac6ae59394adf62",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_ui_btf_ads-btf-cmp.62f5113be131a0f4.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_feedback_disclaimer_with_link_8966e1c3cd4f6c15js",
+      "tool_id": "aa0a7c4f22666095",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_feedback_disclaimer_with_link_8966e1c3cd4f6c15js",
+      "description": "List ads ui feedback disclaimer with link 8966e1c3cd4f6c15.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "0b18586135f03e7a",
+      "signature_id": "aa0a7c4f22666095",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_ui_feedback_disclaimer-with-link-8966e1c3cd4f6c15.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_gallery97e4def855d581c1js",
+      "tool_id": "ddbde4e85fe47ad1",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_gallery97e4def855d581c1js",
+      "description": "List ads ui gallery.97e4def855d581c1.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "d2266c7b492e5785",
+      "signature_id": "ddbde4e85fe47ad1",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_ui_gallery.97e4def855d581c1.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_marquee_marquee_safeframe_uiffb3a29a99dcc1b5js",
+      "tool_id": "87b9a7e854dd720a",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_marquee_marquee_safeframe_uiffb3a29a99dcc1b5js",
+      "description": "List ads ui marquee marquee safeframe ui.ffb3a29a99dcc1b5.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "cc7e92b6f643569b",
+      "signature_id": "87b9a7e854dd720a",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_ui_marquee_marquee-safeframe-ui.ffb3a29a99dcc1b5.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_skyline_801cf40bcb2c23bdjs",
+      "tool_id": "1330135658d03e7e",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_skyline_801cf40bcb2c23bdjs",
+      "description": "List ads ui skyline 801cf40bcb2c23bd.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "689cfb605b045b6e",
+      "signature_id": "1330135658d03e7e",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_ui_skyline-801cf40bcb2c23bd.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_video_video_player_a361abda55effc47js",
+      "tool_id": "d68a0adaf423aa76",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_video_video_player_a361abda55effc47js",
+      "description": "List ads ui video video player a361abda55effc47.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "4d0f6e8ca66ef43c",
+      "signature_id": "d68a0adaf423aa76",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ads_ui_video_video-player-a361abda55effc47.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_amends_data_access_hooks_use_amendable_order_query_9fe97f663bfb3bc7js",
+      "tool_id": "11102edd5dfc9ea7",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_amends_data_access_hooks_use_amendable_order_query_9fe97f663bfb3bc7js",
+      "description": "List amends data access hooks use amendable order query 9fe97f663bfb3bc7.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "cb1b27c69ebc9b87",
+      "signature_id": "11102edd5dfc9ea7",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/amends_data-access_hooks_use-amendable-order-query-9fe97f663bfb3bc7.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_amends_data_access_hooks_use_is_amendable_f7a2ee0f7b7f30a8js",
+      "tool_id": "95711ddf3452216e",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_amends_data_access_hooks_use_is_amendable_f7a2ee0f7b7f30a8js",
+      "description": "List amends data access hooks use is amendable f7a2ee0f7b7f30a8.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "ca065d0f86284c3d",
+      "signature_id": "95711ddf3452216e",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/amends_data-access_hooks_use-is-amendable-f7a2ee0f7b7f30a8.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_add_on_services_util_ac836c14be8ece2cjs",
+      "tool_id": "4ee4f39a3b55e518",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_add_on_services_util_ac836c14be8ece2cjs",
+      "description": "List cart add on services util ac836c14be8ece2c.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "f6c955d8b008ab1e",
+      "signature_id": "4ee4f39a3b55e518",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_add-on-services_util-ac836c14be8ece2c.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_add_to_cart_add_to_cart_3862de0090e0ddc5js",
+      "tool_id": "c4ffd20f45657806",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_add_to_cart_add_to_cart_3862de0090e0ddc5js",
+      "description": "List cart add to cart add to cart 3862de0090e0ddc5.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "77e2363678587123",
+      "signature_id": "c4ffd20f45657806",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_add-to-cart_add-to-cart-3862de0090e0ddc5.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_atc_error_modal_hooks_use_cart_limit_operational_error_ae1eb13a667b5c18js",
+      "tool_id": "51a6b523703e6b37",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_atc_error_modal_hooks_use_cart_limit_operational_error_ae1eb13a667b5c18js",
+      "description": "List cart atc error modal hooks use cart limit operational error ae1eb13a667b5c18.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "c1b3f9c9adc77974",
+      "signature_id": "51a6b523703e6b37",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_atc-error-modal_hooks_use-cart-limit-operational-error-ae1eb13a667b5c18.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_cart_bookslot_wplus_banner_27926cc109f06eadjs",
+      "tool_id": "89e64c7115e7e9ea",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_cart_bookslot_wplus_banner_27926cc109f06eadjs",
+      "description": "List cart common components cart bookslot wplus banner 27926cc109f06ead.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "1b3a12ce51e2438f",
+      "signature_id": "89e64c7115e7e9ea",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_common-components_cart-bookslot-wplus-banner-27926cc109f06ead.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_cart_special_message_alerts_0ff65001b3da948bjs",
+      "tool_id": "8eee3fe56d6e8cb2",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_cart_special_message_alerts_0ff65001b3da948bjs",
+      "description": "List cart common components cart special message alerts 0ff65001b3da948b.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "55dacfe04f0cf78e",
+      "signature_id": "8eee3fe56d6e8cb2",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_common-components_cart-special-message-alerts-0ff65001b3da948b.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_drone_bottomsheet_drone_confirm_bottomsheetc901a5abd99bc0abjs",
+      "tool_id": "593793cdf6204bd3",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_drone_bottomsheet_drone_confirm_bottomsheetc901a5abd99bc0abjs",
+      "description": "List cart common components drone bottomsheet drone confirm bottomsheet.c901a5abd99bc0ab.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "9d90c416946635c4",
+      "signature_id": "593793cdf6204bd3",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_common-components_drone-bottomsheet_drone-confirm-bottomsheet.c901a5abd99bc0ab.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_drone_bottomsheet_drone_error_bottomsheet0c37770cab1d5f43js",
+      "tool_id": "98ca12d1b63e7cce",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_drone_bottomsheet_drone_error_bottomsheet0c37770cab1d5f43js",
+      "description": "List cart common components drone bottomsheet drone error bottomsheet.0c37770cab1d5f43.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "3b667273bf0fbfe2",
+      "signature_id": "98ca12d1b63e7cce",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_common-components_drone-bottomsheet_drone-error-bottomsheet.0c37770cab1d5f43.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_error_text_with_tooltip_b8c78046727b3162js",
+      "tool_id": "3e5020d1f9cde035",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_error_text_with_tooltip_b8c78046727b3162js",
+      "description": "List cart common components error text with tooltip b8c78046727b3162.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "6f126256771edf6f",
+      "signature_id": "3e5020d1f9cde035",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_common-components_error-text-with-tooltip-b8c78046727b3162.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_hook_use_reservation_snackbar65ff01b54be28ea4js",
+      "tool_id": "31e1f6c2a8fc5b84",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_hook_use_reservation_snackbar65ff01b54be28ea4js",
+      "description": "List cart common components hook use reservation snackbar.65ff01b54be28ea4.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "cf5fc6d89b5b2e0b",
+      "signature_id": "31e1f6c2a8fc5b84",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_common-components_hook_use-reservation-snackbar.65ff01b54be28ea4.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_location_nudge84607c5a08c265c7js",
+      "tool_id": "cd80276864f5f28f",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_location_nudge84607c5a08c265c7js",
+      "description": "List cart common components location nudge.84607c5a08c265c7.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "e668a59e150d2ef1",
+      "signature_id": "cd80276864f5f28f",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_common-components_location-nudge.84607c5a08c265c7.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_data_access_hooks_cca_fc985fce86ff5c85js",
+      "tool_id": "9ba1b6dee1ebe8dc",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_data_access_hooks_cca_fc985fce86ff5c85js",
+      "description": "List cart data access hooks cca fc985fce86ff5c85.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "bdf5ce307bc81aef",
+      "signature_id": "9ba1b6dee1ebe8dc",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_data-access_hooks_cca-fc985fce86ff5c85.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_page_view_checkout_beacon_page_view_beacon_6f2f9dcea0a221f2js",
+      "tool_id": "478632a253ba946f",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_page_view_checkout_beacon_page_view_beacon_6f2f9dcea0a221f2js",
+      "description": "List cart page view checkout beacon page view beacon 6f2f9dcea0a221f2.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "8b573b2023a21c44",
+      "signature_id": "478632a253ba946f",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_page-view-checkout-beacon_page-view-beacon-6f2f9dcea0a221f2.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_pos_fee_utils_27dfda4fd0c3bbaajs",
+      "tool_id": "016256fbacc0f123",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_pos_fee_utils_27dfda4fd0c3bbaajs",
+      "description": "List cart pos fee utils 27dfda4fd0c3bbaa.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "04a360ebd1869199",
+      "signature_id": "016256fbacc0f123",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_pos_fee-utils-27dfda4fd0c3bbaa.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_product_tile_container_cart_product_tile_5ee5e4a74b8a5d12js",
+      "tool_id": "f0044eed9b11618d",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_product_tile_container_cart_product_tile_5ee5e4a74b8a5d12js",
+      "description": "List cart product tile container cart product tile 5ee5e4a74b8a5d12.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "eba0d3810eba1a7b",
+      "signature_id": "f0044eed9b11618d",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_product-tile-container_cart-product-tile-5ee5e4a74b8a5d12.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_product_tile_container_locale_messages_19b05717d6ebfcd1js",
+      "tool_id": "0d673685af016155",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_product_tile_container_locale_messages_19b05717d6ebfcd1js",
+      "description": "List cart product tile container locale messages 19b05717d6ebfcd1.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "6b9b74e33380ee8c",
+      "signature_id": "0d673685af016155",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_product-tile-container_locale_messages-19b05717d6ebfcd1.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_data_access_bookslot_tenant_context_662e5083c5e35fe2js",
+      "tool_id": "7c750f3ff242198b",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_data_access_bookslot_tenant_context_662e5083c5e35fe2js",
+      "description": "List checkout bookslot data access bookslot tenant context 662e5083c5e35fe2.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "a6aefd87b2ebd6ee",
+      "signature_id": "7c750f3ff242198b",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-data-access_bookslot-tenant-context-662e5083c5e35fe2.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_data_access_utils_unauthorized_cart_errorffe8e41b70b21060js",
+      "tool_id": "4851ab7407bc60af",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_data_access_utils_unauthorized_cart_errorffe8e41b70b21060js",
+      "description": "List checkout bookslot data access utils unauthorized cart error.ffe8e41b70b21060.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "0fa395c99e3f60e4",
+      "signature_id": "4851ab7407bc60af",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-data-access_utils_unauthorized-cart-error.ffe8e41b70b21060.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_fulfillment_details_utils_93342d89ec70b14cjs",
+      "tool_id": "63f3f17aa5e5cac3",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_fulfillment_details_utils_93342d89ec70b14cjs",
+      "description": "List checkout bookslot fulfillment details utils 93342d89ec70b14c.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "ea1cdd664f8c60f4",
+      "signature_id": "63f3f17aa5e5cac3",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-fulfillment-details_utils-93342d89ec70b14c.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_shortcut_bookslot_shortcut_view_70fe270c59a60e22js",
+      "tool_id": "55a760619ddbdbec",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_shortcut_bookslot_shortcut_view_70fe270c59a60e22js",
+      "description": "List checkout bookslot shortcut bookslot shortcut view 70fe270c59a60e22.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "664967dafd227af0",
+      "signature_id": "55a760619ddbdbec",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-shortcut_bookslot-shortcut-view-70fe270c59a60e22.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_shortcut_locale_messages_859ce9ffb8e591a6js",
+      "tool_id": "c251a55ac8ebf992",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_shortcut_locale_messages_859ce9ffb8e591a6js",
+      "description": "List checkout bookslot shortcut locale messages 859ce9ffb8e591a6.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "c2d36de194449925",
+      "signature_id": "c251a55ac8ebf992",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-shortcut_locale_messages-859ce9ffb8e591a6.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_cxo_cart_shared_utils_helpers_2a9baddcfcd39d48js",
+      "tool_id": "cbbbd8b53989fd7d",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_cxo_cart_shared_utils_helpers_2a9baddcfcd39d48js",
+      "description": "List checkout cxo cart shared utils helpers 2a9baddcfcd39d48.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "d6216fc9f35f6596",
+      "signature_id": "cbbbd8b53989fd7d",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_cxo-cart-shared_utils_helpers-2a9baddcfcd39d48.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_review_order_data_access_hooks_review_order_component_context_795621ea143bafb6js",
+      "tool_id": "e869cf3e4294e4d4",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_review_order_data_access_hooks_review_order_component_context_795621ea143bafb6js",
+      "description": "List checkout review order data access hooks review order component context 795621ea143bafb6.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "1096748929f3b694",
+      "signature_id": "e869cf3e4294e4d4",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_review-order-data-access_hooks_review-order-component-context-795621ea143bafb6.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_store_chooser_beacon_params_store_chooser_460ac2b6e1da32c6js",
+      "tool_id": "d2d13c11070d0cd1",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_store_chooser_beacon_params_store_chooser_460ac2b6e1da32c6js",
+      "description": "List checkout store chooser beacon params store chooser 460ac2b6e1da32c6.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "329add75858eb91b",
+      "signature_id": "d2d13c11070d0cd1",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_store-chooser_beacon-params_store-chooser-460ac2b6e1da32c6.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_store_chooser_hooks_use_get_default_access_types_f2949f698f8887d3js",
+      "tool_id": "3151549c89dce0ee",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_store_chooser_hooks_use_get_default_access_types_f2949f698f8887d3js",
+      "description": "List checkout store chooser hooks use get default access types f2949f698f8887d3.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "8a73bbb683cd2053",
+      "signature_id": "3151549c89dce0ee",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_store-chooser_hooks_use-get-default-access-types-f2949f698f8887d3.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_design_components_wcp_popover_wcp_popover_027d50a7d9a983eajs",
+      "tool_id": "0e1ef9900c47b618",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_design_components_wcp_popover_wcp_popover_027d50a7d9a983eajs",
+      "description": "List design components wcp popover wcp popover 027d50a7d9a983ea.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "5e6556e9577f2cc1",
+      "signature_id": "0e1ef9900c47b618",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/design-components_wcp-popover_wcp-popover-027d50a7d9a983ea.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_design_components_wcp_popover_wcp_popover_c2b540e2e23a03d6js",
+      "tool_id": "7193eec5d1c577d6",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_design_components_wcp_popover_wcp_popover_c2b540e2e23a03d6js",
+      "description": "List design components wcp popover wcp popover c2b540e2e23a03d6.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "47368d32bfa93deb",
+      "signature_id": "7193eec5d1c577d6",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/design-components_wcp-popover_wcp-popover-c2b540e2e23a03d6.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_design_components_wcp_visually_hidden_wcp_visually_hiddenc4e80206e6c95a8ajs",
+      "tool_id": "b7259fd828847a73",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_design_components_wcp_visually_hidden_wcp_visually_hiddenc4e80206e6c95a8ajs",
+      "description": "List design components wcp visually hidden wcp visually hidden.c4e80206e6c95a8a.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "fae50d576eb9f59a",
+      "signature_id": "b7259fd828847a73",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/design-components_wcp-visually-hidden_wcp-visually-hidden.c4e80206e6c95a8a.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_design_components_wcp_visually_hidden_wcp_visually_hiddene3c3a09fa2eba571js",
+      "tool_id": "ca870deea1f3d8d2",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_design_components_wcp_visually_hidden_wcp_visually_hiddene3c3a09fa2eba571js",
+      "description": "List design components wcp visually hidden wcp visually hidden.e3c3a09fa2eba571.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "91fc1c4cbfe36ab4",
+      "signature_id": "ca870deea1f3d8d2",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/design-components_wcp-visually-hidden_wcp-visually-hidden.e3c3a09fa2eba571.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_digital_finance_one_credit_card_components52101e6021a79eedjs",
+      "tool_id": "26820639a6fa8bb0",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_digital_finance_one_credit_card_components52101e6021a79eedjs",
+      "description": "List digital finance one credit card components.52101e6021a79eed.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "8e8e378d743bd114",
+      "signature_id": "26820639a6fa8bb0",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/digital-finance_one-credit-card_components.52101e6021a79eed.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_digital_finance_one_credit_card_components_one_credit_card_application_modal_afe29700c9653ddfjs",
+      "tool_id": "dfc0fab275d3627d",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_digital_finance_one_credit_card_components_one_credit_card_application_modal_afe29700c9653ddfjs",
+      "description": "List digital finance one credit card components one credit card application modal afe29700c9653ddf.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "3b4055094270d715",
+      "signature_id": "dfc0fab275d3627d",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/digital-finance_one-credit-card_components_one-credit-card-application-modal-afe29700c9653ddf.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_framework_f63ef51b63b99aa1js",
+      "tool_id": "4d39aa0a00073e02",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_framework_f63ef51b63b99aa1js",
+      "description": "List framework f63ef51b63b99aa1.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "e0e6977b6b33645a",
+      "signature_id": "4d39aa0a00073e02",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/framework-f63ef51b63b99aa1.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_home_data_access_utils_d5c7d776d68791cajs",
+      "tool_id": "b4aaf204392850f8",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_home_data_access_utils_d5c7d776d68791cajs",
+      "description": "List home data access utils d5c7d776d68791ca.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "aafbd2a5857e8177",
+      "signature_id": "b4aaf204392850f8",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/home_data-access_utils-d5c7d776d68791ca.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_home_redesign_index_page_redesign_index_page_4e61ffc60b887be9js",
+      "tool_id": "6e058cb8096ff8d1",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_home_redesign_index_page_redesign_index_page_4e61ffc60b887be9js",
+      "description": "List home redesign index page redesign index page 4e61ffc60b887be9.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "857c56cb353b736b",
+      "signature_id": "6e058cb8096ff8d1",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/home_redesign-index-page_redesign-index-page-4e61ffc60b887be9.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_identity_next_one_tap_auth1106d6fcf680bdd6js",
+      "tool_id": "fabad39f97dc6468",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_identity_next_one_tap_auth1106d6fcf680bdd6js",
+      "description": "List identity next one tap auth.1106d6fcf680bdd6.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "4268f027f867eb77",
+      "signature_id": "fabad39f97dc6468",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/identity-next_one-tap-auth.1106d6fcf680bdd6.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_ad_routing_hooks_use_ad_optionsb8bb0ea3122cc817js",
+      "tool_id": "ca37503e91c9d63c",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_ad_routing_hooks_use_ad_optionsb8bb0ea3122cc817js",
+      "description": "List intl ads ad routing hooks useAdOptions.b8bb0ea3122cc817.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "182f4f6b01774e67",
+      "signature_id": "ca37503e91c9d63c",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/intl-ads_ad-routing_hooks_useAdOptions.b8bb0ea3122cc817.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_ad_routing_intl_ad_routing_f1428a91edd51943js",
+      "tool_id": "8b27219d9d941d3b",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_ad_routing_intl_ad_routing_f1428a91edd51943js",
+      "description": "List intl ads ad routing intl ad routing f1428a91edd51943.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "035cf715b597ddac",
+      "signature_id": "8b27219d9d941d3b",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/intl-ads_ad-routing_intl-ad-routing-f1428a91edd51943.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_data_access_queries_utils625278aecaa12cd9js",
+      "tool_id": "1e0724d2c56bfb43",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_data_access_queries_utils625278aecaa12cd9js",
+      "description": "List intl ads data access queries utils.625278aecaa12cd9.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "85f40b28f8ac9ed5",
+      "signature_id": "1e0724d2c56bfb43",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/intl-ads_data-access_queries_utils.625278aecaa12cd9.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_sponsored_products_tracking_use_sponsored_product_atc_f5e3250e0d5af9c6js",
+      "tool_id": "86dc709f14fd05be",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_sponsored_products_tracking_use_sponsored_product_atc_f5e3250e0d5af9c6js",
+      "description": "List intl ads sponsored products tracking use sponsored product atc f5e3250e0d5af9c6.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "280f130514d1bbf1",
+      "signature_id": "86dc709f14fd05be",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/intl-ads_sponsored-products-tracking_use-sponsored-product-atc-f5e3250e0d5af9c6.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_ui_btf_716afd008cc9765fjs",
+      "tool_id": "78417a45f0691c64",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_ui_btf_716afd008cc9765fjs",
+      "description": "List intl ads ui btf 716afd008cc9765f.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "f811fae7f0432ae0",
+      "signature_id": "78417a45f0691c64",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/intl-ads_ui_btf-716afd008cc9765f.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_ui_buybox_52f20645940604adjs",
+      "tool_id": "d9e4ad647f5a8344",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_ui_buybox_52f20645940604adjs",
+      "description": "List intl ads ui buybox 52f20645940604ad.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "de9131a932ee0a62",
+      "signature_id": "d9e4ad647f5a8344",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/intl-ads_ui_buybox-52f20645940604ad.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_video_video_player_562e1f29aea7e3d3js",
+      "tool_id": "fbb82f3cc410fa7b",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_video_video_player_562e1f29aea7e3d3js",
+      "description": "List intl ads video video player 562e1f29aea7e3d3.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "47ba8730460e5afb",
+      "signature_id": "fbb82f3cc410fa7b",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/intl-ads_video_video-player-562e1f29aea7e3d3.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_main_b9015432f38038dcjs",
+      "tool_id": "9784222595705fab",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_main_b9015432f38038dcjs",
+      "description": "List main b9015432f38038dc.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "c36ef7085300fd9b",
+      "signature_id": "9784222595705fab",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/main-b9015432f38038dc.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_marketplace_import_fees_import_fees_ef5476d45c165bc7js",
+      "tool_id": "dfc908685ba4e3a2",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_marketplace_import_fees_import_fees_ef5476d45c165bc7js",
+      "description": "List marketplace import fees import fees ef5476d45c165bc7.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "b014b0330d57fbf9",
+      "signature_id": "dfc908685ba4e3a2",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/marketplace_import-fees_import-fees-ef5476d45c165bc7.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_marketplace_product_seller_info_product_seller_info_9bbd54f0f92db15fjs",
+      "tool_id": "708fdbf1a1709966",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_marketplace_product_seller_info_product_seller_info_9bbd54f0f92db15fjs",
+      "description": "List marketplace product seller info product seller info 9bbd54f0f92db15f.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "14c0d6826d56bae5",
+      "signature_id": "708fdbf1a1709966",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/marketplace_product-seller-info_product-seller-info-9bbd54f0f92db15f.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_marketplace_special_instructions_item_special_instructions_597466845314a96djs",
+      "tool_id": "64ea5a4e9d558ed8",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_marketplace_special_instructions_item_special_instructions_597466845314a96djs",
+      "description": "List marketplace special instructions item special instructions 597466845314a96d.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "d8d75c78dd5c7fa6",
+      "signature_id": "64ea5a4e9d558ed8",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/marketplace_special-instructions_item-special-instructions-597466845314a96d.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_node_modules_pnpm_40walmart2buse_safeframe40133_react40182_node_modules_40walmart_use_safeframe_lib_index_a92b5817b9091156js",
+      "tool_id": "cc68125c0bf70a0b",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_node_modules_pnpm_40walmart2buse_safeframe40133_react40182_node_modules_40walmart_use_safeframe_lib_index_a92b5817b9091156js",
+      "description": "List node modules .pnpm %40walmart%2Buse safeframe%401.3.3 react%4018.2 node modules %40walmart use safeframe lib index a92b5817b9091156.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "3764c331008279d4",
+      "signature_id": "cc68125c0bf70a0b",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/node_modules_.pnpm_%40walmart%2Buse-safeframe%401.3.3_react%4018.2_node_modules_%40walmart_use-safeframe_lib_index-a92b5817b9091156.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_node_modules_pnpm_livingdesignreact1121_babelruntime7260_typesreact_dom1820_typesreact182_node_modules_livingdesign_react_dist_regular_esm_card_card_706ea3c8146a1cb9js",
+      "tool_id": "cf813c07b4488073",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_node_modules_pnpm_livingdesignreact1121_babelruntime7260_typesreact_dom1820_typesreact182_node_modules_livingdesign_react_dist_regular_esm_card_card_706ea3c8146a1cb9js",
+      "description": "List node modules .pnpm @livingdesign+react@1.12.1 @babel+runtime@7.26.0 @types+react dom@18.2.0 @types+react@18.2 node modules @livingdesign react dist regular esm Card Card 706ea3c8146a1cb9.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "ad228c990c085601",
+      "signature_id": "cf813c07b4488073",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/node_modules_.pnpm_@livingdesign+react@1.12.1_@babel+runtime@7.26.0_@types+react-dom@18.2.0_@types+react@18.2_node_modules_@livingdesign_react_dist_regular_esm_Card_Card-706ea3c8146a1cb9.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_node_modules_pnpm_walmartuse_safeframe133_react182_node_modules_walmart_use_safeframe_lib_index_a92b5817b9091156js",
+      "tool_id": "307c0b2c5124887e",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_node_modules_pnpm_walmartuse_safeframe133_react182_node_modules_walmart_use_safeframe_lib_index_a92b5817b9091156js",
+      "description": "List node modules .pnpm @walmart+use safeframe@1.3.3 react@18.2 node modules @walmart use safeframe lib index a92b5817b9091156.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "728759804f2d7672",
+      "signature_id": "307c0b2c5124887e",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/node_modules_.pnpm_@walmart+use-safeframe@1.3.3_react@18.2_node_modules_@walmart_use-safeframe_lib_index-a92b5817b9091156.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_node_modules_pnpm_react_device_detect40223_react_dom401820_react401820_react40182_node_modules_react_device_detect_dist_lib_6e0deb8e1f3e66d2js",
+      "tool_id": "0e193e0e2930bb8c",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_node_modules_pnpm_react_device_detect40223_react_dom401820_react401820_react40182_node_modules_react_device_detect_dist_lib_6e0deb8e1f3e66d2js",
+      "description": "List node modules .pnpm react device detect%402.2.3 react dom%4018.2.0 react%4018.2.0  react%4018.2 node modules react device detect dist lib 6e0deb8e1f3e66d2.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "661b5b0f0ddb32fc",
+      "signature_id": "0e193e0e2930bb8c",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/node_modules_.pnpm_react-device-detect%402.2.3_react-dom%4018.2.0_react%4018.2.0__react%4018.2_node_modules_react-device-detect_dist_lib-6e0deb8e1f3e66d2.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_pages_app_80911da2d20bedacjs",
+      "tool_id": "8315c909c36d1360",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_pages_app_80911da2d20bedacjs",
+      "description": "Use this to access or manage content. List  app 80911da2d20bedac.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "3d830521bc0eb6fd",
+      "signature_id": "8315c909c36d1360",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/pages/_app-80911da2d20bedac.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_pages_cart_7c9751e17eba7a03js",
+      "tool_id": "970626374916bf14",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_pages_cart_7c9751e17eba7a03js",
+      "description": "Use this to access or manage content. List cart 7c9751e17eba7a03.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "7b24bf2339a24749",
+      "signature_id": "970626374916bf14",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/pages/cart-7c9751e17eba7a03.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_pages_index_bbe3241de0e470d7js",
+      "tool_id": "8709a93fc1595545",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_pages_index_bbe3241de0e470d7js",
+      "description": "Use this to access or manage content. List index bbe3241de0e470d7.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "dccf55af009bd5d6",
+      "signature_id": "8709a93fc1595545",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/pages/index-bbe3241de0e470d7.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_payments_context_hooks_use_purchase_contract_ada47b193740498ajs",
+      "tool_id": "b354f56f87bc417d",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_payments_context_hooks_use_purchase_contract_ada47b193740498ajs",
+      "description": "List payments context hooks use purchase contract ada47b193740498a.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "061636da4c489043",
+      "signature_id": "b354f56f87bc417d",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/payments_context_hooks_use-purchase-contract-ada47b193740498a.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_pharmacy_shared_rx_nudge_ui6edffe95d094603fjs",
+      "tool_id": "82a8f69de75971ba",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_pharmacy_shared_rx_nudge_ui6edffe95d094603fjs",
+      "description": "List pharmacy shared rx nudge ui.6edffe95d094603f.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "99eb9b982f613ea8",
+      "signature_id": "82a8f69de75971ba",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/pharmacy-shared_rx-nudge_ui.6edffe95d094603f.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_prism_tranformation_utils_collection_carousel_transformation_f1b5a32690773904js",
+      "tool_id": "538cea31a97853a9",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_prism_tranformation_utils_collection_carousel_transformation_f1b5a32690773904js",
+      "description": "List prism tranformation utils collection carousel transformation f1b5a32690773904.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "5434fb2f67282bff",
+      "signature_id": "538cea31a97853a9",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/prism_tranformation-utils_collection-carousel-transformation-f1b5a32690773904.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_repurchase_data_access_repurchase_cloud_variables_27685936cee6e091js",
+      "tool_id": "bc79cded9c9df357",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_repurchase_data_access_repurchase_cloud_variables_27685936cee6e091js",
+      "description": "List repurchase data access repurchase cloud variables 27685936cee6e091.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "2d2a425498091a8b",
+      "signature_id": "bc79cded9c9df357",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/repurchase_data-access_repurchase-cloud-variables-27685936cee6e091.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "search_dfwrs_3d0839e4_71d8_next_static_chunks_search_data_access_transforms_common_query_to_props_60aa33afa4e1e564js",
+      "tool_id": "5130a70395fd134e",
+      "name": "search_dfwrs_3d0839e4_71d8_next_static_chunks_search_data_access_transforms_common_query_to_props_60aa33afa4e1e564js",
+      "description": "List search data access transforms common query to props 60aa33afa4e1e564.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "76dd83502c3fec4d",
+      "signature_id": "5130a70395fd134e",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/search_data-access_transforms_common-query-to-props-60aa33afa4e1e564.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_tempo_shared_modules_adaptive_card_adaptive_card_wrapperedfa61a70b97c9dbjs",
+      "tool_id": "bbc7a9ec94996d93",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_tempo_shared_modules_adaptive_card_adaptive_card_wrapperedfa61a70b97c9dbjs",
+      "description": "List tempo shared modules adaptive card adaptive card wrapper.edfa61a70b97c9db.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "c38812e1e20392b2",
+      "signature_id": "bbc7a9ec94996d93",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/tempo-shared-modules_adaptive-card_adaptive-card-wrapper.edfa61a70b97c9db.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_tempo_shared_modules_adaptive_card_adaptive_card4c45960c8da7afa8js",
+      "tool_id": "c0a1e9dd6452ec97",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_tempo_shared_modules_adaptive_card_adaptive_card4c45960c8da7afa8js",
+      "description": "List tempo shared modules adaptive card adaptive card.4c45960c8da7afa8.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "954a48040b8be695",
+      "signature_id": "c0a1e9dd6452ec97",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/tempo-shared-modules_adaptive-card_adaptive-card.4c45960c8da7afa8.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_captchad49e8b6b3b511808js",
+      "tool_id": "04d6d636ce747c23",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_captchad49e8b6b3b511808js",
+      "description": "List ui captcha.d49e8b6b3b511808.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "b3cfd54044af02fa",
+      "signature_id": "04d6d636ce747c23",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_captcha.d49e8b6b3b511808.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_collapsed_item_list_collapsed_item_list_1a4734145cda38d9js",
+      "tool_id": "1e16ae46ccaef8d7",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_collapsed_item_list_collapsed_item_list_1a4734145cda38d9js",
+      "description": "List ui collapsed item list collapsed item list 1a4734145cda38d9.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "cdc611bb45ca8769",
+      "signature_id": "1e16ae46ccaef8d7",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_collapsed-item-list_collapsed-item-list-1a4734145cda38d9.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_event_timer_queue_timer615d32d9d4b9a23bjs",
+      "tool_id": "d6ba096ea8f65bb1",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_event_timer_queue_timer615d32d9d4b9a23bjs",
+      "description": "List ui event timer queue timer.615d32d9d4b9a23b.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "bb2691596f9bbb17",
+      "signature_id": "d6ba096ea8f65bb1",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_event-timer_queue-timer.615d32d9d4b9a23b.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_global_intent_center_component_shipping_location_panel94dabfe883fc7fbbjs",
+      "tool_id": "d16d11cfc761dd0e",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_global_intent_center_component_shipping_location_panel94dabfe883fc7fbbjs",
+      "description": "List ui global intent center component shipping location panel.94dabfe883fc7fbb.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "ece5f7d0dd25462f",
+      "signature_id": "d16d11cfc761dd0e",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_global-intent-center_component_shipping-location-panel.94dabfe883fc7fbb.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_global_product_tile_global_product_tile_763b8509fb19232cjs",
+      "tool_id": "ef8aaa08f414f4d9",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_global_product_tile_global_product_tile_763b8509fb19232cjs",
+      "description": "List ui global product tile global product tile 763b8509fb19232c.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "3ecb959e8946e5d0",
+      "signature_id": "ef8aaa08f414f4d9",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_global-product-tile_global-product-tile-763b8509fb19232c.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_intl_fees_dialog_intl_fees_dialog_427fffd12549a4e8js",
+      "tool_id": "cd0f6632b9625f60",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_intl_fees_dialog_intl_fees_dialog_427fffd12549a4e8js",
+      "description": "List ui intl fees dialog intl fees dialog 427fffd12549a4e8.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "1a0a8e4715e64ba7",
+      "signature_id": "cd0f6632b9625f60",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_intl-fees-dialog_intl-fees-dialog-427fffd12549a4e8.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_iso_loc_redirectd8dc68afd0c84ee0js",
+      "tool_id": "57b4c917b03b87de",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_iso_loc_redirectd8dc68afd0c84ee0js",
+      "description": "List ui iso loc redirect.d8dc68afd0c84ee0.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "927ddc14a905a323",
+      "signature_id": "57b4c917b03b87de",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_iso-loc-redirect.d8dc68afd0c84ee0.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_item_condition_badge_item_condition_badge_e31ea86aca957cc1js",
+      "tool_id": "c6e5545996851d74",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_item_condition_badge_item_condition_badge_e31ea86aca957cc1js",
+      "description": "List ui item condition badge item condition badge e31ea86aca957cc1.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "e2f0e0358adef3ee",
+      "signature_id": "c6e5545996851d74",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_item-condition-badge_item-condition-badge-e31ea86aca957cc1.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_item_queue_banner_queue_banner_c1ce0b71e141fa7cjs",
+      "tool_id": "652be32e418bde71",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_item_queue_banner_queue_banner_c1ce0b71e141fa7cjs",
+      "description": "List ui item queue banner queue banner c1ce0b71e141fa7c.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "df3942ca645e93bc",
+      "signature_id": "652be32e418bde71",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_item-queue_banner_queue-banner-c1ce0b71e141fa7c.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_language_preference_dialog613f7f74dee49ce4js",
+      "tool_id": "44e5f581cdbe4b60",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_language_preference_dialog613f7f74dee49ce4js",
+      "description": "List ui language preference dialog.613f7f74dee49ce4.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "705d3fff2add8b4c",
+      "signature_id": "44e5f581cdbe4b60",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_language-preference-dialog.613f7f74dee49ce4.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_navigational_modal_navigational_modal_1f74c7059a157284js",
+      "tool_id": "bbf9c7438938c6db",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_navigational_modal_navigational_modal_1f74c7059a157284js",
+      "description": "List ui navigational modal navigational modal 1f74c7059a157284.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "e5540c59c217771c",
+      "signature_id": "bbf9c7438938c6db",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_navigational-modal_navigational-modal-1f74c7059a157284.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_badge_product_badge_4199fb326dcb9b3fjs",
+      "tool_id": "98b6f9116cce3ad0",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_badge_product_badge_4199fb326dcb9b3fjs",
+      "description": "List ui product badge product badge 4199fb326dcb9b3f.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "a0bd94541838aa7f",
+      "signature_id": "98b6f9116cce3ad0",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_product-badge_product-badge-4199fb326dcb9b3f.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_carousel_product_carousel_4ac4a8e13bddedd9js",
+      "tool_id": "5377d18ddc2e25e7",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_carousel_product_carousel_4ac4a8e13bddedd9js",
+      "description": "List ui product carousel product carousel 4ac4a8e13bddedd9.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "151adbd06c19912b",
+      "signature_id": "5377d18ddc2e25e7",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_product-carousel_product-carousel-4ac4a8e13bddedd9.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_hooks_use_on_product_a26c3a534bc5ac75js",
+      "tool_id": "470750fe2412e933",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_hooks_use_on_product_a26c3a534bc5ac75js",
+      "description": "List ui product tile hooks use on product a26c3a534bc5ac75.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "2993b1d6579122b7",
+      "signature_id": "470750fe2412e933",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_product-tile_hooks_use-on-product-a26c3a534bc5ac75.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_horizontal_product_price_e63fa67c25b9199ajs",
+      "tool_id": "0aa9178658adeebf",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_horizontal_product_price_e63fa67c25b9199ajs",
+      "description": "List ui product tile horizontal product price e63fa67c25b9199a.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "8f75d4a9da046edc",
+      "signature_id": "0aa9178658adeebf",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_product-tile_horizontal_product-price-e63fa67c25b9199a.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_locale_messages_ae91c75c9f579c23js",
+      "tool_id": "b5bacd7cd816d834",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_locale_messages_ae91c75c9f579c23js",
+      "description": "List ui product tile locale messages ae91c75c9f579c23.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "394ec5b4c152379d",
+      "signature_id": "b5bacd7cd816d834",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_product-tile_locale_messages-ae91c75c9f579c23.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_32f4ca072f61dddbjs",
+      "tool_id": "ffa9cee5d5351bc4",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_32f4ca072f61dddbjs",
+      "description": "List ui product tile vertical 32f4ca072f61dddb.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "db40b5dcca22ee30",
+      "signature_id": "ffa9cee5d5351bc4",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_product-tile_vertical-32f4ca072f61dddb.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_group_product_badge_be470e344f316c60js",
+      "tool_id": "9379a1d3df3cf872",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_group_product_badge_be470e344f316c60js",
+      "description": "List ui product tile vertical group product badge be470e344f316c60.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "0837b241b64e42e6",
+      "signature_id": "9379a1d3df3cf872",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_product-tile_vertical_group-product-badge-be470e344f316c60.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_product_flag_c35c0655b327df98js",
+      "tool_id": "a20147a4a17cebc5",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_product_flag_c35c0655b327df98js",
+      "description": "List ui product tile vertical product flag c35c0655b327df98.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "0900022fd89f6489",
+      "signature_id": "a20147a4a17cebc5",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_product-tile_vertical_product-flag-c35c0655b327df98.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_product_image_responsive_vertical_f21b613c6ab81647js",
+      "tool_id": "19042c58a76a96e2",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_product_image_responsive_vertical_f21b613c6ab81647js",
+      "description": "List ui product tile vertical product image responsive vertical f21b613c6ab81647.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "b698f6bdf763c22b",
+      "signature_id": "19042c58a76a96e2",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_product-tile_vertical_product-image-responsive-vertical-f21b613c6ab81647.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_product_promo_discount_f80dc1ec3952ab98js",
+      "tool_id": "97b938f414f3707e",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_product_promo_discount_f80dc1ec3952ab98js",
+      "description": "List ui product tile vertical product promo discount f80dc1ec3952ab98.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "9a10f1ed8cbc2414",
+      "signature_id": "97b938f414f3707e",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_product-tile_vertical_product-promo-discount-f80dc1ec3952ab98.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_product_reward_9a36e7d02d660729js",
+      "tool_id": "ab8acf0694062af7",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_product_reward_9a36e7d02d660729js",
+      "description": "List ui product tile vertical product reward 9a36e7d02d660729.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "27d78f2d3a738116",
+      "signature_id": "ab8acf0694062af7",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_product-tile_vertical_product-reward-9a36e7d02d660729.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_quantity_stepper_quantity_stepper_cafd9507cfe06ec6js",
+      "tool_id": "d74d05bd13ca695a",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_quantity_stepper_quantity_stepper_cafd9507cfe06ec6js",
+      "description": "List ui quantity stepper quantity stepper cafd9507cfe06ec6.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "3869a3bac31c0f3d",
+      "signature_id": "d74d05bd13ca695a",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_quantity-stepper_quantity-stepper-cafd9507cfe06ec6.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_review_locale_messages_29228608878575e4js",
+      "tool_id": "3d7de8ffcfec2ba2",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_review_locale_messages_29228608878575e4js",
+      "description": "List ui review locale messages 29228608878575e4.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "fad5f112684b839b",
+      "signature_id": "3d7de8ffcfec2ba2",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_review_locale_messages-29228608878575e4.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_text_area_text_area_f058ac5cd2f18681js",
+      "tool_id": "58124b2b5b326ae1",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_text_area_text_area_f058ac5cd2f18681js",
+      "description": "List ui text area text area f058ac5cd2f18681.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "eb4ec158610252a1",
+      "signature_id": "58124b2b5b326ae1",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_text-area_text-area-f058ac5cd2f18681.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_va_notice0843d9fab37c71b1js",
+      "tool_id": "b8f5f83ac9a010e3",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_va_notice0843d9fab37c71b1js",
+      "description": "List ui va notice.0843d9fab37c71b1.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "8a5592b5d51e2bab",
+      "signature_id": "b8f5f83ac9a010e3",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/ui_va-notice.0843d9fab37c71b1.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_vision_center_lens_selection_helpers_utils_98e56c9dc49285d1js",
+      "tool_id": "0987e7c0c806b49d",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_vision_center_lens_selection_helpers_utils_98e56c9dc49285d1js",
+      "description": "List vision center lens selection helpers utils 98e56c9dc49285d1.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "87825408d87e03db",
+      "signature_id": "0987e7c0c806b49d",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/vision-center_lens-selection_helpers_utils-98e56c9dc49285d1.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_webpack_3ed230c12b0e5450js",
+      "tool_id": "e69aaed4c321a52d",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_webpack_3ed230c12b0e5450js",
+      "description": "List webpack 3ed230c12b0e5450.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "1f43bc1d9ca6a08a",
+      "signature_id": "e69aaed4c321a52d",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/webpack-3ed230c12b0e5450.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_wplus_ui_fed_opt_in61c59f87669adbddjs",
+      "tool_id": "dd7189e8621c4aab",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_wplus_ui_fed_opt_in61c59f87669adbddjs",
+      "description": "List wplus ui fed opt in.61c59f87669adbdd.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "91f572071b5030d6",
+      "signature_id": "dd7189e8621c4aab",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/wplus_ui_fed-opt-in.61c59f87669adbdd.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_chunks_wplus_ui_locale_messages_5543422a52ae9083js",
+      "tool_id": "14e4b22ea4b9bf00",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_chunks_wplus_ui_locale_messages_5543422a52ae9083js",
+      "description": "List wplus ui locale messages 5543422a52ae9083.js for a v2 (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "fc2fb0d207505aa3",
+      "signature_id": "14e4b22ea4b9bf00",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/wplus_ui_locale_messages-5543422a52ae9083.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_build_manifestjs",
+      "tool_id": "b6654afb3ed362bb",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_build_manifestjs",
+      "description": "List  buildManifest.js for a static (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "e2f4583170d6e323",
+      "signature_id": "b6654afb3ed362bb",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/{token}/_buildManifest.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "token",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_dfwrs_3d0839e4_71d8_next_static_ssg_manifestjs",
+      "tool_id": "c29de154d5604b34",
+      "name": "get_dfwrs_3d0839e4_71d8_next_static_ssg_manifestjs",
+      "description": "List  ssgManifest.js for a static (Call get_orchestra_home_graphql_location first to obtain uuid)",
+      "endpoint_id": "f71a4be5a2c33d90",
+      "signature_id": "c29de154d5604b34",
+      "method": "GET",
+      "path": "/dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/{token}/_ssgManifest.js",
+      "host": "i5.walmartimages.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "token",
+          "uuid"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "dfwrs",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_orchestra_home_graphql_location"
+      ]
+    },
+    {
+      "id": "get_orchestra_home_graphql_location",
+      "tool_id": "459d9d4280f718c3",
+      "name": "get_orchestra_home_graphql_location",
+      "description": "Use this to search or query data. Retrieve a Location by {token}. Returns: appId, blockScript, firstPartyEnabled, hostUrl, jsClientSrc",
+      "endpoint_id": "7759fb6b678c750f",
+      "signature_id": "459d9d4280f718c3",
+      "method": "GET",
+      "path": "/orchestra/home/graphql/Location/{token}",
+      "host": "www.walmart.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "variables": {
+            "type": "string",
+            "example": "%7B%7D"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "orchestra",
+        "read"
+      ],
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "appId": {
+            "type": "string"
+          },
+          "blockScript": {
+            "type": "string"
+          },
+          "firstPartyEnabled": {
+            "type": "boolean"
+          },
+          "hostUrl": {
+            "type": "string"
+          },
+          "jsClientSrc": {
+            "type": "string"
+          },
+          "redirectUrl": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string"
+          },
+          "vid": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "appId",
+          "blockScript",
+          "firstPartyEnabled",
+          "hostUrl",
+          "jsClientSrc",
+          "redirectUrl",
+          "uuid",
+          "vid"
+        ]
+      },
+      "scopes": [
+        "first_party_only"
+      ],
+      "enables": [
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_pos_fee_utils_27dfda4fd0c3bbaajs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_is_tracking_enabled_111ba2b6ae9b88b9js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_captchad49e8b6b3b511808js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_vision_center_lens_selection_helpers_utils_98e56c9dc49285d1js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_horizontal_product_price_e63fa67c25b9199ajs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_product_tile_container_locale_messages_19b05717d6ebfcd1js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_node_modules_pnpm_react_device_detect40223_react_dom401820_react401820_react40182_node_modules_react_device_detect_dist_lib_6e0deb8e1f3e66d2js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_design_components_wcp_popover_wcp_popover_027d50a7d9a983eajs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_amends_data_access_hooks_use_amendable_order_query_9fe97f663bfb3bc7js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_provider_ads_context_ac3e02d69ee12598js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_skyline_801cf40bcb2c23bdjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_wplus_ui_locale_messages_5543422a52ae9083js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_product_image_responsive_vertical_f21b613c6ab81647js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_data_access_hooks_use_get_ad_query_d957efa514ec84cfjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_data_access_queries_utils625278aecaa12cd9js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_collapsed_item_list_collapsed_item_list_1a4734145cda38d9js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_digital_finance_one_credit_card_components52101e6021a79eedjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_node_modules_pnpm_walmartuse_safeframe133_react182_node_modules_walmart_use_safeframe_lib_index_a92b5817b9091156js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_store_chooser_hooks_use_get_default_access_types_f2949f698f8887d3js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_hook_use_reservation_snackbar65ff01b54be28ea4js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_review_locale_messages_29228608878575e4js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_error_text_with_tooltip_b8c78046727b3162js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_components_ads_error_boundary_d14e2b39f7ed1386js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_language_preference_dialog613f7f74dee49ce4js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_hooks_use_on_product_a26c3a534bc5ac75js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_page_view_checkout_beacon_page_view_beacon_6f2f9dcea0a221f2js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_data_access_utils_unauthorized_cart_errorffe8e41b70b21060js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_framework_f63ef51b63b99aa1js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_add_on_services_util_ac836c14be8ece2cjs",
+        "search_dfwrs_3d0839e4_71d8_next_static_chunks_search_data_access_transforms_common_query_to_props_60aa33afa4e1e564js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_atc_error_modal_hooks_use_cart_limit_operational_error_ae1eb13a667b5c18js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_carousel_product_carousel_4ac4a8e13bddedd9js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_prism_tranformation_utils_collection_carousel_transformation_f1b5a32690773904js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_shortcut_bookslot_shortcut_view_70fe270c59a60e22js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_components_remount_wrapper_3df0ea601cde4a12js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_iso_loc_redirectd8dc68afd0c84ee0js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_text_area_text_area_f058ac5cd2f18681js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_drone_bottomsheet_drone_confirm_bottomsheetc901a5abd99bc0abjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_components_display_ad_wrapper_af9824b0d5275311js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_intersection_observable_172253fdd689999ajs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_fulfillment_details_utils_93342d89ec70b14cjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_marketplace_special_instructions_item_special_instructions_597466845314a96djs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_item_queue_banner_queue_banner_c1ce0b71e141fa7cjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_platform0fa7b4ac85cd1f63js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_should_not_render_cfe10e6f7bfb9fc7js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_home_redesign_index_page_redesign_index_page_4e61ffc60b887be9js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_marketplace_product_seller_info_product_seller_info_9bbd54f0f92db15fjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_design_components_wcp_popover_wcp_popover_c2b540e2e23a03d6js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_ui_btf_716afd008cc9765fjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_data_access_bookslot_tenant_context_662e5083c5e35fe2js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_pharmacy_shared_rx_nudge_ui6edffe95d094603fjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_pages_app_80911da2d20bedacjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_sponsored_products_tracking_use_sponsored_product_atc_f5e3250e0d5af9c6js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_pages_index_bbe3241de0e470d7js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_marquee_marquee_safeframe_uiffb3a29a99dcc1b5js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_cart_bookslot_wplus_banner_27926cc109f06eadjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_ad_routing_intl_ad_routing_f1428a91edd51943js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_sponsored_products_tracking_ad_click_beacon_504ce46bfaf4d05ejs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_cart_special_message_alerts_0ff65001b3da948bjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_group_product_badge_be470e344f316c60js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_amends_data_access_hooks_use_is_amendable_f7a2ee0f7b7f30a8js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_pages_cart_7c9751e17eba7a03js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_main_b9015432f38038dcjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_product_promo_discount_f80dc1ec3952ab98js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_badge_product_badge_4199fb326dcb9b3fjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_drone_bottomsheet_drone_error_bottomsheet0c37770cab1d5f43js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_data_access_hooks_cca_fc985fce86ff5c85js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_get_is_adblocked_976cfe7579276997js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_product_flag_c35c0655b327df98js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_provider_ads_context_provider_3d99ad87a15ed89cjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_feedback_disclaimer_with_link_8966e1c3cd4f6c15js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_btf_ads_btf_cmp62f5113be131a0f4js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_product_reward_9a36e7d02d660729js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_payments_context_hooks_use_purchase_contract_ada47b193740498ajs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_home_data_access_utils_d5c7d776d68791cajs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_locale_messages_ae91c75c9f579c23js",
+        "get_dfwrs_3d0839e4_71d8_next_static_build_manifestjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_design_components_wcp_visually_hidden_wcp_visually_hiddenc4e80206e6c95a8ajs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_va_notice0843d9fab37c71b1js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_core_hooks_use_is_sp_tracking_enable_8d248c31f1ce373djs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_tempo_shared_modules_adaptive_card_adaptive_card_wrapperedfa61a70b97c9dbjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_navigational_modal_navigational_modal_1f74c7059a157284js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_repurchase_data_access_repurchase_cloud_variables_27685936cee6e091js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_tempo_shared_modules_adaptive_card_adaptive_card4c45960c8da7afa8js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_bookslot_shortcut_locale_messages_859ce9ffb8e591a6js",
+        "get_dfwrs_3d0839e4_71d8_next_static_ssg_manifestjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_add_to_cart_add_to_cart_3862de0090e0ddc5js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_item_condition_badge_item_condition_badge_e31ea86aca957cc1js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_ad_routing_hooks_use_ad_optionsb8bb0ea3122cc817js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_design_components_wcp_visually_hidden_wcp_visually_hiddene3c3a09fa2eba571js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_cxo_cart_shared_utils_helpers_2a9baddcfcd39d48js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_node_modules_pnpm_40walmart2buse_safeframe40133_react40182_node_modules_40walmart_use_safeframe_lib_index_a92b5817b9091156js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_intl_fees_dialog_intl_fees_dialog_427fffd12549a4e8js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_common_components_location_nudge84607c5a08c265c7js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_node_modules_pnpm_livingdesignreact1121_babelruntime7260_typesreact_dom1820_typesreact182_node_modules_livingdesign_react_dist_regular_esm_card_card_706ea3c8146a1cb9js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_safeframe_ui_safeframe_wrapper_c27303b0dfd03ae8js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_global_intent_center_component_shipping_location_panel94dabfe883fc7fbbjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_store_chooser_beacon_params_store_chooser_460ac2b6e1da32c6js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_video_video_player_a361abda55effc47js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_event_timer_queue_timer615d32d9d4b9a23bjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_quantity_stepper_quantity_stepper_cafd9507cfe06ec6js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_ui_buybox_52f20645940604adjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_wplus_ui_fed_opt_in61c59f87669adbddjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_ui_gallery97e4def855d581c1js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_digital_finance_one_credit_card_components_one_credit_card_application_modal_afe29700c9653ddfjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_marketplace_import_fees_import_fees_ef5476d45c165bc7js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_webpack_3ed230c12b0e5450js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_checkout_review_order_data_access_hooks_review_order_component_context_795621ea143bafb6js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_global_product_tile_global_product_tile_763b8509fb19232cjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_cart_product_tile_container_cart_product_tile_5ee5e4a74b8a5d12js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ads_generic_utils_use_dom_element_event_0876806db51bd01bjs",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_identity_next_one_tap_auth1106d6fcf680bdd6js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_intl_ads_video_video_player_562e1f29aea7e3d3js",
+        "get_dfwrs_3d0839e4_71d8_next_static_chunks_ui_product_tile_vertical_32f4ca072f61dddbjs"
+      ]
+    },
+    {
+      "id": "create_si_elh9ie_ob",
+      "tool_id": "dc66179224ad564e",
+      "name": "create_si_elh9ie_ob",
+      "description": "Create a new ob",
+      "endpoint_id": "a92325b73e4bad76",
+      "signature_id": "dc66179224ad564e",
+      "method": "POST",
+      "path": "/si/elh9ie/obs",
+      "host": "www.walmart.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "si",
+        "write"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    }
+  ],
+  "description": "Generated from capture cap_20260212_6873d157",
+  "capture_id": "cap_20260212_6873d157",
+  "scope": "first_party_only",
+  "default_confirmation": "on_risk"
+}

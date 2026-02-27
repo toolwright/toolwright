@@ -1,0 +1,623 @@
+version: 1.0.0
+schema_version: '1.0'
+generated_at: '1970-01-01T00:00:00+00:00'
+capture_id: null
+scope: null
+artifacts_digest: e7d33ef85e473b67064633f5586cd86f3c465576be76fd119d678bdb410fce66
+evidence_summary_sha256: null
+baseline_snapshot_dir: snapshot
+baseline_snapshot_digest: 2e9aa9e994da544ee65e22183d77105f427fc630655703b4efc383daf1ce83dd
+baseline_snapshot_id: appr_2e9aa9e994da
+tools:
+  06163b3f051e8e7f:
+    tool_id: 06163b3f051e8e7f
+    tool_version: 1
+    signature_id: 06163b3f051e8e7f
+    endpoint_id: 9434a34f63930df3
+    name: get_repo_pull
+    method: GET
+    path: /repos/{owner}/{repo}/pulls/{pull_number}
+    host: api.github.com
+    risk_tier: low
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-21T20:28:08.628774Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:B9pY6l6SYTcC-T_QG-QdV4r-kzrcVDylLzda3qizDsvWEoq7DS1teSg_aod1g6jw9v-6ob8qGed1BIaEimZgDA
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  0d7f8e9170f61dba:
+    tool_id: 0d7f8e9170f61dba
+    tool_version: 1
+    signature_id: 0d7f8e9170f61dba
+    endpoint_id: 6764626c0dbe716a
+    name: get_repo_issue_comments
+    method: GET
+    path: /repos/{owner}/{repo}/issues/{issue_number}/comments
+    host: api.github.com
+    risk_tier: low
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-21T20:28:08.628431Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:foAeAKAoHPRDSZCEyjx39AAoOEY2sR5QizjZjsqR3WXwUBWDvQ4g1iEo7m3q_GTXB6XLo3zaZWS-fTPCu9cXCA
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  1445c5fd28b9f8d0:
+    tool_id: 1445c5fd28b9f8d0
+    tool_version: 1
+    signature_id: 1445c5fd28b9f8d0
+    endpoint_id: e8fb6312157f64e0
+    name: create_repo_label
+    method: POST
+    path: /repos/{owner}/{repo}/labels
+    host: api.github.com
+    risk_tier: medium
+    toolsets:
+    - operator
+    - write_ops
+    approved_toolsets:
+    - operator
+    - write_ops
+    status: approved
+    approved_at: '2026-02-21T20:28:08.627418Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:t82vm6IUxZnx0ofu52PxfMAyCG8LRuA_p0z2ig4kugeH5QUsXVvqij-8fs7VLQ8unIYZ0a_kAjNUUcg-7gaJBA
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  145f96762079780a:
+    tool_id: 145f96762079780a
+    tool_version: 1
+    signature_id: 145f96762079780a
+    endpoint_id: 2d9acaee0a83c30c
+    name: get_repo_commits
+    method: GET
+    path: /repos/{owner}/{repo}/commits
+    host: api.github.com
+    risk_tier: low
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-21T20:28:08.628071Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:RoHpu5q9Gc7XzHIhXaAbR1xGLyK9Z-fZMya_GjKUcKqn0aRWcOYuavD0bsJqJJp-cEusRdci_GRcvyUjBIn6DQ
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  216b3ec640035a24:
+    tool_id: 216b3ec640035a24
+    tool_version: 1
+    signature_id: 216b3ec640035a24
+    endpoint_id: c870263c059f74fb
+    name: get_repo_pulls
+    method: GET
+    path: /repos/{owner}/{repo}/pulls
+    host: api.github.com
+    risk_tier: low
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-21T20:28:08.628888Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:QCgHIFdiDO9kZ2815wp5lY5_UPJYzEsIUN3N17C7PFbDkKhnsh3tGAJ7qBO2KVQRVacRq5kcQFUBrxa8WJKTCg
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  44bc01a16a56eeac:
+    tool_id: 44bc01a16a56eeac
+    tool_version: 1
+    signature_id: 44bc01a16a56eeac
+    endpoint_id: bab7c3f8c98376d0
+    name: get_repo_content
+    method: GET
+    path: /repos/{owner}/{repo}/contents/{path}
+    host: api.github.com
+    risk_tier: safe
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-21T20:28:08.628200Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:XGTO5K-FFS7TTvhVxCeCOKBR3QIu-0BcJq17NAi4Ftiu-04x3ubY7B8FJEg-m0YMxnYY7qlYbCG97GiqOZiBDg
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  4f3d65649ed34213:
+    tool_id: 4f3d65649ed34213
+    tool_version: 1
+    signature_id: 4f3d65649ed34213
+    endpoint_id: b8ca50bfa1cbe49b
+    name: get_user
+    method: GET
+    path: /user
+    host: api.github.com
+    risk_tier: safe
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-21T20:28:08.629001Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:oIsxJ4Z4OVxGFSNfp4fyXdJsJsdNJEgaauJIyeH-XvrVahiwivbrySH5aelbmqy7gg2Jc-rtKf3vIZvzAR0yDQ
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  5d0f793636971e94:
+    tool_id: 5d0f793636971e94
+    tool_version: 1
+    signature_id: 5d0f793636971e94
+    endpoint_id: a8bc39c97edcae06
+    name: delete_repo
+    method: DELETE
+    path: /repos/{owner}/{repo}
+    host: api.github.com
+    risk_tier: high
+    toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    approved_toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    status: approved
+    approved_at: '2026-02-21T20:28:08.627715Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:xnTMKK7652iUen5d7PLdHZfgF4daic99BIjN29WqeiQa12dNkizyeOsZvjoYtKzQdmqzZ72Ea3RfLhj_JvnBCw
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  6d834de9d20e2178:
+    tool_id: 6d834de9d20e2178
+    tool_version: 1
+    signature_id: 6d834de9d20e2178
+    endpoint_id: 9165621b8b90f5cb
+    name: get_repo_issue
+    method: GET
+    path: /repos/{owner}/{repo}/issues/{issue_number}
+    host: api.github.com
+    risk_tier: low
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-21T20:28:08.628316Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:7HQ92_5hxy9U7nc0wISwHRVzhPQiLOYp_rdBM7fOr6avL8ot6SJo3dS1-YsInAPGbu63GFwTJhKyhhEblI3MCQ
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  775fd047adac1439:
+    tool_id: 775fd047adac1439
+    tool_version: 1
+    signature_id: 775fd047adac1439
+    endpoint_id: 67a0e88f382c634f
+    name: update_user
+    method: PATCH
+    path: /user
+    host: api.github.com
+    risk_tier: high
+    toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    approved_toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    status: approved
+    approved_at: '2026-02-21T20:28:08.630253Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:117P8qYJvxc-UcgJQF5SbXNlIvOTF-Q508KRXxmFZ8qge4roSOOqkLS1ueaVpzD_wObKXUZnCWrWpzp1zU6aBg
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  7ad1449bfd893e6b:
+    tool_id: 7ad1449bfd893e6b
+    tool_version: 1
+    signature_id: 7ad1449bfd893e6b
+    endpoint_id: aab9e4c3253f2c9c
+    name: update_repo_content
+    method: PUT
+    path: /repos/{owner}/{repo}/contents/{path}
+    host: api.github.com
+    risk_tier: high
+    toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    approved_toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    status: approved
+    approved_at: '2026-02-21T20:28:08.629301Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:_cJulR_Aa84xdTV9dA8tUMmr_VyDTM3ZkhByN7Lg19C72NQ2yf-MU9qdI0Tv1HH4onwq3imU0goxdooOTBS8CA
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  81c9fdf7cbb0b494:
+    tool_id: 81c9fdf7cbb0b494
+    tool_version: 1
+    signature_id: 81c9fdf7cbb0b494
+    endpoint_id: 103c0b2082c07c83
+    name: create_repo_issue_comment
+    method: POST
+    path: /repos/{owner}/{repo}/issues/{issue_number}/comments
+    host: api.github.com
+    risk_tier: high
+    toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    approved_toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    status: approved
+    approved_at: '2026-02-21T20:28:08.627213Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:X7TJfrJFedxPNsCoqxZ5dALtKBvSSpmdDKzIe7k-nUMSQfmEURLuUylzdi1H_i27VjRo-NN1a2UcJYETPbQ2Cw
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  8493323c486304d7:
+    tool_id: 8493323c486304d7
+    tool_version: 1
+    signature_id: 8493323c486304d7
+    endpoint_id: 3173896fb62ee415
+    name: update_repo_pull
+    method: PATCH
+    path: /repos/{owner}/{repo}/pulls/{pull_number}
+    host: api.github.com
+    risk_tier: high
+    toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    approved_toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    status: approved
+    approved_at: '2026-02-21T20:28:08.630070Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:E_eG6xJuEWq4-eGG2qhR60NQDWqVWvzAGSFyODDuTXsqk5QDrvYNVPOFdOtdJ8GUDO-NQJnE2fqrwP_EbREHDQ
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  8d7d8bf4d2fcf2e1:
+    tool_id: 8d7d8bf4d2fcf2e1
+    tool_version: 1
+    signature_id: 8d7d8bf4d2fcf2e1
+    endpoint_id: 10a2c41b30fac618
+    name: create_repo_issue
+    method: POST
+    path: /repos/{owner}/{repo}/issues
+    host: api.github.com
+    risk_tier: high
+    toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    approved_toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    status: approved
+    approved_at: '2026-02-21T20:28:08.626150Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:AgExg_2OCS5baUfu5SK3cwG-uA3ePJdeLMN9d7Ml9Zq3kgmerghQI6SV45n6wCEq0-prRbmKarBkSZm9KveFBg
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  a2a29f77de98a3de:
+    tool_id: a2a29f77de98a3de
+    tool_version: 1
+    signature_id: a2a29f77de98a3de
+    endpoint_id: 803d80a3b55a384c
+    name: get_repo
+    method: GET
+    path: /repos/{owner}/{repo}
+    host: api.github.com
+    risk_tier: low
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-21T20:28:08.627953Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:HVz788-Q4JXfCU52QN0-Mvf2PiuFt1-CAE0Egfc1-F_MX-UHkc6w4VFvm8tmoFlu-aOOEbwB3diH_6TWHAoUAg
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  b6594c247842b62b:
+    tool_id: b6594c247842b62b
+    tool_version: 1
+    signature_id: b6594c247842b62b
+    endpoint_id: ac95a59ab339a6d3
+    name: create_repo_pull
+    method: POST
+    path: /repos/{owner}/{repo}/pulls
+    host: api.github.com
+    risk_tier: high
+    toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    approved_toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    status: approved
+    approved_at: '2026-02-21T20:28:08.627586Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:3_BrRgRCP8cMxMWhuUdKelMzxPIdrqJiq8TE07n0L-GATCvHaQafWDrQPO2poUSXQsyTMRlhxKSa-gJTQDPTAA
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  b9df8f397da7daf4:
+    tool_id: b9df8f397da7daf4
+    tool_version: 1
+    signature_id: b9df8f397da7daf4
+    endpoint_id: f7005cc3430c7e81
+    name: get_repo_labels
+    method: GET
+    path: /repos/{owner}/{repo}/labels
+    host: api.github.com
+    risk_tier: safe
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-21T20:28:08.628657Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:tk1BMX8HsWD6m33liAkwTSCxgRTevoWe3UqUZCS1vO-4JNa92iXsRT-7oeifGZ-hGPN4LN9A7_Bp65AXjclgDg
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  d099a5b970f8624b:
+    tool_id: d099a5b970f8624b
+    tool_version: 1
+    signature_id: d099a5b970f8624b
+    endpoint_id: 6d6e7ab4d7d6656c
+    name: get_repo_issues
+    method: GET
+    path: /repos/{owner}/{repo}/issues
+    host: api.github.com
+    risk_tier: low
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-21T20:28:08.628544Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:CEsSmnYNRypKgklI7w4JUirRi1mkCkmatkP6rK35Ow4R69kFxWM4Wbqx6-08rKUMiKiPOL7YCEz5HMEYNeu1BA
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  defe95a5f474aaf5:
+    tool_id: defe95a5f474aaf5
+    tool_version: 1
+    signature_id: defe95a5f474aaf5
+    endpoint_id: e148f0ffddd4c13b
+    name: update_repo_issue
+    method: PATCH
+    path: /repos/{owner}/{repo}/issues/{issue_number}
+    host: api.github.com
+    risk_tier: high
+    toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    approved_toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    status: approved
+    approved_at: '2026-02-21T20:28:08.629656Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:Tb1qxFLO4RRuyjH2hmbNxUZFf1B_eg8zAbj3E2qeLisvI2lwq_oRpLeZzWJuemqjh94Fn3AL9MjGZgXdyZNQDw
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  e3128eab5791e39e:
+    tool_id: e3128eab5791e39e
+    tool_version: 1
+    signature_id: e3128eab5791e39e
+    endpoint_id: 984653e549b4f654
+    name: update_repo
+    method: PATCH
+    path: /repos/{owner}/{repo}
+    host: api.github.com
+    risk_tier: high
+    toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    approved_toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    status: approved
+    approved_at: '2026-02-21T20:28:08.629114Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:PkTC-fwAx-BoAPET0HKEG7VxY_Er9IxZAHEzhN492KC0SWn5j3JrXhyGhzml2PV8SKwTskohDgDivpfAupqvBA
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  e327aea88c387005:
+    tool_id: e327aea88c387005
+    tool_version: 1
+    signature_id: e327aea88c387005
+    endpoint_id: 05f8e45586f9282e
+    name: delete_repo_content
+    method: DELETE
+    path: /repos/{owner}/{repo}/contents/{path}
+    host: api.github.com
+    risk_tier: high
+    toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    approved_toolsets:
+    - high_risk
+    - operator
+    - write_ops
+    status: approved
+    approved_at: '2026-02-21T20:28:08.627835Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:683f3e2a3a70957c:HwUEzV6LfPxesgkwHXuYKe4q_Br9Lz-fuS0akAE6gmrGlynECKIokDu8VBBiKTak5D_fFdo-0ObHwO3QaiggAw
+    approval_alg: ed25519
+    approval_key_id: 683f3e2a3a70957c
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+total_tools: 21
+approved_count: 21
+pending_count: 0
+rejected_count: 0

@@ -1,0 +1,78 @@
+version: 1.0.0
+schema_version: '1.0'
+name: The Jira Cloud platform REST API Policy
+description: Auto-generated policy for 12 endpoints
+default_action: deny
+global_rate_limit: 100
+audit_all: true
+redact_headers:
+- authorization
+- cookie
+- set-cookie
+- x-api-key
+- x-auth-token
+- proxy-authorization
+redact_patterns:
+- bearer\s+[a-zA-Z0-9\-_.]+
+- api[_-]?key[\"']?\s*[=:]\s*[\"']?[a-zA-Z0-9]+
+redact_pattern_justifications:
+  bearer\s+[a-zA-Z0-9\-_.]+: Redact bearer tokens from logs and evidence.
+  api[_-]?key[\"']?\s*[=:]\s*[\"']?[a-zA-Z0-9]+: Redact API keys from query strings,
+    payloads, and headers.
+state_changing_overrides: []
+rules:
+- id: allow_first_party_get
+  name: Allow first-party read operations
+  type: allow
+  priority: 100
+  match:
+    hosts:
+    - your-domain.atlassian.net
+    methods:
+    - GET
+    - HEAD
+    - OPTIONS
+- id: confirm_state_changes
+  name: Require confirmation for mutations
+  type: confirm
+  priority: 90
+  match:
+    methods:
+    - POST
+    - PUT
+    - PATCH
+    - DELETE
+  settings:
+    message: This action will modify data. Proceed?
+- id: budget_writes
+  name: Rate limit write operations
+  type: budget
+  priority: 80
+  match:
+    methods:
+    - POST
+    - PUT
+    - PATCH
+  settings:
+    per_minute: 10
+    per_hour: 100
+- id: budget_deletes
+  name: Strict rate limit for deletes
+  type: budget
+  priority: 70
+  match:
+    methods:
+    - DELETE
+  settings:
+    per_minute: 5
+    per_hour: 20
+- id: protect_pii
+  name: Extra protection for PII
+  type: confirm
+  priority: 60
+  match:
+    path_pattern: .*/(user|profile|account|customer).*
+  settings:
+    message: This endpoint handles personal data. Confirm access?
+    justification: PII-linked endpoints require explicit human confirmation.
+scope: first_party_only

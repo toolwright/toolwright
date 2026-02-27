@@ -1,0 +1,1563 @@
+{
+  "version": "1.0.0",
+  "schema_version": "1.0",
+  "name": "playwright_www_ebay_com_20260212_022218",
+  "generated_at": "2026-02-12T02:22:18.089212+00:00",
+  "allowed_hosts": [
+    "backstory.ebay.com",
+    "edgetrksvc.ebay.com",
+    "mkttag.ebay.com",
+    "monitor.ebay.com",
+    "pulsar.ebay.com",
+    "sherlock-events-sampler.ebay.com",
+    "www.ebay.com"
+  ],
+  "actions": [
+    {
+      "id": "create_customer",
+      "tool_id": "90ab6c9254ff8de0",
+      "name": "create_customer",
+      "description": "Use this to access or manage user information. Create a new v1",
+      "endpoint_id": "5fe36664696f5f57",
+      "signature_id": "90ab6c9254ff8de0",
+      "method": "POST",
+      "path": "/customer/v1/{id}",
+      "host": "backstory.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ct": {
+            "type": "integer",
+            "example": "1770862927242"
+          },
+          "activity": {
+            "type": "object",
+            "properties": {
+              "category": {
+                "type": "string"
+              },
+              "details": {
+                "type": "object",
+                "properties": {
+                  "ciid": {
+                    "type": "string"
+                  },
+                  "ePageId": {
+                    "type": "string"
+                  },
+                  "h": {
+                    "type": "string"
+                  },
+                  "history": {
+                    "type": "string"
+                  },
+                  "isTabSwitch": {
+                    "type": "boolean"
+                  },
+                  "loadTime": {
+                    "type": "integer"
+                  },
+                  "nPageId": {
+                    "type": "string"
+                  },
+                  "openTime": {
+                    "type": "string"
+                  },
+                  "pageId": {
+                    "type": "string"
+                  },
+                  "perf": {
+                    "type": "string"
+                  },
+                  "prevPageId": {
+                    "type": "string"
+                  },
+                  "pvKey": {
+                    "type": "string"
+                  },
+                  "rPageId": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "static": {
+                    "type": "boolean"
+                  },
+                  "viewcnt": {
+                    "type": "integer"
+                  },
+                  "w": {
+                    "type": "string"
+                  },
+                  "x": {
+                    "type": "string"
+                  },
+                  "y": {
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "isTabSwitch",
+                  "pvKey"
+                ]
+              },
+              "duration": {
+                "type": "integer"
+              },
+              "ratio": {
+                "type": "string"
+              },
+              "referer": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "integer"
+              },
+              "type": {
+                "type": "string"
+              },
+              "viewportHeight": {
+                "type": "integer"
+              },
+              "viewportWidth": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "category",
+              "details",
+              "timestamp",
+              "type",
+              "viewportHeight",
+              "viewportWidth"
+            ]
+          },
+          "agentVersion": {
+            "type": "string"
+          },
+          "context": {
+            "type": "object",
+            "properties": {
+              "others": {
+                "type": "object",
+                "properties": {
+                  "etbn": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "screenHeight": {
+                "type": "integer"
+              },
+              "screenWidth": {
+                "type": "integer"
+              },
+              "userAgent": {
+                "type": "string"
+              },
+              "userLang": {
+                "type": "string"
+              },
+              "utcOffset": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "others",
+              "screenHeight",
+              "screenWidth",
+              "userAgent",
+              "userLang",
+              "utcOffset"
+            ]
+          },
+          "eventFamily": {
+            "type": "string"
+          },
+          "guid": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "siteId": {
+            "type": "integer"
+          },
+          "trackable": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "entityId": {
+                "type": "string"
+              },
+              "entityType": {
+                "type": "string"
+              },
+              "instanceId": {
+                "type": "string"
+              },
+              "parentTrackableId": {
+                "type": "string"
+              },
+              "screenId": {
+                "type": "string"
+              },
+              "trackableId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "description",
+              "entityType",
+              "instanceId",
+              "trackableId"
+            ]
+          }
+        },
+        "required": [
+          "activity",
+          "agentVersion",
+          "eventFamily",
+          "guid",
+          "id",
+          "siteId",
+          "trackable"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "customer",
+        "write"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "create_base_service",
+      "tool_id": "99c588aade114f34",
+      "name": "create_base_service",
+      "description": "Create a new v1",
+      "endpoint_id": "bbc742605d7355f9",
+      "signature_id": "99c588aade114f34",
+      "method": "POST",
+      "path": "/base/service/v1/{id}",
+      "host": "edgetrksvc.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "eventFamily": {
+                  "type": "string"
+                },
+                "eventType": {
+                  "type": "string"
+                },
+                "inputCorrelator": {
+                  "type": "string"
+                },
+                "pageId": {
+                  "type": "string"
+                },
+                "propertySets": {
+                  "type": "object",
+                  "properties": {
+                    "serviceProperties": {
+                      "type": "object",
+                      "properties": {
+                        "ciid": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "ciid"
+                      ]
+                    },
+                    "trackables": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "boundingBox": {
+                            "type": "object",
+                            "properties": {
+                              "height": {
+                                "type": "integer"
+                              },
+                              "topLeftX": {
+                                "type": "integer"
+                              },
+                              "topLeftY": {
+                                "type": "integer"
+                              },
+                              "width": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "height",
+                              "topLeftX",
+                              "topLeftY",
+                              "width"
+                            ]
+                          },
+                          "clientProvidedViewElement": {
+                            "type": "object",
+                            "properties": {
+                              "moduleId": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "moduleId"
+                            ]
+                          },
+                          "dwellTime": {
+                            "type": "integer"
+                          },
+                          "trackable": {
+                            "type": "object",
+                            "properties": {
+                              "tid": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "tid"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "boundingBox",
+                          "dwellTime",
+                          "trackable"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "serviceProperties",
+                    "trackables"
+                  ]
+                },
+                "timestamp": {
+                  "type": "string"
+                },
+                "timezoneName": {
+                  "type": "string"
+                },
+                "utcOffset": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "eventFamily",
+                "eventType",
+                "inputCorrelator",
+                "pageId",
+                "propertySets",
+                "timestamp",
+                "timezoneName",
+                "utcOffset"
+              ]
+            }
+          },
+          "globalContext": {
+            "type": "object",
+            "properties": {
+              "deviceContext": {
+                "type": "object",
+                "properties": {
+                  "browserContext": {
+                    "type": "object",
+                    "properties": {
+                      "domain": {
+                        "type": "string"
+                      },
+                      "userAgent": {
+                        "type": "string"
+                      },
+                      "windowHeight": {
+                        "type": "integer"
+                      },
+                      "windowWidth": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "domain",
+                      "userAgent",
+                      "windowHeight",
+                      "windowWidth"
+                    ]
+                  }
+                },
+                "required": [
+                  "browserContext"
+                ]
+              },
+              "trackingGuid": {
+                "type": "null"
+              },
+              "userPrefLang": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "deviceContext",
+              "trackingGuid",
+              "userPrefLang"
+            ]
+          }
+        },
+        "required": [
+          "events",
+          "globalContext",
+          "id"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "base",
+        "write"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_tag_madrona_loadscriptsjs",
+      "tool_id": "ced57ea035bc6193",
+      "name": "get_tag_madrona_loadscriptsjs",
+      "description": "List all madrona loadscripts.js",
+      "endpoint_id": "faf0ba1cb38e34e3",
+      "signature_id": "ced57ea035bc6193",
+      "method": "GET",
+      "path": "/{id}/v1/tag/madrona_loadscripts.js",
+      "host": "mkttag.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "tag",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_tag_utag10js",
+      "tool_id": "d9f5d235c806c34d",
+      "name": "get_tag_utag10js",
+      "description": "List all utag.10.js",
+      "endpoint_id": "9ea74ba10d560f44",
+      "signature_id": "d9f5d235c806c34d",
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.10.js",
+      "host": "mkttag.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "utv": {
+            "type": "string",
+            "example": "ut4.51.202507151247"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "tag",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_tag_utag11js",
+      "tool_id": "62009008b256a46e",
+      "name": "get_tag_utag11js",
+      "description": "List all utag.11.js",
+      "endpoint_id": "b50be61c89c2911e",
+      "signature_id": "62009008b256a46e",
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.11.js",
+      "host": "mkttag.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "utv": {
+            "type": "string",
+            "example": "ut4.51.202510161852"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "tag",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_tag_utag3js",
+      "tool_id": "60f217b75c9a88ce",
+      "name": "get_tag_utag3js",
+      "description": "List all utag.3.js",
+      "endpoint_id": "0b85f7f98ed29009",
+      "signature_id": "60f217b75c9a88ce",
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.3.js",
+      "host": "mkttag.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "utv": {
+            "type": "string",
+            "example": "ut4.51.202508181654"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "tag",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_tag_utag37js",
+      "tool_id": "48b1a5c775871ddc",
+      "name": "get_tag_utag37js",
+      "description": "List all utag.37.js",
+      "endpoint_id": "00e74063f76b25e8",
+      "signature_id": "48b1a5c775871ddc",
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.37.js",
+      "host": "mkttag.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "utv": {
+            "type": "string",
+            "example": "ut4.51.202602021657"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "tag",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_tag_utag48js",
+      "tool_id": "e52e83db40e288b4",
+      "name": "get_tag_utag48js",
+      "description": "List all utag.48.js",
+      "endpoint_id": "0a8d21ff46e846b0",
+      "signature_id": "e52e83db40e288b4",
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.48.js",
+      "host": "mkttag.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "utv": {
+            "type": "string",
+            "example": "ut4.51.202602091115"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "tag",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_tag_utag50js",
+      "tool_id": "3c3faf726afd940a",
+      "name": "get_tag_utag50js",
+      "description": "List all utag.50.js",
+      "endpoint_id": "b0e270c6538274a5",
+      "signature_id": "3c3faf726afd940a",
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.50.js",
+      "host": "mkttag.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "utv": {
+            "type": "string",
+            "example": "ut4.51.202509300759"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "tag",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_tag_utag7js",
+      "tool_id": "0611eb472a2fc46c",
+      "name": "get_tag_utag7js",
+      "description": "List all utag.7.js",
+      "endpoint_id": "fbfca9a51e1fb209",
+      "signature_id": "0611eb472a2fc46c",
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.7.js",
+      "host": "mkttag.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "utv": {
+            "type": "string",
+            "example": "ut4.51.202505221616"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "tag",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_tag_utag9js",
+      "tool_id": "71203efd94b98488",
+      "name": "get_tag_utag9js",
+      "description": "List all utag.9.js",
+      "endpoint_id": "d40c25f4b2e2a8d9",
+      "signature_id": "71203efd94b98488",
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.9.js",
+      "host": "mkttag.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "utv": {
+            "type": "string",
+            "example": "ut4.51.202601261643"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "tag",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_tag_utagjs",
+      "tool_id": "21be8c60d1b7b4c2",
+      "name": "get_tag_utagjs",
+      "description": "List all utag.js",
+      "endpoint_id": "75146cdddfed06fe",
+      "signature_id": "21be8c60d1b7b4c2",
+      "method": "GET",
+      "path": "/{id}/v1/tag/utag.js",
+      "host": "mkttag.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "tag",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "create_webresource",
+      "tool_id": "d9ec1c931a6b30dd",
+      "name": "create_webresource",
+      "description": "Create a new webresource (Call get_sch_ajax_autocomplete first to obtain url)",
+      "endpoint_id": "9bccc7a0a64a5b06",
+      "signature_id": "d9ec1c931a6b30dd",
+      "method": "POST",
+      "path": "/webresources",
+      "host": "monitor.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "url"
+              ]
+            }
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "ts": {
+                "type": "integer"
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "ts",
+              "url"
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "webresources",
+        "write"
+      ],
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_sch_ajax_autocomplete"
+      ]
+    },
+    {
+      "id": "create_plsr_mpe_dflt",
+      "tool_id": "4bf66fd4ee606e5b",
+      "name": "create_plsr_mpe_dflt",
+      "description": "Create a new DFLT",
+      "endpoint_id": "9e5e713ef297e2a1",
+      "signature_id": "4bf66fd4ee606e5b",
+      "method": "POST",
+      "path": "/plsr/mpe/{id}/DFLT/{id}",
+      "host": "pulsar.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "app": {
+            "type": "string"
+          },
+          "bh": {
+            "type": "integer"
+          },
+          "bw": {
+            "type": "integer"
+          },
+          "callingEF": {
+            "type": "string"
+          },
+          "ciid": {
+            "type": "string"
+          },
+          "clientTS": {
+            "type": "integer"
+          },
+          "difTS": {
+            "type": "integer"
+          },
+          "ea": {
+            "type": "string"
+          },
+          "ef": {
+            "type": "string"
+          },
+          "eventOrder": {
+            "type": "integer"
+          },
+          "hostingPageId": {
+            "type": "string"
+          },
+          "imp": {
+            "type": "integer"
+          },
+          "moduledtl": {
+            "type": "string"
+          },
+          "pageci": {
+            "type": "string"
+          },
+          "parentrq": {
+            "type": "string"
+          },
+          "pge": {
+            "type": "integer"
+          },
+          "plsUBT": {
+            "type": "integer"
+          },
+          "screenHeight": {
+            "type": "integer"
+          },
+          "screenWidth": {
+            "type": "integer"
+          },
+          "scrollbtm": {
+            "type": "integer"
+          },
+          "scrolltop": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "app",
+          "callingEF",
+          "ciid",
+          "difTS",
+          "ea",
+          "ef",
+          "eventOrder",
+          "id",
+          "pge",
+          "plsUBT"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "plsr",
+        "write"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "create_plsr_mpe_sand",
+      "tool_id": "0b5421537557c9b0",
+      "name": "create_plsr_mpe_sand",
+      "description": "Create a new SAND",
+      "endpoint_id": "1a228d983cabdb73",
+      "signature_id": "0b5421537557c9b0",
+      "method": "POST",
+      "path": "/plsr/mpe/{id}/SAND/{id}",
+      "host": "pulsar.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "pld": {
+            "type": "string",
+            "example": "%5B%7B%22ef%22%3A%22SAND%22%2C%22ea%22%3A%223PADS%22%2C%22pge%22%3A2367355%2C%22plsUBT%22%3A1%2C%22app%22%3A%22Sandwich%22%2C%22callingEF%22%3A%22SAND%22%2C%22difTS%22%3A1%2C%22eventOrder%22%3A0%2C%22scandal_imp%22%3A%22plid%3A100928%2Cscorid%3A01KH7TFFF77XQPCYWGN2SY3WJ4%2Cmeid%3A4fa7bdda19c0a35d5d272191ffffe0a6%252F100928%2Cw%3A300%2Ch%3A250%2Cempty%3Atrue%2Cprvdr%3Ahybrid%2Cap%3Agoober%2Cafs%3A1770862920965%2Cafe%3A1770862922102%2Cfbr%3Atrue%7Cplid%3A100927%2Cscorid%3A01KH7TFFF77XQPCYWGN2SY3WJ4%2Cmeid%3A4fa7bdda19c0a35d5d272191ffffe0a6%252F100927%2Cw%3A300%2Ch%3A250%2Cempty%3Atrue%2Cprvdr%3Ahybrid%2Cap%3Agoober%2Cafs%3A1770862920965%2Cafe%3A1770862921875%2Cfbr%3Atrue%7Cplid%3A100926%2Cscorid%3A01KH7TFFF77XQPCYWGN2SY3WJ4%2Cmeid%3A4fa7bdda19c0a35d5d272191ffffe0a6%252F100926%2Cw%3A300%2Ch%3A250%2Cempty%3Atrue%2Cprvdr%3Ahybrid%2Cap%3Agoober%2Cafs%3A1770862920964%2Cafe%3A1770862921437%2Cfbr%3Atrue%7Cplid%3A100659%2Cscorid%3A01KH7TFFF77XQPCYWGN2SY3WJ4%2Cmeid%3A%2Cprvdr%3Acsa%2Cafs%3A1770862920731%2Cafe%3A1770862920813%2Cars%3A1770862920732%7Cplid%3A100587%2Cscorid%3A01KH7TFFF77XQPCYWGN2SY3WJ4%2Cmeid%3A4fa7bdda19c0a35d5d272191ffffe0a6%252F100587%2Cw%3A160%2Ch%3A600%2Cempty%3Atrue%2Cprvdr%3Ahybrid%2Cap%3Agoober%2Cafs%3A1770862921035%2Cafe%3A1770862922318%2Cfbr%3Atrue%7Cplid%3A100586%2Cscorid%3A01KH7TFFF77XQPCYWGN2SY3WJ4%2Cmeid%3A4fa7bdda19c0a35d5d272191ffffe0a6%252F100586%2Cw%3A160%2Ch%3A600%2Cempty%3Atrue%2Cprvdr%3Ahybrid%2Cap%3Agoober%2Cafs%3A1770862920964%2Cafe%3A1770862921630%2Cfbr%3Atrue%22%2C%22ciid%22%3A%22p74CPEM*%22%7D%2C%20%7B%22ef%22%3A%22SAND%22%2C%22ea%22%3A%223PADS%22%2C%22pge%22%3A2367355%2C%22plsUBT%22%3A1%2C%22app%22%3A%22Sandwich%22%2C%22callingEF%22%3A%22SAND%22%2C%22difTS%22%3A0%2C%22eventOrder%22%3A1%2C%22scandal_trk%22%3A%22meid%3A4fa7bdda19c0a35d5d272191ffffe0a6%252F100928%2Cplid%3A100928%2Cw%3A300%2Ch%3A250%2Cscorid%3A01KH7TFFF77XQPCYWGN2SY3WJ4%2Cempty%3Atrue%2Cprvdr%3Ahybrid%2Cap%3Agoober%2Cafs%3A1770862920965%2Cafe%3A1770862922102%2Cfbr%3Atrue%2Cade%3A0%7Cmeid%3A4fa7bdda19c0a35d5d272191ffffe0a6%252F100927%2Cplid%3A100927%2Cw%3A300%2Ch%3A250%2Cscorid%3A01KH7TFFF77XQPCYWGN2SY3WJ4%2Cempty%3Atrue%2Cprvdr%3Ahybrid%2Cap%3Agoober%2Cafs%3A1770862920965%2Cafe%3A1770862921875%2Cfbr%3Atrue%2Cade%3A0%7Cmeid%3A4fa7bdda19c0a35d5d272191ffffe0a6%252F100926%2Cplid%3A100926%2Cw%3A300%2Ch%3A250%2Cscorid%3A01KH7TFFF77XQPCYWGN2SY3WJ4%2Cempty%3Atrue%2Cprvdr%3Ahybrid%2Cap%3Agoober%2Cafs%3A1770862920964%2Cafe%3A1770862921437%2Cfbr%3Atrue%2Cade%3A0%7Cmeid%3A%2Cplid%3A100659%2Cscorid%3A01KH7TFFF77XQPCYWGN2SY3WJ4%2Cprvdr%3Acsa%2Cafs%3A1770862920731%2Cafe%3A1770862920813%2Cars%3A1770862920732%2Ccsa_ts%3A82%7Cmeid%3A4fa7bdda19c0a35d5d272191ffffe0a6%252F100587%2Cplid%3A100587%2Cw%3A160%2Ch%3A600%2Cscorid%3A01KH7TFFF77XQPCYWGN2SY3WJ4%2Cempty%3Atrue%2Cprvdr%3Ahybrid%2Cap%3Agoober%2Cafs%3A1770862921035%2Cafe%3A1770862922318%2Cfbr%3Atrue%2Cade%3A0%7Cmeid%3A4fa7bdda19c0a35d5d272191ffffe0a6%252F100586%2Cplid%3A100586%2Cw%3A160%2Ch%3A600%2Cscorid%3A01KH7TFFF77XQPCYWGN2SY3WJ4%2Cempty%3Atrue%2Cprvdr%3Ahybrid%2Cap%3Agoober%2Cafs%3A1770862920964%2Cafe%3A1770862921630%2Cfbr%3Atrue%2Cade%3A0%22%2C%22scandal_timings%22%3A%22sjsv%3Aundefined%2Cload%3A1770862920625%2Cdata_collected%3A1770862923528%2Cbw%3A1280%2Cbh%3A720%2Csh%3A720%2Csw%3A1280%2Cadblk%3A0%22%2C%22ciid%22%3A%22p74CPEM*%22%7D%5D"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "plsr",
+        "write"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get",
+      "tool_id": "7b42f75369b21c00",
+      "name": "get",
+      "description": "Retrieve a resource by {token}. Returns: operationSampling, probabilisticSampling",
+      "endpoint_id": "bd80b691b85ba313",
+      "signature_id": "7b42f75369b21c00",
+      "method": "GET",
+      "path": "/{token}",
+      "host": "sherlock-events-sampler.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "service": {
+            "type": "string",
+            "example": "sgninui"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "read"
+      ],
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "operationSampling": {
+            "type": "object",
+            "properties": {}
+          },
+          "probabilisticSampling": {
+            "type": "object",
+            "properties": {
+              "samplingRate": {
+                "oneOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "samplingRate"
+            ]
+          }
+        },
+        "required": [
+          "probabilisticSampling"
+        ]
+      },
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_gh_useracquisition",
+      "tool_id": "51c3d0893e4bcb96",
+      "name": "get_gh_useracquisition",
+      "description": "List all useracquisition. Returns: criticalJS, css, html, js, jsInline",
+      "endpoint_id": "bd67ca73431de073",
+      "signature_id": "51c3d0893e4bcb96",
+      "method": "GET",
+      "path": "/gh/useracquisition",
+      "host": "www.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "_nkw": {
+            "type": "string",
+            "example": "vintage%2Bwatch"
+          },
+          "correlation": {
+            "type": "string",
+            "example": "si%3D4fa7aa0019c0ab13d8734cf8ff747171%2Cc%3D7%2CserviceCorrelationId%3D01KH7TFKXABEMKGDZQRB5H0CG3%2CoperationId%3D4439441%2Ctrk-gflgs%3D"
+          },
+          "customReferer": {
+            "type": "string",
+            "example": "https%253A%252F%252Fsignin.ebay.com%252Fsignin%252Fid"
+          },
+          "v": {
+            "type": "integer",
+            "example": "2"
+          }
+        }
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "gh",
+        "read"
+      ],
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "criticalJS": {
+            "type": "string"
+          },
+          "css": {
+            "type": "null"
+          },
+          "html": {
+            "type": "string"
+          },
+          "js": {
+            "type": "null"
+          },
+          "jsInline": {
+            "type": "null"
+          },
+          "onDemand": {
+            "type": "integer"
+          },
+          "renderedComponents": {
+            "type": "object",
+            "properties": {
+              "l": {
+                "type": "integer"
+              },
+              "r": {
+                "type": "string"
+              },
+              "t": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "w": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "f": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "f"
+                    ]
+                  }
+                }
+              }
+            },
+            "required": [
+              "l",
+              "r",
+              "t",
+              "w"
+            ]
+          }
+        },
+        "required": [
+          "criticalJS",
+          "css",
+          "html",
+          "js",
+          "jsInline",
+          "onDemand",
+          "renderedComponents"
+        ]
+      },
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_nap_napkinapi_ticketing_redeem",
+      "tool_id": "475f12c6e1ad5db8",
+      "name": "get_nap_napkinapi_ticketing_redeem",
+      "description": "List all redeem",
+      "endpoint_id": "393839de5bac9345",
+      "signature_id": "475f12c6e1ad5db8",
+      "method": "GET",
+      "path": "/nap/napkinapi/v1/ticketing/redeem",
+      "host": "www.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "ticket": {
+            "type": "string",
+            "example": "01KH7TFFP5RB6K4NQ1BDJF3K63"
+          }
+        }
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "nap",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_sch_ajax_autocomplete",
+      "tool_id": "53ada5df10fa0a79",
+      "name": "get_sch_ajax_autocomplete",
+      "description": "List all autocomplete. Returns: activeFactors, url",
+      "endpoint_id": "346f2ded70e21082",
+      "signature_id": "53ada5df10fa0a79",
+      "method": "GET",
+      "path": "/sch/ajax/autocomplete",
+      "host": "www.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "sch",
+        "read"
+      ],
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "activeFactors": {
+            "type": "object",
+            "properties": {}
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "activeFactors",
+          "url"
+        ]
+      },
+      "scopes": [
+        "first_party_only"
+      ],
+      "enables": [
+        "create_webresource"
+      ]
+    },
+    {
+      "id": "create_blueberry_ads_identity_pixel_url",
+      "tool_id": "e2b9e135007c97cf",
+      "name": "create_blueberry_ads_identity_pixel_url",
+      "description": "Create a new pixelUrl. Returns: pixelUrls",
+      "endpoint_id": "8e5530e56779ae86",
+      "signature_id": "e2b9e135007c97cf",
+      "method": "POST",
+      "path": "/blueberry/v1/ads/identity/pixelUrls",
+      "host": "www.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "adChoice": {
+            "type": "string"
+          },
+          "guid": {
+            "type": "string"
+          },
+          "pageId": {
+            "type": "string"
+          },
+          "siteId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "adChoice",
+          "guid",
+          "pageId",
+          "siteId"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "blueberry",
+        "write"
+      ],
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "pixelUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "pixelUrls"
+        ]
+      },
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "create_gh_dfpsvc",
+      "tool_id": "7672fddb71c146d3",
+      "name": "create_gh_dfpsvc",
+      "description": "Create a new dfpsvc",
+      "endpoint_id": "c2e18325ec56890b",
+      "signature_id": "7672fddb71c146d3",
+      "method": "POST",
+      "path": "/gh/dfpsvc",
+      "host": "www.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "integer",
+            "example": "2"
+          },
+          "fingerPrintData": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fingerPrintData",
+          "sessionId"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "gh",
+        "write"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "create_srv_app_csep",
+      "tool_id": "54a76ac55ec7a0b8",
+      "name": "create_srv_app_csep",
+      "description": "Create a new csep. Returns: response, survey",
+      "endpoint_id": "c53e4c3945c4a65c",
+      "signature_id": "54a76ac55ec7a0b8",
+      "method": "POST",
+      "path": "/srv/app/v2/csep/{id}",
+      "host": "www.ebay.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "interceptContext": {
+            "type": "object",
+            "properties": {
+              "app_name": {
+                "type": "string"
+              },
+              "pageId": {
+                "type": "string"
+              },
+              "page_name": {
+                "type": "string"
+              },
+              "srcrlogid": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "app_name",
+              "pageId",
+              "page_name",
+              "srcrlogid"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "interceptContext"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "srv",
+        "write"
+      ],
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "response": {
+            "type": "object",
+            "properties": {
+              "allClientSideEps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "dqt": {
+                      "type": "boolean"
+                    },
+                    "factors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "value": {
+                            "oneOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "value"
+                        ]
+                      }
+                    },
+                    "flagKey": {
+                      "type": "string"
+                    },
+                    "flagValue": {
+                      "type": "string"
+                    },
+                    "priority": {
+                      "type": "integer"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "treatmentId": {
+                      "type": "integer"
+                    },
+                    "value": {
+                      "type": "object",
+                      "properties": {
+                        "intercept": {
+                          "type": "boolean"
+                        },
+                        "page_ids": {
+                          "type": "string"
+                        },
+                        "survey_alias": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "intercept"
+                      ]
+                    },
+                    "variant": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "dqt",
+                    "factors",
+                    "flagKey",
+                    "flagValue",
+                    "priority",
+                    "reason",
+                    "treatmentId",
+                    "value",
+                    "variant"
+                  ]
+                }
+              },
+              "clientSideEps": {
+                "type": "array"
+              },
+              "qTags": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "type",
+                    "value"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "allClientSideEps",
+              "clientSideEps",
+              "qTags"
+            ]
+          },
+          "survey": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          }
+        },
+        "required": [
+          "response",
+          "survey"
+        ]
+      },
+      "scopes": [
+        "first_party_only"
+      ]
+    }
+  ],
+  "description": "Generated from capture cap_20260212_ecf13c3b",
+  "capture_id": "cap_20260212_ecf13c3b",
+  "scope": "first_party_only",
+  "default_confirmation": "on_risk"
+}

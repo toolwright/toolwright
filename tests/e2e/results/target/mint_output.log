@@ -1,0 +1,216 @@
+Mint step 1/4: capturing traffic...
+  Start URL: https://www.target.com
+  Allowed hosts: *.target.com, *.targetimg.com
+  Headless: True
+  Script: tests/e2e/target_capture.py
+
+Navigating to: https://www.target.com
+  ✓ GET /content-publish/pages/v1 [200]
+  ✓ GET /sapphire/runtime/api/v1/raw/www.target.com/ [200]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ POST /firefly_events/v1/events/page_view [202]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ GET /privacy_rule_engine/v1/applicable_laws [200]
+  ✓ GET /location_fulfillment_aggregations/v1/preferred_st [200]
+  ✓ POST /firefly_events/v1/events/traffic_source [202]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ GET /web_checkouts/v1/cart [204]
+  ✓ GET /redsky_aggregations/v1/web/store_location_v1 [200]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ GET /redsky_aggregations/v1/web/nearby_stores_v1 [200]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ GET /web_checkouts/v1/cart [204]
+Running scripted capture: tests/e2e/target_capture.py
+  ✓ POST /firefly_events/v1/events/traffic_source [202]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/content_impression [202]
+  ✓ POST /firefly_events/v1/events/content_impression [202]
+  ✓ GET /content-publish/pages/v1 [200]
+  ✓ GET /privacy_rule_engine/v1/applicable_laws [200]
+  ✓ POST /firefly_events/v1/events/page_view [202]
+  ✓ GET /sapphire/runtime/api/v1/raw/www.target.com/ [200]
+  ✓ GET /redsky_aggregations/v1/web/store_location_v1 [200]
+  ✓ GET /web_checkouts/v1/cart [204]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ POST /firefly_events/v1/events/traffic_source [202]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ GET /web_checkouts/v1/cart [204]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/traffic_source [202]
+  ✓ POST /firefly_events/v1/events/content_impression [202]
+  ✓ POST /firefly_events/v1/events/content_impression [202]
+  ✓ POST /firefly_events/v1/events/traffic_source [202]
+  ✓ GET /content-publish/pages/v1 [200]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ GET /sapphire/runtime/api/v1/raw/www.target.com/s [200]
+  ✓ POST /firefly_events/v1/events/traffic_source [202]
+  ✓ GET /redsky_aggregations/v1/web/store_location_v1 [200]
+  ✓ GET /privacy_rule_engine/v1/applicable_laws [200]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/page_view [202]
+  ✓ GET /web_checkouts/v1/cart [204]
+  ✓ GET /digital_guest_intents/v1/web_fulfillments [200]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/traffic_source [202]
+  ✓ GET /cdui_orchestrations/v1/pages/slp [200]
+  ✓ POST /firefly_events/v1/events/content_impression [202]
+  ✓ POST /firefly_events/v1/events/content_impression [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ GET /redsky_aggregations/v1/web/product_summary_with_f [200]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ GET /web_checkouts/v1/cart [204]
+  ✓ GET /redsky_aggregations/v1/web/product_summary_with_f [200]
+  ✓ GET /location_fulfillment_aggregations/v1/1147 [200]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ GET /redsky_aggregations/v1/web/product_summary_with_f [200]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ GET /redsky_aggregations/v1/web/plp_search_v2 [200]
+  ✓ POST /firefly_events/v1/events/results_grid [202]
+  ✓ GET /redsky_aggregations/v1/web/product_summary_with_f [200]
+  ✓ GET /content-publish/pages/v1 [200]
+  ✓ GET /redsky_aggregations/v1/web/taxonomy_subcategories [200]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ POST /firefly_events/v1/events/page_view [202]
+  ✓ POST /firefly_events/v1/events/traffic_source [202]
+  ✓ GET /privacy_rule_engine/v1/applicable_laws [200]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ GET /sapphire/runtime/api/v1/raw/www.target.com/c/elec [200]
+  ✓ GET /web_checkouts/v1/cart [204]
+  ✓ GET /redsky_aggregations/v1/web/store_location_v1 [200]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ GET /web_checkouts/v1/cart [204]
+  ✓ GET /redsky_aggregations/v1/web/plp_search_v2 [200]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/traffic_source [202]
+  ✓ GET /redsky_aggregations/v1/web/product_summary_with_f [200]
+  ✓ POST /firefly_events/v1/events/content_impression [202]
+  ✓ POST /firefly_events/v1/events/content_impression [202]
+  ✓ POST /firefly_events/v1/events/content_impression [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ GET /content-publish/pages/v1 [200]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ GET /sapphire/runtime/api/v1/raw/www.target.com/c/top- [200]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ POST /firefly_events/v1/events/page_view [202]
+  ✓ GET /redsky_aggregations/v1/web/store_location_v1 [200]
+  ✓ GET /privacy_rule_engine/v1/applicable_laws [200]
+  ✓ GET /content-publish/pages/v1 [200]
+  ✗ GET /redsky_aggregations/v1/web/plp_search_v2 [400]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/traffic_source [202]
+  ✓ GET /web_checkouts/v1/cart [204]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/traffic_source [202]
+  ✓ GET /content-publish/pages/v1 [200]
+  ✓ GET /privacy_rule_engine/v1/applicable_laws [200]
+  ✓ GET /sapphire/runtime/api/v1/raw/www.target.com/c/groc [200]
+  ✓ POST /firefly_events/v1/events/page_view [202]
+  ✓ POST /firefly_events/v1/events/traffic_source [202]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ GET /web_checkouts/v1/cart [204]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ GET /redsky_aggregations/v1/web/store_location_v1 [200]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ POST /firefly_events/v1/events/experiment_exposed [202]
+  ✓ GET /web_checkouts/v1/cart [204]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ GET /redsky_aggregations/v1/web/plp_search_v2 [200]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ GET /redsky_aggregations/v1/web/product_summary_with_f [200]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /firefly_events/v1/events/traffic_source [202]
+  ✓ POST /firefly_events/v1/events/results_grid [202]
+  ✓ POST /firefly_events/v1/events/content_impression [202]
+  ✓ POST /firefly_events/v1/events/content_impression [202]
+  ✓ GET /redsky_aggregations/v1/web/general_recommendation [200]
+  ✓ GET /redsky_aggregations/v1/web/product_summary_with_f [200]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /firefly_events/v1/events/served_display_ads_impre [202]
+  ✓ POST /telemetry_data/v1/traces [200]
+  ✓ POST /telemetry_data/v1/traces [200]
+
+Stopping capture...
+Mint step 2/4: compiling artifacts...
+Loaded capture: cap_20260212_e5e64458
+  Exchanges: 169
+Aggregating endpoints...
+  Endpoints: 17
+  After scope filter: 17
+  Flow edges: 73
+  Scope drafts: 17 (0 need review)
+Mint step 3/4: creating toolpack...
+
+Mint complete: tp_d1dc0abe3491
+  Capture: cap_20260212_e5e64458
+  Capture location: .caskmcp/captures/cap_20260212_e5e64458
+  Artifact: art_1b7ea0e1c1f2
+  Toolpack: .caskmcp/toolpacks/tp_d1dc0abe3491/toolpack.yaml
+  Pending approvals: 17
+
+Next commands:
+  caskmcp run --toolpack .caskmcp/toolpacks/tp_d1dc0abe3491/toolpack.yaml
+  caskmcp gate allow --all --toolset readonly --lockfile .caskmcp/toolpacks/tp_d1dc0abe3491/lockfile/caskmcp.lock.pending.yaml
+  caskmcp drift --baseline .caskmcp/toolpacks/tp_d1dc0abe3491/artifact/baseline.json --capture-path .caskmcp/captures/cap_20260212_e5e64458
+
+Connect to your AI agent:
+
+  Add to .mcp.json (works with any MCP client):
+    {
+      "mcpServers": {
+        "caskmcp": {
+          "command": "cask",
+          "args": ["run", "--toolpack", ".caskmcp/toolpacks/tp_d1dc0abe3491/toolpack.yaml"]
+        }
+      }
+    }
+
+  Or via Claude Code CLI:
+    claude mcp add caskmcp -- cask run --toolpack .caskmcp/toolpacks/tp_d1dc0abe3491/toolpack.yaml
+

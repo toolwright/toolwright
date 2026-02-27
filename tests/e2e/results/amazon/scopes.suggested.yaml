@@ -1,0 +1,115 @@
+version: '1.0'
+generated_at: '2026-02-12T02:21:09.159016+00:00'
+scope: first_party_only
+drafts:
+- endpoint_id: 250569f18e3a4804
+  scope_name: read
+  confidence: 0.85
+  risk_tier: safe
+  risk_reasons: []
+  signals:
+  - 'domain tags: commerce'
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe). Signals: domain tags: commerce'
+- endpoint_id: ab1ff8befde81e62
+  scope_name: write
+  confidence: 0.7
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST'
+- endpoint_id: da3f18410120cc25
+  scope_name: write
+  confidence: 0.7
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST'
+- endpoint_id: ff02cf87ceb4cc25
+  scope_name: write
+  confidence: 0.8
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  - 'domain tags: auth'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST; domain tags: auth'
+- endpoint_id: 07efeb4a11ae1b76
+  scope_name: write
+  confidence: 0.7
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST'
+- endpoint_id: 812f8debff3f3a64
+  scope_name: write
+  confidence: 0.7
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST'
+- endpoint_id: 2441192833f35b52
+  scope_name: write
+  confidence: 0.7
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST'
+- endpoint_id: 3d42ed0462395cb3
+  scope_name: read
+  confidence: 0.7
+  risk_tier: safe
+  risk_reasons:
+  - state_changing
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe). Signals: state-changing method:
+    POST'
+- endpoint_id: 55f16f38ed5fed67
+  scope_name: read
+  confidence: 0.85
+  risk_tier: safe
+  risk_reasons: []
+  signals:
+  - 'domain tags: commerce'
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe). Signals: domain tags: commerce'
+- endpoint_id: d06bacd964fc98c2
+  scope_name: read
+  confidence: 0.85
+  risk_tier: safe
+  risk_reasons: []
+  signals:
+  - 'domain tags: commerce'
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe). Signals: domain tags: commerce'

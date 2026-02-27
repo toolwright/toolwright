@@ -1,0 +1,811 @@
+{
+  "version": "1.0.0",
+  "schema_version": "1.0",
+  "name": "playwright_www_tcgplayer_com_20260212_022409",
+  "generated_at": "2026-02-12T02:24:09.772089+00:00",
+  "allowed_hosts": [
+    "infinite-api.tcgplayer.com",
+    "mpapi.tcgplayer.com",
+    "www.tcgplayer.com"
+  ],
+  "actions": [
+    {
+      "id": "get_c_verticals",
+      "tool_id": "a570722762a367bc",
+      "name": "get_c_verticals",
+      "description": "List all verticals. Returns: result",
+      "endpoint_id": "458f8aecab1ca443",
+      "signature_id": "a570722762a367bc",
+      "method": "GET",
+      "path": "/c/verticals",
+      "host": "infinite-api.tcgplayer.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "c",
+        "read"
+      ],
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "displayName": {
+                  "type": "string"
+                },
+                "urlName": {
+                  "type": "string"
+                },
+                "verticalName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "displayName",
+                "urlName",
+                "verticalName"
+              ]
+            }
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "search_direct_info",
+      "tool_id": "bab2915ed6b478b3",
+      "name": "search_direct_info",
+      "description": "Use this to search or query data. List all directInfo. Returns: errors, results (Call get_user first to obtain shippingCountry)",
+      "endpoint_id": "a70ab9fb709626d4",
+      "signature_id": "bab2915ed6b478b3",
+      "method": "GET",
+      "path": "/v2/search/directInfo",
+      "host": "mpapi.tcgplayer.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "shippingCountry": {
+            "type": "string",
+            "example": "US"
+          },
+          "userKey": {
+            "type": "string",
+            "example": "00000000-0000-0000-0000-000000000000"
+          }
+        }
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "search",
+        "read"
+      ],
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "directShippingThreshold": {
+                  "type": "number"
+                },
+                "isUserDirectEligible": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "directShippingThreshold",
+                "isUserDirectEligible"
+              ]
+            }
+          }
+        },
+        "required": [
+          "errors",
+          "results"
+        ]
+      },
+      "scopes": [
+        "first_party_only"
+      ],
+      "depends_on": [
+        "get_user"
+      ]
+    },
+    {
+      "id": "get_user",
+      "tool_id": "ac3917f8d52660e4",
+      "name": "get_user",
+      "description": "Use this to access or manage user information. List all user. Returns: errors, results",
+      "endpoint_id": "011d307cbdc44c4a",
+      "signature_id": "ac3917f8d52660e4",
+      "method": "GET",
+      "path": "/v2/user",
+      "host": "mpapi.tcgplayer.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "user",
+        "read"
+      ],
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "cartKey": {
+                  "type": "null"
+                },
+                "createdAt": {
+                  "type": "null"
+                },
+                "externalUserId": {
+                  "type": "string"
+                },
+                "ipAddress": {
+                  "type": "string"
+                },
+                "isGuest": {
+                  "type": "boolean"
+                },
+                "isSubscriber": {
+                  "type": "boolean"
+                },
+                "isValidated": {
+                  "type": "boolean"
+                },
+                "lastUsedShippingAddress": {
+                  "type": "null"
+                },
+                "productLineAffinity": {
+                  "type": "null"
+                },
+                "saveForLaterKey": {
+                  "type": "null"
+                },
+                "sellerKeys": {
+                  "type": "array"
+                },
+                "sellerLevels": {
+                  "type": "null"
+                },
+                "shippingCountry": {
+                  "type": "string"
+                },
+                "traits": {
+                  "type": "null"
+                },
+                "userId": {
+                  "type": "integer"
+                },
+                "userKey": {
+                  "type": "string"
+                },
+                "userName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cartKey",
+                "createdAt",
+                "externalUserId",
+                "ipAddress",
+                "isGuest",
+                "isSubscriber",
+                "isValidated",
+                "lastUsedShippingAddress",
+                "productLineAffinity",
+                "saveForLaterKey",
+                "sellerKeys",
+                "sellerLevels",
+                "shippingCountry",
+                "traits",
+                "userId",
+                "userKey",
+                "userName"
+              ]
+            }
+          }
+        },
+        "required": [
+          "errors",
+          "results"
+        ]
+      },
+      "scopes": [
+        "first_party_only"
+      ],
+      "enables": [
+        "search_direct_info"
+      ]
+    },
+    {
+      "id": "get_js_modules_discovery_mf_discoveryjson",
+      "tool_id": "31374e3652d39912",
+      "name": "get_js_modules_discovery_mf_discoveryjson",
+      "description": "List all mf discovery.json. Returns: exposes, id, metaData, name, remotes",
+      "endpoint_id": "124aa0c876115332",
+      "signature_id": "31374e3652d39912",
+      "method": "GET",
+      "path": "/js/modules/discovery/mf-discovery.json",
+      "host": "www.tcgplayer.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "js",
+        "read"
+      ],
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "exposes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "assets": {
+                  "type": "object",
+                  "properties": {
+                    "css": {
+                      "type": "object",
+                      "properties": {
+                        "async": {
+                          "type": "array"
+                        },
+                        "sync": {
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "async",
+                        "sync"
+                      ]
+                    },
+                    "js": {
+                      "type": "object",
+                      "properties": {
+                        "async": {
+                          "type": "array"
+                        },
+                        "sync": {
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "async",
+                        "sync"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "css",
+                    "js"
+                  ]
+                },
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "assets",
+                "id",
+                "name",
+                "path"
+              ]
+            }
+          },
+          "id": {
+            "type": "string"
+          },
+          "metaData": {
+            "type": "object",
+            "properties": {
+              "buildInfo": {
+                "type": "object",
+                "properties": {
+                  "buildName": {
+                    "type": "string"
+                  },
+                  "buildVersion": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "buildName",
+                  "buildVersion"
+                ]
+              },
+              "globalName": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "pluginVersion": {
+                "type": "string"
+              },
+              "publicPath": {
+                "type": "string"
+              },
+              "remoteEntry": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "path",
+                  "type"
+                ]
+              },
+              "ssrRemoteEntry": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "path",
+                  "type"
+                ]
+              },
+              "type": {
+                "type": "string"
+              },
+              "types": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "path"
+                ]
+              }
+            },
+            "required": [
+              "buildInfo",
+              "globalName",
+              "name",
+              "pluginVersion",
+              "publicPath",
+              "remoteEntry",
+              "ssrRemoteEntry",
+              "type",
+              "types"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "remotes": {
+            "type": "array"
+          },
+          "shared": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "assets": {
+                  "type": "object",
+                  "properties": {
+                    "css": {
+                      "type": "object",
+                      "properties": {
+                        "async": {
+                          "type": "array"
+                        },
+                        "sync": {
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "async",
+                        "sync"
+                      ]
+                    },
+                    "js": {
+                      "type": "object",
+                      "properties": {
+                        "async": {
+                          "type": "array"
+                        },
+                        "sync": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "async",
+                        "sync"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "css",
+                    "js"
+                  ]
+                },
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "requiredVersion": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "assets",
+                "id",
+                "name",
+                "requiredVersion",
+                "version"
+              ]
+            }
+          }
+        },
+        "required": [
+          "exposes",
+          "id",
+          "metaData",
+          "name",
+          "remotes",
+          "shared"
+        ]
+      },
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_js_modules_seller_mf_sellerjson",
+      "tool_id": "60ee7fd0b4ae1b06",
+      "name": "get_js_modules_seller_mf_sellerjson",
+      "description": "List all mf seller.json. Returns: exposes, id, metaData, name, remotes",
+      "endpoint_id": "8741310e7d3b3083",
+      "signature_id": "60ee7fd0b4ae1b06",
+      "method": "GET",
+      "path": "/js/modules/seller/mf-seller.json",
+      "host": "www.tcgplayer.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "js",
+        "read"
+      ],
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "exposes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "assets": {
+                  "type": "object",
+                  "properties": {
+                    "css": {
+                      "type": "object",
+                      "properties": {
+                        "async": {
+                          "type": "array"
+                        },
+                        "sync": {
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "async",
+                        "sync"
+                      ]
+                    },
+                    "js": {
+                      "type": "object",
+                      "properties": {
+                        "async": {
+                          "type": "array"
+                        },
+                        "sync": {
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "async",
+                        "sync"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "css",
+                    "js"
+                  ]
+                },
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "assets",
+                "id",
+                "name",
+                "path"
+              ]
+            }
+          },
+          "id": {
+            "type": "string"
+          },
+          "metaData": {
+            "type": "object",
+            "properties": {
+              "buildInfo": {
+                "type": "object",
+                "properties": {
+                  "buildName": {
+                    "type": "string"
+                  },
+                  "buildVersion": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "buildName",
+                  "buildVersion"
+                ]
+              },
+              "globalName": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "pluginVersion": {
+                "type": "string"
+              },
+              "publicPath": {
+                "type": "string"
+              },
+              "remoteEntry": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "path",
+                  "type"
+                ]
+              },
+              "ssrRemoteEntry": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "path",
+                  "type"
+                ]
+              },
+              "type": {
+                "type": "string"
+              },
+              "types": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "path"
+                ]
+              }
+            },
+            "required": [
+              "buildInfo",
+              "globalName",
+              "name",
+              "pluginVersion",
+              "publicPath",
+              "remoteEntry",
+              "ssrRemoteEntry",
+              "type",
+              "types"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "remotes": {
+            "type": "array"
+          },
+          "shared": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "assets": {
+                  "type": "object",
+                  "properties": {
+                    "css": {
+                      "type": "object",
+                      "properties": {
+                        "async": {
+                          "type": "array"
+                        },
+                        "sync": {
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "async",
+                        "sync"
+                      ]
+                    },
+                    "js": {
+                      "type": "object",
+                      "properties": {
+                        "async": {
+                          "type": "array"
+                        },
+                        "sync": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "async",
+                        "sync"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "css",
+                    "js"
+                  ]
+                },
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "requiredVersion": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "assets",
+                "id",
+                "name",
+                "requiredVersion",
+                "version"
+              ]
+            }
+          }
+        },
+        "required": [
+          "exposes",
+          "id",
+          "metaData",
+          "name",
+          "remotes",
+          "shared"
+        ]
+      },
+      "scopes": [
+        "first_party_only"
+      ]
+    }
+  ],
+  "description": "Generated from capture cap_20260212_6629993a",
+  "capture_id": "cap_20260212_6629993a",
+  "scope": "first_party_only",
+  "default_confirmation": "on_risk"
+}

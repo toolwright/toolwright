@@ -1,0 +1,118 @@
+Mint step 1/4: capturing traffic...
+  Start URL: https://www.ebay.com
+  Allowed hosts: *.ebay.com, *.ebaystatic.com
+  Headless: True
+  Script: tests/e2e/ebay_capture.py
+
+Navigating to: https://www.ebay.com
+  ✓ GET /eventsPerServiceStrategy [200]
+Running scripted capture: tests/e2e/ebay_capture.py
+  ✓ GET /sch/ajax/autocomplete [200]
+  ✓ GET /gh/useracquisition [200]
+  ✓ GET /eventsPerServiceStrategy [200]
+  ✓ GET /sch/ajax/autocomplete [200]
+  ✓ GET /gh/useracquisition [200]
+  ✓ GET /tag-manager/v1/tag/madrona_loadscripts.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.3.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.7.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.50.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.9.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.10.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.37.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.11.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.48.js [200]
+  ✓ GET /eventsPerServiceStrategy [200]
+  ✓ POST /customer/v1/customer_service [200]
+  ✓ POST /base/service/v1/viewport_events [200]
+  ✓ GET /eventsPerServiceStrategy [200]
+  ✓ GET /nap/napkinapi/v1/ticketing/redeem [200]
+  ✓ GET /tag-manager/v1/tag/madrona_loadscripts.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.3.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.7.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.9.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.10.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.11.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.37.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.48.js [200]
+  ✓ GET /tag-manager/v1/tag/utag.50.js [200]
+  ✓ GET /nap/napkinapi/v1/ticketing/redeem [200]
+  ✓ GET /nap/napkinapi/v1/ticketing/redeem [200]
+  ✓ POST /blueberry/v1/ads/identity/pixelUrls [200]
+  ✓ GET /nap/napkinapi/v1/ticketing/redeem [200]
+  ✓ GET /nap/napkinapi/v1/ticketing/redeem [200]
+  ✓ GET /gh/useracquisition [200]
+  ✓ POST /webresources [200]
+  ✓ GET /eventsPerServiceStrategy [200]
+  ✓ POST /plsr/mpe/0/DFLT/9 [200]
+  ✓ POST /plsr/mpe/0/DFLT/9 [200]
+  ✓ POST /base/service/v1/viewport_events [200]
+  ✓ POST /customer/v1/customer_service [200]
+  ✓ POST /plsr/mpe/0/SAND/9 [200]
+  ✓ GET /eventsPerServiceStrategy [200]
+  ✓ GET /gh/useracquisition [200]
+  ✓ POST /srv/app/v2/csep/4439441 [200]
+  ✓ GET /eventsPerServiceStrategy [200]
+  ✓ POST /plsr/mpe/0/DFLT/9 [200]
+  ✓ POST /customer/v1/customer_service [200]
+  ✓ GET /eventsPerServiceStrategy [200]
+  ✓ GET /gh/useracquisition [200]
+  ✓ GET /eventsPerServiceStrategy [200]
+  ✓ GET /eventsPerServiceStrategy [200]
+  ✓ POST /webresources [200]
+  ✓ POST /gh/dfpsvc [204]
+  ✓ GET /gh/useracquisition [200]
+  ✓ POST /plsr/mpe/0/DFLT/9 [200]
+  ✓ GET /eventsPerServiceStrategy [200]
+  ✓ POST /customer/v1/customer_service [200]
+  ✓ POST /customer/v1/customer_service [200]
+  ✓ GET /eventsPerServiceStrategy [200]
+  ✓ GET /gh/useracquisition [200]
+  ✓ POST /srv/app/v2/csep/4439441 [200]
+  ✓ GET /eventsPerServiceStrategy [200]
+  ✓ POST /customer/v1/customer_service [200]
+  ✓ POST /plsr/mpe/0/DFLT/9 [200]
+  ✓ GET /eventsPerServiceStrategy [200]
+  ✓ POST /srv/app/v2/csep/4504271 [200]
+  ✓ GET /gh/useracquisition [200]
+  ✓ GET /eventsPerServiceStrategy [200]
+
+Stopping capture...
+Mint step 2/4: compiling artifacts...
+Loaded capture: cap_20260212_ecf13c3b
+  Exchanges: 71
+Aggregating endpoints...
+  Endpoints: 22
+  After scope filter: 22
+  Flow edges: 1
+  Scope drafts: 22 (0 need review)
+Mint step 3/4: creating toolpack...
+
+Mint complete: tp_c2e983a690cd
+  Capture: cap_20260212_ecf13c3b
+  Capture location: .caskmcp/captures/cap_20260212_ecf13c3b
+  Artifact: art_db7108d7e92d
+  Toolpack: .caskmcp/toolpacks/tp_c2e983a690cd/toolpack.yaml
+  Pending approvals: 22
+
+Next commands:
+  caskmcp run --toolpack .caskmcp/toolpacks/tp_c2e983a690cd/toolpack.yaml
+  caskmcp gate allow --all --toolset readonly --lockfile .caskmcp/toolpacks/tp_c2e983a690cd/lockfile/caskmcp.lock.pending.yaml
+  caskmcp drift --baseline .caskmcp/toolpacks/tp_c2e983a690cd/artifact/baseline.json --capture-path .caskmcp/captures/cap_20260212_ecf13c3b
+
+Connect to your AI agent:
+
+  Add to .mcp.json (works with any MCP client):
+    {
+      "mcpServers": {
+        "caskmcp": {
+          "command": "cask",
+          "args": ["run", "--toolpack", ".caskmcp/toolpacks/tp_c2e983a690cd/toolpack.yaml"]
+        }
+      }
+    }
+
+  Or via Claude Code CLI:
+    claude mcp add caskmcp -- cask run --toolpack .caskmcp/toolpacks/tp_c2e983a690cd/toolpack.yaml
+

@@ -1,0 +1,930 @@
+"""MCP server implementation for Toolwright."""
+
+from __future__ import annotations
+
+import asyncio
+import hashlib
+import ipaddress
+import json
+import logging
+import re
+from pathlib import Path
+from typing import Any
+from urllib.parse import urlencode, urljoin, urlparse
+from uuid import uuid4
+
+import httpx
+import yaml
+
+from toolwright.core.approval import (
+    ApprovalStatus,
+    LockfileManager,
+    compute_artifacts_digest_from_paths,
+    compute_lockfile_digest,
+)
+from toolwright.core.approval.signing import resolve_approval_root
+from toolwright.core.audit import (
+    AuditLogger,
+    DecisionTraceEmitter,
+    FileAuditBackend,
+    MemoryAuditBackend,
+)
+from toolwright.core.enforce import ConfirmationStore, DecisionEngine, PolicyEngine
+from toolwright.core.network_safety import (
+    RuntimeBlockError,
+    host_matches_allowlist,
+    normalize_host_for_allowlist,
+    validate_network_target,
+    validate_url_scheme,
+)
+from toolwright.mcp._compat import (
+    InitializationOptions,
+    NotificationOptions,
+    Server,
+    mcp_stdio,
+)
+from toolwright.mcp._compat import (
+    mcp_types as types,
+)
+from toolwright.models.decision import (
+    DecisionContext,
+    DecisionRequest,
+    DecisionType,
+    NetworkSafetyConfig,
+    ReasonCode,
+)
+from toolwright.utils.schema_version import resolve_schema_version
+
+logger = logging.getLogger(__name__)
+
+_NEXTJS_DATA_PLACEHOLDER_RE = re.compile(r"/_next/data/\{([^}]+)\}/", re.IGNORECASE)
+_NEXTJS_NEXT_DATA_RE = re.compile(
+    r'<script[^>]+id="__NEXT_DATA__"[^>]*>(.*?)</script>',
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+class ToolwrightMCPServer:
+    """MCP server that exposes Toolwright tools with runtime enforcement."""
+
+    def __init__(
+        self,
+        tools_path: str | Path,
+        toolsets_path: str | Path | None = None,
+        toolset_name: str | None = None,
+        policy_path: str | Path | None = None,
+        lockfile_path: str | Path | None = None,
+        base_url: str | None = None,
+        auth_header: str | None = None,
+        audit_log: str | Path | None = None,
+        dry_run: bool = False,
+        confirmation_store_path: str | Path = ".toolwright/state/confirmations.db",
+        allow_private_cidrs: list[str] | None = None,
+        allow_redirects: bool = False,
+    ) -> None:
+        self.tools_path = Path(tools_path)
+        self.toolsets_path = Path(toolsets_path) if toolsets_path else None
+        self.toolset_name = toolset_name
+        self.policy_path = Path(policy_path) if policy_path else None
+        self.lockfile_path = Path(lockfile_path) if lockfile_path else None
+        self.base_url = base_url
+        self.auth_header = auth_header
+        self.dry_run = dry_run
+        self.allow_private_networks = [
+            ipaddress.ip_network(cidr)
+            for cidr in (allow_private_cidrs or [])
+        ]
+        self.allow_redirects = allow_redirects
+        self.approval_root_path = resolve_approval_root(
+            lockfile_path=self.lockfile_path,
+            fallback_root=confirmation_store_path,
+        )
+        self.run_id = f"run_{uuid4().hex[:12]}"
+
+        with open(self.tools_path) as f:
+            self.manifest: dict[str, Any] = json.load(f)
+        resolve_schema_version(
+            self.manifest,
+            artifact="tools manifest",
+            allow_legacy=True,
+        )
+
+        self.toolsets_payload: dict[str, Any] | None = None
+        selected_action_names: set[str] | None = None
+        if self.toolsets_path is not None:
+            with open(self.toolsets_path) as f:
+                self.toolsets_payload = yaml.safe_load(f) or {}
+            resolve_schema_version(
+                self.toolsets_payload,
+                artifact="toolsets artifact",
+                allow_legacy=False,
+            )
+
+            if self.toolset_name:
+                toolsets = self.toolsets_payload.get("toolsets", {})
+                if self.toolset_name not in toolsets:
+                    available = ", ".join(sorted(toolsets))
+                    raise ValueError(
+                        f"Unknown toolset '{self.toolset_name}'. Available: {available}"
+                    )
+                selected_action_names = set(toolsets[self.toolset_name].get("actions", []))
+
+        self.lockfile_manager: LockfileManager | None = None
+        self.lockfile_digest_current: str | None = None
+        if self.lockfile_path is not None:
+            manager = LockfileManager(self.lockfile_path)
+            if not manager.exists():
+                raise ValueError(f"Lockfile not found: {manager.lockfile_path}")
+            lockfile = manager.load()
+            self.lockfile_manager = manager
+            self.lockfile_digest_current = compute_lockfile_digest(lockfile.model_dump(mode="json"))
+
+        self.actions: dict[str, dict[str, Any]] = {}
+        self.actions_by_tool_id: dict[str, dict[str, Any]] = {}
+        for action in self.manifest.get("actions", []):
+            if selected_action_names is not None and action.get("name") not in selected_action_names:
+                continue
+            if not self._is_action_exposed(action):
+                continue
+            self.actions[action["name"]] = action
+            tool_id = str(action.get("tool_id") or action.get("signature_id") or action.get("name"))
+            self.actions_by_tool_id[tool_id] = action
+            self.actions_by_tool_id[action["name"]] = action
+
+        if selected_action_names is not None:
+            missing = sorted(selected_action_names - set(self.actions))
+            if missing:
+                raise ValueError(
+                    f"Toolset '{self.toolset_name}' references missing tools: {', '.join(missing)}"
+                )
+
+        backend = FileAuditBackend(audit_log) if audit_log else MemoryAuditBackend()
+        self.audit_logger = AuditLogger(backend)
+        self.policy_digest = (
+            hashlib.sha256(self.policy_path.read_bytes()).hexdigest()
+            if self.policy_path and self.policy_path.exists()
+            else None
+        )
+        self.decision_trace = DecisionTraceEmitter(
+            output_path=audit_log,
+            run_id=self.run_id,
+            lockfile_digest=self.lockfile_digest_current,
+            policy_digest=self.policy_digest,
+        )
+
+        self.policy_engine: PolicyEngine | None = None
+        if self.policy_path and self.policy_path.exists():
+            self.policy_engine = PolicyEngine.from_file(str(self.policy_path))
+        # Backward-compatible alias used by existing tests/callers.
+        self.enforcer = self.policy_engine
+
+        toolsets_for_digest: str | None = str(self.toolsets_path) if self.toolsets_path else None
+        policy_for_digest: str | None = str(self.policy_path) if self.policy_path else None
+        self.artifacts_digest_current = compute_artifacts_digest_from_paths(
+            tools_path=self.tools_path,
+            toolsets_path=toolsets_for_digest,
+            policy_path=policy_for_digest,
+        )
+
+        self.confirmation_store = ConfirmationStore(confirmation_store_path)
+        self.decision_engine = DecisionEngine(self.confirmation_store)
+        self.decision_context = DecisionContext(
+            manifest_view=self.actions_by_tool_id,
+            policy=self.policy_engine.policy if self.policy_engine else None,
+            policy_engine=self.policy_engine,
+            lockfile=self.lockfile_manager,
+            toolsets=self.toolsets_payload,
+            network_safety=NetworkSafetyConfig(
+                allow_private_cidrs=allow_private_cidrs or [],
+                allow_redirects=allow_redirects,
+                max_redirects=3,
+            ),
+            artifacts_digest_current=self.artifacts_digest_current,
+            lockfile_digest_current=self.lockfile_digest_current,
+            approval_root_path=str(self.approval_root_path),
+            require_signed_approvals=True,
+        )
+
+        self.server = Server("toolwright")
+        self._register_handlers()
+        self._http_client: httpx.AsyncClient | None = None
+        self._nextjs_build_id_cache: dict[str, str] = {}
+
+        logger.info(
+            "Initialized Toolwright MCP server with %s tools",
+            len(self.actions),
+        )
+
+    def _is_action_exposed(self, action: dict[str, Any]) -> bool:
+        if self.lockfile_manager is None:
+            return True
+
+        action_name = str(action.get("name", ""))
+        action_signature = str(action.get("signature_id", ""))
+        action_tool_id = str(action.get("tool_id") or action_signature or action_name)
+
+        tool = self.lockfile_manager.get_tool(action_signature) if action_signature else None
+        if tool is None:
+            tool = self.lockfile_manager.get_tool(action_tool_id)
+        if tool is None:
+            tool = self.lockfile_manager.get_tool(action_name)
+        if tool is None:
+            return False
+
+        if self.toolset_name:
+            if tool.status == ApprovalStatus.REJECTED:
+                return False
+            if tool.toolsets and self.toolset_name not in tool.toolsets:
+                return False
+            if tool.approved_toolsets:
+                return self.toolset_name in tool.approved_toolsets
+            return tool.status == ApprovalStatus.APPROVED
+
+        return tool.status == ApprovalStatus.APPROVED
+
+    def _register_handlers(self) -> None:
+        @self.server.list_tools()  # type: ignore
+        async def handle_list_tools() -> list[types.Tool]:
+            tools = []
+            for action in self.actions.values():
+                tool = types.Tool(
+                    name=action["name"],
+                    description=self._build_description(action),
+                    inputSchema=action.get("input_schema", {"type": "object", "properties": {}}),
+                )
+                output_schema = action.get("output_schema")
+                if isinstance(output_schema, dict):
+                    # MCP structuredContent is object-only in practice (and in the reference
+                    # `mcp` types). Avoid advertising an outputSchema for non-object payloads
+                    # (arrays/scalars), since clients will require structuredContent when an
+                    # outputSchema is present.
+                    schema_type = output_schema.get("type")
+                    is_object_schema = schema_type == "object" or (
+                        schema_type is None and "properties" in output_schema
+                    )
+                    if is_object_schema:
+                        tool.outputSchema = output_schema
+                tools.append(tool)
+            return tools
+
+        @self.server.call_tool()  # type: ignore
+        async def handle_call_tool(
+            name: str,
+            arguments: dict[str, Any] | None,
+        ) -> Any:
+            arguments = arguments or {}
+            action = self.actions.get(name)
+            if not action:
+                self._emit_decision_trace(
+                    tool_id=name,
+                    scope_id=self.toolset_name,
+                    request_fingerprint=None,
+                    decision=DecisionType.DENY.value,
+                    reason_code=ReasonCode.DENIED_UNKNOWN_ACTION.value,
+                    reason=f"Unknown tool: {name}",
+                )
+                payload: dict[str, Any] = {"error": f"Unknown tool: {name}"}
+                if hasattr(types, "CallToolResult"):
+                    return types.CallToolResult(
+                        content=[types.TextContent(type="text", text=json.dumps(payload))],
+                        isError=True,
+                    )
+                return [types.TextContent(type="text", text=json.dumps(payload))]
+
+            method, path, host = self._resolve_action_endpoint(action)
+            tool_id = str(action.get("tool_id") or action.get("signature_id") or name)
+            confirmation_token_id = (
+                arguments.get("confirmation_token_id")
+                or arguments.get("_confirmation_token_id")
+            )
+            call_args = {
+                k: v
+                for k, v in arguments.items()
+                if k not in {"confirmation_token_id", "_confirmation_token_id"}
+            }
+            effective_args = self._apply_fixed_body(action, call_args)
+
+            request = DecisionRequest(
+                tool_id=tool_id,
+                action_name=name,
+                method=method,
+                path=path,
+                host=host,
+                params=effective_args,
+                toolset_name=self.toolset_name,
+                confirmation_token_id=str(confirmation_token_id) if confirmation_token_id else None,
+                source="mcp",
+                mode="execute",
+            )
+            decision = self.decision_engine.evaluate(request, self.decision_context)
+
+            if decision.decision == DecisionType.CONFIRM:
+                if decision.confirmation_token_id:
+                    import sys
+
+                    sys.stderr.write(
+                        f"[toolwright] Confirmation required for {name}. "
+                        f"Run: toolwright confirm grant {decision.confirmation_token_id}\\n"
+                    )
+                self._emit_decision_trace(
+                    tool_id=tool_id,
+                    scope_id=self.toolset_name,
+                    request_fingerprint=str(decision.audit_fields.get("request_digest"))
+                    if decision.audit_fields.get("request_digest")
+                    else None,
+                    decision=decision.decision.value,
+                    reason_code=decision.reason_code.value,
+                    reason=decision.reason_message,
+                )
+                payload = {
+                    "status": "confirmation_required",
+                    "decision": decision.decision.value,
+                    "reason_code": decision.reason_code.value,
+                    "reason": decision.reason_message,
+                    "confirmation_token_id": decision.confirmation_token_id,
+                    "action": name,
+                }
+                if hasattr(types, "CallToolResult"):
+                    return types.CallToolResult(
+                        content=[types.TextContent(type="text", text=json.dumps(payload))],
+                        isError=False,
+                    )
+                return [types.TextContent(type="text", text=json.dumps(payload))]
+
+            if decision.decision == DecisionType.DENY:
+                self._emit_decision_trace(
+                    tool_id=tool_id,
+                    scope_id=self.toolset_name,
+                    request_fingerprint=str(decision.audit_fields.get("request_digest"))
+                    if decision.audit_fields.get("request_digest")
+                    else None,
+                    decision=decision.decision.value,
+                    reason_code=decision.reason_code.value,
+                    reason=decision.reason_message,
+                )
+                payload = {
+                    "status": "blocked",
+                    "decision": decision.decision.value,
+                    "reason_code": decision.reason_code.value,
+                    "reason": decision.reason_message,
+                    "action": name,
+                    "audit_fields": decision.audit_fields,
+                }
+                if hasattr(types, "CallToolResult"):
+                    return types.CallToolResult(
+                        content=[types.TextContent(type="text", text=json.dumps(payload))],
+                        isError=True,
+                    )
+                return [types.TextContent(type="text", text=json.dumps(payload))]
+
+            if self.dry_run:
+                self._emit_decision_trace(
+                    tool_id=tool_id,
+                    scope_id=self.toolset_name,
+                    request_fingerprint=str(decision.audit_fields.get("request_digest"))
+                    if decision.audit_fields.get("request_digest")
+                    else None,
+                    decision=DecisionType.ALLOW.value,
+                    reason_code=decision.reason_code.value,
+                    reason="Dry run execution",
+                )
+                payload = {
+                    "status": "dry_run",
+                    "action": name,
+                    "method": method,
+                    "path": path,
+                    "arguments": effective_args,
+                    "message": "Request would be sent (dry run mode)",
+                    "decision": decision.decision.value,
+                    "reason_code": decision.reason_code.value,
+                }
+                if hasattr(types, "CallToolResult"):
+                    return types.CallToolResult(
+                        content=[types.TextContent(type="text", text=json.dumps(payload))],
+                        isError=False,
+                    )
+                return [types.TextContent(type="text", text=json.dumps(payload))]
+
+            try:
+                response = await self._execute_request(action, effective_args)
+                self._emit_decision_trace(
+                    tool_id=tool_id,
+                    scope_id=self.toolset_name,
+                    request_fingerprint=str(decision.audit_fields.get("request_digest"))
+                    if decision.audit_fields.get("request_digest")
+                    else None,
+                    decision=DecisionType.ALLOW.value,
+                    reason_code=decision.reason_code.value,
+                    reason="Execution allowed",
+                )
+                # Return structured content when possible so clients can validate outputSchema.
+                #
+                # `_execute_request` returns a response envelope:
+                #   {"status": "...", "status_code": <int>, "action": "<name>", "data": <parsed json/text>}
+                #
+                # For tools that define an output_schema, that schema typically targets the *upstream*
+                # JSON body (the "data" field), not our envelope. So when output_schema exists,
+                # return `data` as structured content when it's an object, and fall back to
+                # unstructured output for non-object JSON (arrays/scalars) because MCP structuredContent
+                # is an object-only field.
+                if isinstance(response, dict):
+                    is_envelope = (
+                        "status_code" in response
+                        and "data" in response
+                        and "action" in response
+                    )
+                    if not is_envelope:
+                        return response
+
+                    status_code = response.get("status_code")
+                    payload_data = response.get("data")
+                    if isinstance(status_code, int) and status_code >= 400:
+                        if hasattr(types, "CallToolResult"):
+                            return types.CallToolResult(
+                                content=[types.TextContent(type="text", text=json.dumps(response))],
+                                isError=True,
+                            )
+                        return [types.TextContent(type="text", text=json.dumps(response))]
+
+                    if "output_schema" in action:
+                        if isinstance(payload_data, dict):
+                            return payload_data
+                        if hasattr(types, "CallToolResult"):
+                            return types.CallToolResult(
+                                content=[types.TextContent(type="text", text=json.dumps(payload_data))],
+                                isError=False,
+                            )
+                        return [types.TextContent(type="text", text=json.dumps(payload_data))]
+
+                    return response
+                if hasattr(types, "CallToolResult"):
+                    return types.CallToolResult(
+                        content=[types.TextContent(type="text", text=json.dumps(response))],
+                        isError=False,
+                    )
+                return [types.TextContent(type="text", text=json.dumps(response))]
+            except RuntimeBlockError as blocked:
+                self._emit_decision_trace(
+                    tool_id=tool_id,
+                    scope_id=self.toolset_name,
+                    request_fingerprint=str(decision.audit_fields.get("request_digest"))
+                    if decision.audit_fields.get("request_digest")
+                    else None,
+                    decision=DecisionType.DENY.value,
+                    reason_code=blocked.reason_code.value,
+                    reason=blocked.message,
+                )
+                payload = {
+                    "status": "blocked",
+                    "action": name,
+                    "decision": DecisionType.DENY.value,
+                    "reason_code": blocked.reason_code.value,
+                    "reason": blocked.message,
+                }
+                if hasattr(types, "CallToolResult"):
+                    return types.CallToolResult(
+                        content=[types.TextContent(type="text", text=json.dumps(payload))],
+                        isError=True,
+                    )
+                return [types.TextContent(type="text", text=json.dumps(payload))]
+            except Exception as e:
+                logger.exception("Error executing %s", name)
+                self._emit_decision_trace(
+                    tool_id=tool_id,
+                    scope_id=self.toolset_name,
+                    request_fingerprint=str(decision.audit_fields.get("request_digest"))
+                    if decision.audit_fields.get("request_digest")
+                    else None,
+                    decision=DecisionType.DENY.value,
+                    reason_code=ReasonCode.ERROR_INTERNAL.value,
+                    reason=str(e),
+                )
+                payload = {
+                    "status": "error",
+                    "action": name,
+                    "reason_code": ReasonCode.ERROR_INTERNAL.value,
+                    "error": str(e),
+                }
+                if hasattr(types, "CallToolResult"):
+                    return types.CallToolResult(
+                        content=[types.TextContent(type="text", text=json.dumps(payload))],
+                        isError=True,
+                    )
+                return [types.TextContent(type="text", text=json.dumps(payload))]
+
+    def _emit_decision_trace(
+        self,
+        *,
+        tool_id: str | None,
+        scope_id: str | None,
+        request_fingerprint: str | None,
+        decision: str,
+        reason_code: str,
+        reason: str | None,
+    ) -> None:
+        self.decision_trace.emit(
+            tool_id=tool_id,
+            scope_id=scope_id,
+            request_fingerprint=request_fingerprint,
+            decision=decision,
+            reason_code=reason_code,
+            provenance_mode="runtime",
+            extra={"reason": reason} if reason else None,
+        )
+
+    def _build_description(self, action: dict[str, Any]) -> str:
+        desc: str = action.get("description", f"{action.get('method', 'GET')} {action.get('path', '/')}")
+        risk = action.get("risk_tier", "low")
+        if risk in ("high", "critical"):
+            desc += f" [Risk: {risk}]"
+        if action.get("confirmation_required") == "always":
+            desc += " [Requires confirmation]"
+        return desc
+
+    def _resolve_action_endpoint(self, action: dict[str, Any]) -> tuple[str, str, str]:
+        endpoint = action.get("endpoint")
+        endpoint_data = endpoint if isinstance(endpoint, dict) else {}
+
+        method = endpoint_data.get("method") or action.get("method") or "GET"
+        path = endpoint_data.get("path") or action.get("path") or "/"
+        host = endpoint_data.get("host") or action.get("host") or ""
+        return str(method), str(path), str(host)
+
+    def _apply_fixed_body(
+        self,
+        action: dict[str, Any],
+        arguments: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Merge action-level fixed body fields into tool arguments."""
+        resolved = dict(arguments)
+        fixed_body = action.get("fixed_body")
+        if not isinstance(fixed_body, dict):
+            return resolved
+
+        for key, value in fixed_body.items():
+            resolved[str(key)] = value
+        return resolved
+
+    async def _get_http_client(self) -> httpx.AsyncClient:
+        if self._http_client is None:
+            self._http_client = httpx.AsyncClient(timeout=30.0)
+        return self._http_client
+
+    async def _resolve_nextjs_build_id(
+        self,
+        *,
+        action_host: str,
+        path_template: str,
+        params: dict[str, Any],
+    ) -> str:
+        cached = self._nextjs_build_id_cache.get(action_host)
+        if cached:
+            return cached
+
+        probe_path = self._nextjs_probe_path(path_template, params)
+        base = (self.base_url or f"https://{action_host}").rstrip("/") + "/"
+        probe_url = urljoin(base, probe_path.lstrip("/"))
+
+        headers: dict[str, str] = {"User-Agent": "Toolwright/1.0"}
+        if self.auth_header:
+            headers["Authorization"] = self.auth_header
+
+        client = await self._get_http_client()
+        current_url = probe_url
+        for _ in range(2):
+            validate_url_scheme(current_url)
+            parsed = urlparse(current_url)
+            target_host = parsed.hostname or action_host
+            self._validate_host_allowlist(target_host, action_host)
+            validate_network_target(target_host, self.allow_private_networks)
+
+            response = await client.request(
+                "GET",
+                current_url,
+                headers=headers,
+                follow_redirects=False,
+            )
+            if response.status_code in {301, 302, 303, 307, 308}:
+                location = response.headers.get("location")
+                if not location:
+                    break
+                next_url = urljoin(current_url, location)
+                next_host = urlparse(next_url).hostname
+                if not next_host:
+                    break
+                self._validate_host_allowlist(next_host, action_host)
+                validate_network_target(next_host, self.allow_private_networks)
+                current_url = next_url
+                continue
+
+            html = response.text or ""
+            match = _NEXTJS_NEXT_DATA_RE.search(html)
+            if not match:
+                raise RuntimeBlockError(
+                    ReasonCode.DENIED_PARAM_VALIDATION,
+                    f"Failed to resolve Next.js build ID from {current_url}: __NEXT_DATA__ not found",
+                )
+            raw = match.group(1).strip()
+            try:
+                payload = json.loads(raw)
+            except json.JSONDecodeError as exc:
+                raise RuntimeBlockError(
+                    ReasonCode.DENIED_PARAM_VALIDATION,
+                    f"Failed to parse __NEXT_DATA__ JSON from {current_url}: {exc}",
+                ) from exc
+
+            build_id = payload.get("buildId")
+            if not isinstance(build_id, str) or not build_id.strip():
+                raise RuntimeBlockError(
+                    ReasonCode.DENIED_PARAM_VALIDATION,
+                    f"Failed to resolve Next.js build ID from {current_url}: buildId missing",
+                )
+
+            resolved = build_id.strip()
+            self._nextjs_build_id_cache[action_host] = resolved
+            return resolved
+
+        raise RuntimeBlockError(
+            ReasonCode.DENIED_PARAM_VALIDATION,
+            f"Failed to resolve Next.js build ID for host '{action_host}'",
+        )
+
+    @staticmethod
+    def _nextjs_probe_path(path_template: str, params: dict[str, Any]) -> str:
+        """Pick a lightweight HTML page path for extracting __NEXT_DATA__ buildId."""
+        segments = [s for s in (path_template or "").split("/") if s]
+        try:
+            idx = next(
+                i for i in range(len(segments) - 2)
+                if segments[i].lower() == "_next" and segments[i + 1].lower() == "data"
+            )
+        except StopIteration:
+            return "/"
+
+        tail = segments[idx + 3 :]  # skip `_next/data/{token}`
+        if not tail:
+            return "/"
+
+        last = tail[-1]
+        if last.lower().endswith(".json"):
+            tail[-1] = last[:-5]
+
+        page_path = "/" + "/".join(tail)
+        for key, value in params.items():
+            page_path = page_path.replace(f"{{{key}}}", str(value))
+
+        # Prefer locale roots like `/en` to avoid redirects and placeholders.
+        parts = [p for p in page_path.split("/") if p]
+        if parts and re.fullmatch(r"[a-z]{2}", parts[0].lower()):
+            return "/" + parts[0]
+        return "/"
+
+    def _validate_host_allowlist(self, target_host: str, action_host: str) -> None:
+        allowed_hosts = self._allowed_app_hosts()
+        if host_matches_allowlist(target_host, allowed_hosts):
+            return
+        if not allowed_hosts and normalize_host_for_allowlist(target_host) == normalize_host_for_allowlist(action_host):
+            return
+        raise RuntimeBlockError(
+            ReasonCode.DENIED_REDIRECT_NOT_ALLOWLISTED,
+            f"Host '{target_host}' is not allowlisted for action host '{action_host}'",
+        )
+
+    def _allowed_app_hosts(self) -> set[str]:
+        raw_allowed = self.manifest.get("allowed_hosts", [])
+        if isinstance(raw_allowed, dict):
+            app_hosts = raw_allowed.get("app", [])
+            if not isinstance(app_hosts, list):
+                return set()
+            return {str(host).lower() for host in app_hosts}
+        if isinstance(raw_allowed, list):
+            return {str(host).lower() for host in raw_allowed}
+        return set()
+
+    async def _execute_request(
+        self,
+        action: dict[str, Any],
+        arguments: dict[str, Any],
+    ) -> dict[str, Any]:
+        arguments = self._apply_fixed_body(action, arguments)
+        method, path, action_host = self._resolve_action_endpoint(action)
+
+        # Derived runtime parameters (e.g., Next.js buildId) are resolved on demand.
+        nextjs_token_name: str | None = None
+        nextjs_token_user_supplied = False
+        match = _NEXTJS_DATA_PLACEHOLDER_RE.search(path)
+        if match:
+            token_name = match.group(1)
+            if token_name and token_name.lower() in {"token", "build_id", "buildid"}:
+                nextjs_token_name = token_name
+                nextjs_token_user_supplied = token_name in arguments
+                if not nextjs_token_user_supplied and token_name not in arguments:
+                    # Prefer an explicit default build id from the action schema (captured value)
+                    # to avoid probing HTML on hostile/bot-protected sites. If the default drifts,
+                    # we refresh on-demand (retry once on 404).
+                    default_token: str | None = None
+                    schema = action.get("input_schema")
+                    if isinstance(schema, dict):
+                        props = schema.get("properties")
+                        if isinstance(props, dict):
+                            token_spec = props.get(token_name)
+                            if isinstance(token_spec, dict):
+                                raw_default = token_spec.get("default")
+                                if isinstance(raw_default, str) and raw_default.strip():
+                                    default_token = raw_default.strip()
+
+                    if default_token is not None:
+                        arguments = dict(arguments)
+                        arguments[token_name] = default_token
+                    else:
+                        resolved = await self._resolve_nextjs_build_id(
+                            action_host=action_host,
+                            path_template=path,
+                            params=arguments,
+                        )
+                        arguments = dict(arguments)
+                        arguments[token_name] = resolved
+
+        def build_url_and_kwargs(args: dict[str, Any]) -> tuple[str, dict[str, Any]]:
+            url = urljoin(self.base_url, path) if self.base_url else f"https://{action_host}{path}"
+
+            for param_name, param_value in args.items():
+                placeholder = f"{{{param_name}}}"
+                if placeholder in path:
+                    url = url.replace(placeholder, str(param_value))
+
+            headers: dict[str, str] = {"User-Agent": "Toolwright/1.0"}
+            if self.auth_header:
+                headers["Authorization"] = self.auth_header
+
+            kwargs: dict[str, Any] = {"headers": headers, "follow_redirects": False}
+            if method.upper() in ("POST", "PUT", "PATCH"):
+                body_params = {k: v for k, v in args.items() if f"{{{k}}}" not in path}
+                if body_params:
+                    headers["Content-Type"] = "application/json"
+                    kwargs["json"] = body_params
+            elif method.upper() in ("GET", "HEAD", "OPTIONS"):
+                query_params = {k: v for k, v in args.items() if f"{{{k}}}" not in path}
+                if query_params:
+                    url = f"{url}?{urlencode(query_params)}"
+
+            return url, kwargs
+
+        async def fetch(url: str, kwargs: dict[str, Any]) -> tuple[httpx.Response, str]:
+            client = await self._get_http_client()
+            current_url = url
+
+            for _ in range(4):
+                validate_url_scheme(current_url)
+                parsed = urlparse(current_url)
+                target_host = parsed.hostname or action_host
+                self._validate_host_allowlist(target_host, action_host)
+                validate_network_target(target_host, self.allow_private_networks)
+
+                response = await client.request(method.upper(), current_url, **kwargs)
+                if response.status_code in {301, 302, 303, 307, 308}:
+                    location = response.headers.get("location")
+                    if not location:
+                        break
+                    if not self.allow_redirects:
+                        raise RuntimeBlockError(
+                            ReasonCode.DENIED_REDIRECT_NOT_ALLOWLISTED,
+                            f"Redirect blocked for {current_url} -> {location}",
+                        )
+                    next_url = urljoin(current_url, location)
+                    validate_url_scheme(next_url)
+                    next_host = urlparse(next_url).hostname
+                    if not next_host:
+                        raise RuntimeBlockError(
+                            ReasonCode.DENIED_REDIRECT_NOT_ALLOWLISTED,
+                            f"Redirect target '{location}' has no host",
+                        )
+                    self._validate_host_allowlist(next_host, action_host)
+                    validate_network_target(next_host, self.allow_private_networks)
+                    current_url = next_url
+                    continue
+
+                return response, target_host
+
+            raise RuntimeBlockError(
+                ReasonCode.DENIED_REDIRECT_NOT_ALLOWLISTED,
+                "Maximum redirect hops exceeded",
+            )
+
+        response: httpx.Response
+        target_host: str
+        refreshed = False
+        for _attempt in range(2):
+            url, kwargs = build_url_and_kwargs(arguments)
+            response, target_host = await fetch(url, kwargs)
+
+            if (
+                nextjs_token_name
+                and not nextjs_token_user_supplied
+                and not refreshed
+                and response.status_code == 404
+            ):
+                try:
+                    resolved = await self._resolve_nextjs_build_id(
+                        action_host=action_host,
+                        path_template=path,
+                        params=arguments,
+                    )
+                except RuntimeBlockError:
+                    break
+                arguments = dict(arguments)
+                arguments[nextjs_token_name] = resolved
+                refreshed = True
+                continue
+
+            break
+
+        content_type = response.headers.get("content-type", "")
+        if content_type.startswith("application/octet-stream"):
+            raise RuntimeBlockError(
+                ReasonCode.DENIED_CONTENT_TYPE_NOT_ALLOWED,
+                f"Blocked response content type: {content_type}",
+            )
+
+        result: dict[str, Any] = {
+            "status": "success",
+            "status_code": response.status_code,
+            "action": action["name"],
+        }
+        if "application/json" in content_type:
+            try:
+                result["data"] = response.json()
+            except json.JSONDecodeError:
+                result["data"] = response.text
+        else:
+            result["data"] = response.text
+
+        self.audit_logger.log_enforce_decision(
+            action_id=action["name"],
+            endpoint_id=action.get("endpoint_id"),
+            method=method,
+            path=path,
+            host=target_host,
+            decision="allowed",
+            confirmation_required=False,
+        )
+        return result
+
+    async def run_stdio(self) -> None:
+        async with mcp_stdio.stdio_server() as (read_stream, write_stream):
+            await self.server.run(
+                read_stream,
+                write_stream,
+                InitializationOptions(
+                    server_name="toolwright",
+                    server_version="1.0.0",
+                    capabilities=self.server.get_capabilities(
+                        notification_options=NotificationOptions(),
+                        experimental_capabilities={},
+                    ),
+                ),
+            )
+
+    async def close(self) -> None:
+        if self._http_client:
+            await self._http_client.aclose()
+            self._http_client = None
+
+
+def run_mcp_server(
+    tools_path: str,
+    toolsets_path: str | None = None,
+    toolset_name: str | None = None,
+    policy_path: str | None = None,
+    lockfile_path: str | None = None,
+    base_url: str | None = None,
+    auth_header: str | None = None,
+    audit_log: str | None = None,
+    dry_run: bool = False,
+    confirmation_store_path: str = ".toolwright/state/confirmations.db",
+    allow_private_cidrs: list[str] | None = None,
+    allow_redirects: bool = False,
+) -> None:
+    """Run the Toolwright MCP server."""
+    server = ToolwrightMCPServer(
+        tools_path=tools_path,
+        toolsets_path=toolsets_path,
+        toolset_name=toolset_name,
+        policy_path=policy_path,
+        lockfile_path=lockfile_path,
+        base_url=base_url,
+        auth_header=auth_header,
+        audit_log=audit_log,
+        dry_run=dry_run,
+        confirmation_store_path=confirmation_store_path,
+        allow_private_cidrs=allow_private_cidrs,
+        allow_redirects=allow_redirects,
+    )
+
+    async def main() -> None:
+        try:
+            await server.run_stdio()
+        finally:
+            await server.close()
+
+    asyncio.run(main())

@@ -1,0 +1,351 @@
+version: 1.0.0
+schema_version: '1.0'
+generated_at: '1970-01-01T00:00:00+00:00'
+capture_id: null
+scope: null
+artifacts_digest: 7ac1181ac324c55e06bc42fbeaa7ec7f07ee38cee8ad9fe7665a497028056273
+evidence_summary_sha256: null
+baseline_snapshot_dir: snapshot
+baseline_snapshot_digest: 86a79f8006f4a39cc1687f2f311c59f08a92fd81e4faccb0f5137657bdb50149
+baseline_snapshot_id: appr_f9c3b934f3c4
+tools:
+  0cadd0d0b1a99c4b:
+    tool_id: 0cadd0d0b1a99c4b
+    tool_version: 1
+    signature_id: 0cadd0d0b1a99c4b
+    endpoint_id: 28995d6de52c5b43
+    name: get_project
+    method: GET
+    path: /project
+    host: your-domain.atlassian.net
+    risk_tier: low
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-22T04:17:16.143945Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:3e66fed471702870:VMPdf-nNGP_-vOCgzbZpLvSoVIQuqX5-0jsu2FewdSrdeAAXP8yk5ptpVTb2W4y_Jk8q4faHdplgV_VdJpZDBQ
+    approval_alg: ed25519
+    approval_key_id: 3e66fed471702870
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  1fd041cf89305574:
+    tool_id: 1fd041cf89305574
+    tool_version: 1
+    signature_id: 1fd041cf89305574
+    endpoint_id: 1c822b4c562a17c6
+    name: get_issue_transitions
+    method: GET
+    path: /issue/{issueIdOrKey}/transitions
+    host: your-domain.atlassian.net
+    risk_tier: safe
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-22T04:17:16.143837Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:3e66fed471702870:C2MktwVLNPzOJh1i3HThEaBrdM2lqYqO1bClIzrV1katOiFeM0LtA6Yv_WZtcqJRQQiGlm1seiGVMoAvXbRxDA
+    approval_alg: ed25519
+    approval_key_id: 3e66fed471702870
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  52a800e06efdb207:
+    tool_id: 52a800e06efdb207
+    tool_version: 1
+    signature_id: 52a800e06efdb207
+    endpoint_id: 1d0a55d37b3b39a6
+    name: create_issue_comment
+    method: POST
+    path: /issue/{issueIdOrKey}/comment
+    host: your-domain.atlassian.net
+    risk_tier: medium
+    toolsets:
+    - operator
+    - write_ops
+    approved_toolsets:
+    - operator
+    - write_ops
+    status: approved
+    approved_at: '2026-02-22T04:17:16.143237Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:3e66fed471702870:ThaH0HFNu4mpwZNV2Ez0sg-01mE_WMYZ1GIGIW-lf6_wG409m8D1IVQgU80CJR38sOzmZ-DFr-bqCAYTQsB0AA
+    approval_alg: ed25519
+    approval_key_id: 3e66fed471702870
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  5af7d1833c77d88e:
+    tool_id: 5af7d1833c77d88e
+    tool_version: 1
+    signature_id: 5af7d1833c77d88e
+    endpoint_id: 3d655fa0793f5a67
+    name: get_issue
+    method: GET
+    path: /issue/{issueIdOrKey}
+    host: your-domain.atlassian.net
+    risk_tier: safe
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-22T04:17:16.143493Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:3e66fed471702870:CyJHVrtgRPyyOKNh4ekJBzlo9cKk9rqxlKwd3YRty8vP-zFPsaPytWrIuLiRzqOUXrSEOJ9rgmLnI7PE1G6VDA
+    approval_alg: ed25519
+    approval_key_id: 3e66fed471702870
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  622a54704cb65f6c:
+    tool_id: 622a54704cb65f6c
+    tool_version: 1
+    signature_id: 622a54704cb65f6c
+    endpoint_id: 5cb8c51d67f15e9f
+    name: get_project__your_domain_atlassian_net
+    method: GET
+    path: /project/{projectIdOrKey}
+    host: your-domain.atlassian.net
+    risk_tier: low
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-22T04:17:16.144058Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:3e66fed471702870:E-9n_HIOo9aZJkr4OTHlCnJcH9BkkKsRnrIf8dme95EbxmhQfS8_5DQ8x4yNo1QuQ2n_8hLZGblnO10ktOEkBA
+    approval_alg: ed25519
+    approval_key_id: 3e66fed471702870
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  68f758c8a929ced5:
+    tool_id: 68f758c8a929ced5
+    tool_version: 1
+    signature_id: 68f758c8a929ced5
+    endpoint_id: 725bd70fb52e00b7
+    name: get_user
+    method: GET
+    path: /user
+    host: your-domain.atlassian.net
+    risk_tier: safe
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-22T04:17:16.144177Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:3e66fed471702870:-peLsLchL1mPL_ExTZGad37NRrXVLe1LQ9x377BynRTK6maFRbhFat-RzPTSyvmNib3QDux4EH7idbbYFCZxDg
+    approval_alg: ed25519
+    approval_key_id: 3e66fed471702870
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  6fcf1c3157da3bdf:
+    tool_id: 6fcf1c3157da3bdf
+    tool_version: 1
+    signature_id: 6fcf1c3157da3bdf
+    endpoint_id: c422a2558f66d71e
+    name: create_issue
+    method: POST
+    path: /issue
+    host: your-domain.atlassian.net
+    risk_tier: medium
+    toolsets:
+    - operator
+    - write_ops
+    approved_toolsets:
+    - operator
+    - write_ops
+    status: approved
+    approved_at: '2026-02-22T04:17:16.142058Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:3e66fed471702870:05XCWOsMNcs-X6OeJNxlr7Y0MtN-0-OtcOPdulcbrF7aql_IlJ2qwhm2h2GnQ8s69mH627_jxJ2GT6ocY4HCDA
+    approval_alg: ed25519
+    approval_key_id: 3e66fed471702870
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  71c1ba05d017a51f:
+    tool_id: 71c1ba05d017a51f
+    tool_version: 1
+    signature_id: 71c1ba05d017a51f
+    endpoint_id: bd1e0d8d70ad1f3e
+    name: create_issue_transition
+    method: POST
+    path: /issue/{issueIdOrKey}/transitions
+    host: your-domain.atlassian.net
+    risk_tier: medium
+    toolsets:
+    - operator
+    - write_ops
+    approved_toolsets:
+    - operator
+    - write_ops
+    status: approved
+    approved_at: '2026-02-22T04:17:16.143371Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:3e66fed471702870:0lsOoe38A5vF_iMosKQCc7cT5XIilywh2-4uxO4uB6WW8Vt8uaNhEp4J4OKQSZscfZIFEmJsLd_xWzIKD_kpAQ
+    approval_alg: ed25519
+    approval_key_id: 3e66fed471702870
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  c445a7c4a19a2ef6:
+    tool_id: c445a7c4a19a2ef6
+    tool_version: 1
+    signature_id: c445a7c4a19a2ef6
+    endpoint_id: be713b35e2b84e1c
+    name: get_issue_comment__your_domain_atlassian_net
+    method: GET
+    path: /issue/{issueIdOrKey}/comment/{id}
+    host: your-domain.atlassian.net
+    risk_tier: safe
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-22T04:17:16.143728Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:3e66fed471702870:ZrHNVg5J00V2YXfVIBCqlfcudigfETb3dRvlOnGyaV4T17hVIO7xg6VkSjGUaOlLXY8eUy1KU5yix3KZxuMiAw
+    approval_alg: ed25519
+    approval_key_id: 3e66fed471702870
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  d8cb2d1f89648b3c:
+    tool_id: d8cb2d1f89648b3c
+    tool_version: 1
+    signature_id: d8cb2d1f89648b3c
+    endpoint_id: 6a6e2f6a5631cb22
+    name: search_users
+    method: GET
+    path: /users/search
+    host: your-domain.atlassian.net
+    risk_tier: safe
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-22T04:17:16.144404Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:3e66fed471702870:jRQ2Da4PqwH2yci6a63zdcGShkVz8PlJ6v9EhfuMYhrUNbcnSfdItlFUNpCcIAbdUtTO_qxYDeefyHiFzRSoDw
+    approval_alg: ed25519
+    approval_key_id: 3e66fed471702870
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  de4c133d5a01ae1c:
+    tool_id: de4c133d5a01ae1c
+    tool_version: 1
+    signature_id: de4c133d5a01ae1c
+    endpoint_id: cd13d7d71988fe91
+    name: get_issue_comment
+    method: GET
+    path: /issue/{issueIdOrKey}/comment
+    host: your-domain.atlassian.net
+    risk_tier: safe
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-22T04:17:16.143611Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:3e66fed471702870:OTiBr8xBC02d1G9-kkvtgEW1bBGvra95oJ_4mA8NZFK2oWjY7gYlN_5Nc_WnKfgBdOVhMEJV4wYTlXbOo1XfBA
+    approval_alg: ed25519
+    approval_key_id: 3e66fed471702870
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+  e10f8a0ca51e5205:
+    tool_id: e10f8a0ca51e5205
+    tool_version: 1
+    signature_id: e10f8a0ca51e5205
+    endpoint_id: 0a0bd24c79b8fa31
+    name: search_jql
+    method: GET
+    path: /search/jql
+    host: your-domain.atlassian.net
+    risk_tier: safe
+    toolsets:
+    - operator
+    - readonly
+    approved_toolsets:
+    - operator
+    - readonly
+    status: approved
+    approved_at: '2026-02-22T04:17:16.144291Z'
+    approved_by: thomasallicino
+    approval_reason: null
+    approval_signature: ed25519:3e66fed471702870:kRSNKhzZarI_W1pOJFhfI6IJ8i415tpfyZQNWJYtFiLc3mJw3wHsyQw8dt1j1HyaBsMaDHFqxPQ-qJGeFymFCA
+    approval_alg: ed25519
+    approval_key_id: 3e66fed471702870
+    approval_mode: 1-of-1
+    rejection_reason: null
+    previous_signature: null
+    changed_at: '1970-01-01T00:00:00Z'
+    change_type: new
+total_tools: 12
+approved_count: 12
+pending_count: 0
+rejected_count: 0

@@ -1,0 +1,44 @@
+version: 1.0.0
+schema_version: '1.0'
+generated_at: '2026-02-22T04:03:55.728143+00:00'
+source_manifest: The Jira Cloud platform REST API
+capture_id: cap_20260222_87d01ace
+scope: first_party_only
+default_toolset: readonly
+toolsets:
+  readonly:
+    description: Read-only tools for autonomous agents
+    actions:
+    - get_issue
+    - get_issue_comment
+    - get_issue_comment__your_domain_atlassian_net
+    - get_issue_transitions
+    - get_project
+    - get_project__your_domain_atlassian_net
+    - get_user
+    - search_jql
+    - search_users
+  write_ops:
+    description: State-changing tools requiring explicit operator approval
+    actions:
+    - create_issue
+    - create_issue_comment
+    - create_issue_transition
+  high_risk:
+    description: High/critical risk tools requiring extra controls
+    actions: []
+  operator:
+    description: Full reviewed tool surface for trusted operator flows
+    actions:
+    - create_issue
+    - create_issue_comment
+    - create_issue_transition
+    - get_issue
+    - get_issue_comment
+    - get_issue_comment__your_domain_atlassian_net
+    - get_issue_transitions
+    - get_project
+    - get_project__your_domain_atlassian_net
+    - get_user
+    - search_jql
+    - search_users

@@ -1,0 +1,26 @@
+version: 1.0.0
+schema_version: '1.0'
+toolpack_id: tp_jira_dogfood
+created_at: '2026-02-21T00:00:00Z'
+capture_id: cap_jira_dogfood
+artifact_id: art_jira_dogfood
+scope: first_party_only
+allowed_hosts:
+- placeholder.atlassian.net
+origin:
+  start_url: https://placeholder.atlassian.net
+  name: Jira Cloud Platform REST API (dogfood)
+paths:
+  tools: artifact/tools.json
+  toolsets: artifact/toolsets.yaml
+  policy: artifact/policy.yaml
+  baseline: artifact/baseline.json
+  contracts: null
+  contract_yaml: null
+  contract_json: null
+  evidence_summary: null
+  evidence_summary_sha256: null
+  lockfiles:
+    pending: lockfile/toolwright.lock.pending.yaml
+    approved: lockfile/toolwright.lock.yaml
+runtime: null

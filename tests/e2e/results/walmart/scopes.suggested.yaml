@@ -1,0 +1,969 @@
+version: '1.0'
+generated_at: '2026-02-12T02:23:27.854816+00:00'
+scope: first_party_only
+drafts:
+- endpoint_id: 4354e369ef537916
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 62e92141d4b14882
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 56b6035f6ee51b5e
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 9c6378ed6807293e
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 636980293a98e23b
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: bb6119952fdbb359
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 03a03d316943dde1
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 697ddac34ae8e0f9
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 6b6a4dd059a40951
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 1b97bef099492134
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: f9bef61a2b077ebb
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 1264b149dec3552a
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: a2692c3f365f3b3e
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: cf8e551f5b97360a
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 8d78a5fc78214dda
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: aac6ae59394adf62
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: aa0a7c4f22666095
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: ddbde4e85fe47ad1
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 87b9a7e854dd720a
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 1330135658d03e7e
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: d68a0adaf423aa76
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 11102edd5dfc9ea7
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 95711ddf3452216e
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 4ee4f39a3b55e518
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: c4ffd20f45657806
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 51a6b523703e6b37
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 89e64c7115e7e9ea
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 8eee3fe56d6e8cb2
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 593793cdf6204bd3
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 98ca12d1b63e7cce
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 3e5020d1f9cde035
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 31e1f6c2a8fc5b84
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: cd80276864f5f28f
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 9ba1b6dee1ebe8dc
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 478632a253ba946f
+  scope_name: read
+  confidence: 0.9
+  risk_tier: critical
+  risk_reasons:
+  - sensitive_path
+  signals:
+  - critical path keyword in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_page-view-checkout-beacon_page-view-beacon-6f2f9dcea0a221f2.js
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: critical). Signals: critical path keyword
+    in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/cart_page-view-checkout-beacon_page-view-beacon-6f2f9dcea0a221f2.js'
+- endpoint_id: 016256fbacc0f123
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: f0044eed9b11618d
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 0d673685af016155
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 7c750f3ff242198b
+  scope_name: read
+  confidence: 0.9
+  risk_tier: critical
+  risk_reasons:
+  - sensitive_path
+  signals:
+  - critical path keyword in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-data-access_bookslot-tenant-context-662e5083c5e35fe2.js
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: critical). Signals: critical path keyword
+    in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-data-access_bookslot-tenant-context-662e5083c5e35fe2.js'
+- endpoint_id: 4851ab7407bc60af
+  scope_name: read
+  confidence: 0.9
+  risk_tier: critical
+  risk_reasons:
+  - sensitive_path
+  signals:
+  - critical path keyword in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-data-access_utils_unauthorized-cart-error.ffe8e41b70b21060.js
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: critical). Signals: critical path keyword
+    in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-data-access_utils_unauthorized-cart-error.ffe8e41b70b21060.js'
+- endpoint_id: 63f3f17aa5e5cac3
+  scope_name: read
+  confidence: 0.9
+  risk_tier: critical
+  risk_reasons:
+  - sensitive_path
+  signals:
+  - critical path keyword in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-fulfillment-details_utils-93342d89ec70b14c.js
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: critical). Signals: critical path keyword
+    in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-fulfillment-details_utils-93342d89ec70b14c.js'
+- endpoint_id: 55a760619ddbdbec
+  scope_name: read
+  confidence: 0.9
+  risk_tier: critical
+  risk_reasons:
+  - sensitive_path
+  signals:
+  - critical path keyword in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-shortcut_bookslot-shortcut-view-70fe270c59a60e22.js
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: critical). Signals: critical path keyword
+    in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-shortcut_bookslot-shortcut-view-70fe270c59a60e22.js'
+- endpoint_id: c251a55ac8ebf992
+  scope_name: read
+  confidence: 0.9
+  risk_tier: critical
+  risk_reasons:
+  - sensitive_path
+  signals:
+  - critical path keyword in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-shortcut_locale_messages-859ce9ffb8e591a6.js
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: critical). Signals: critical path keyword
+    in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_bookslot-shortcut_locale_messages-859ce9ffb8e591a6.js'
+- endpoint_id: cbbbd8b53989fd7d
+  scope_name: read
+  confidence: 0.9
+  risk_tier: critical
+  risk_reasons:
+  - sensitive_path
+  signals:
+  - critical path keyword in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_cxo-cart-shared_utils_helpers-2a9baddcfcd39d48.js
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: critical). Signals: critical path keyword
+    in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_cxo-cart-shared_utils_helpers-2a9baddcfcd39d48.js'
+- endpoint_id: e869cf3e4294e4d4
+  scope_name: read
+  confidence: 0.9
+  risk_tier: critical
+  risk_reasons:
+  - sensitive_path
+  signals:
+  - critical path keyword in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_review-order-data-access_hooks_review-order-component-context-795621ea143bafb6.js
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: critical). Signals: critical path keyword
+    in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_review-order-data-access_hooks_review-order-component-context-795621ea143bafb6.js'
+- endpoint_id: d2d13c11070d0cd1
+  scope_name: read
+  confidence: 0.9
+  risk_tier: critical
+  risk_reasons:
+  - sensitive_path
+  signals:
+  - critical path keyword in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_store-chooser_beacon-params_store-chooser-460ac2b6e1da32c6.js
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: critical). Signals: critical path keyword
+    in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_store-chooser_beacon-params_store-chooser-460ac2b6e1da32c6.js'
+- endpoint_id: 3151549c89dce0ee
+  scope_name: read
+  confidence: 0.9
+  risk_tier: critical
+  risk_reasons:
+  - sensitive_path
+  signals:
+  - critical path keyword in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_store-chooser_hooks_use-get-default-access-types-f2949f698f8887d3.js
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: critical). Signals: critical path keyword
+    in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/checkout_store-chooser_hooks_use-get-default-access-types-f2949f698f8887d3.js'
+- endpoint_id: 0e1ef9900c47b618
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 7193eec5d1c577d6
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: b7259fd828847a73
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: ca870deea1f3d8d2
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 26820639a6fa8bb0
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: dfc0fab275d3627d
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 4d39aa0a00073e02
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: b4aaf204392850f8
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 6e058cb8096ff8d1
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: fabad39f97dc6468
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: ca37503e91c9d63c
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 8b27219d9d941d3b
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 1e0724d2c56bfb43
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 86dc709f14fd05be
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 78417a45f0691c64
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: d9e4ad647f5a8344
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: fbb82f3cc410fa7b
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 9784222595705fab
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: dfc908685ba4e3a2
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 708fdbf1a1709966
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 64ea5a4e9d558ed8
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: cc68125c0bf70a0b
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: cf813c07b4488073
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 307c0b2c5124887e
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 0e193e0e2930bb8c
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 8315c909c36d1360
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 970626374916bf14
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 8709a93fc1595545
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: b354f56f87bc417d
+  scope_name: read
+  confidence: 0.9
+  risk_tier: critical
+  risk_reasons:
+  - sensitive_path
+  signals:
+  - critical path keyword in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/payments_context_hooks_use-purchase-contract-ada47b193740498a.js
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: critical). Signals: critical path keyword
+    in /dfwrs/3d0839e4-71d8/{uuid}/v2/{id}/_next/static/chunks/payments_context_hooks_use-purchase-contract-ada47b193740498a.js'
+- endpoint_id: 82a8f69de75971ba
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 538cea31a97853a9
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: bc79cded9c9df357
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 5130a70395fd134e
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: bbc7a9ec94996d93
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: c0a1e9dd6452ec97
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 04d6d636ce747c23
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 1e16ae46ccaef8d7
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: d6ba096ea8f65bb1
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: d16d11cfc761dd0e
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: ef8aaa08f414f4d9
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: cd0f6632b9625f60
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 57b4c917b03b87de
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: c6e5545996851d74
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 652be32e418bde71
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 44e5f581cdbe4b60
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: bbf9c7438938c6db
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 98b6f9116cce3ad0
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 5377d18ddc2e25e7
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 470750fe2412e933
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 0aa9178658adeebf
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: b5bacd7cd816d834
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: ffa9cee5d5351bc4
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 9379a1d3df3cf872
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: a20147a4a17cebc5
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 19042c58a76a96e2
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 97b938f414f3707e
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: ab8acf0694062af7
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: d74d05bd13ca695a
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 3d7de8ffcfec2ba2
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 58124b2b5b326ae1
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: b8f5f83ac9a010e3
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 0987e7c0c806b49d
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: e69aaed4c321a52d
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: dd7189e8621c4aab
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 14e4b22ea4b9bf00
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: b6654afb3ed362bb
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: c29de154d5604b34
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 459d9d4280f718c3
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: dc66179224ad564e
+  scope_name: write
+  confidence: 0.7
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST'

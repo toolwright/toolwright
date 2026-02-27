@@ -1,0 +1,72 @@
+version: 1.0.0
+schema_version: '1.0'
+generated_at: '2026-02-21T20:27:30.436158+00:00'
+source_manifest: GitHub REST API
+capture_id: cap_20260221_fc57ca1f
+scope: first_party_only
+default_toolset: readonly
+toolsets:
+  readonly:
+    description: Read-only tools for autonomous agents
+    actions:
+    - get_repo
+    - get_repo_commits
+    - get_repo_content
+    - get_repo_issue
+    - get_repo_issue_comments
+    - get_repo_issues
+    - get_repo_labels
+    - get_repo_pull
+    - get_repo_pulls
+    - get_user
+  write_ops:
+    description: State-changing tools requiring explicit operator approval
+    actions:
+    - create_repo_issue
+    - create_repo_issue_comment
+    - create_repo_label
+    - create_repo_pull
+    - delete_repo
+    - delete_repo_content
+    - update_repo
+    - update_repo_content
+    - update_repo_issue
+    - update_repo_pull
+    - update_user
+  high_risk:
+    description: High/critical risk tools requiring extra controls
+    actions:
+    - create_repo_issue
+    - create_repo_issue_comment
+    - create_repo_pull
+    - delete_repo
+    - delete_repo_content
+    - update_repo
+    - update_repo_content
+    - update_repo_issue
+    - update_repo_pull
+    - update_user
+  operator:
+    description: Full reviewed tool surface for trusted operator flows
+    actions:
+    - create_repo_issue
+    - create_repo_issue_comment
+    - create_repo_label
+    - create_repo_pull
+    - delete_repo
+    - delete_repo_content
+    - get_repo
+    - get_repo_commits
+    - get_repo_content
+    - get_repo_issue
+    - get_repo_issue_comments
+    - get_repo_issues
+    - get_repo_labels
+    - get_repo_pull
+    - get_repo_pulls
+    - get_user
+    - update_repo
+    - update_repo_content
+    - update_repo_issue
+    - update_repo_pull
+    - update_user

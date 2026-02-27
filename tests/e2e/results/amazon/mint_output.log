@@ -1,0 +1,91 @@
+Mint step 1/4: capturing traffic...
+  Start URL: https://www.amazon.com
+  Allowed hosts: *.amazon.com, *.media-amazon.com
+  Headless: True
+  Script: tests/e2e/amazon_capture.py
+
+Navigating to: https://www.amazon.com
+Running scripted capture: tests/e2e/amazon_capture.py
+  ✓ POST /1/batch/1/OE/ [204]
+  ✓ POST /1/batch/1/OE/ [204]
+  ✓ GET /cart/add-to-cart/patc-config [200]
+  ✓ GET /cart/add-to-cart/get-cart-items [200]
+  ✓ POST /1/events/com.amazon.csm.csa.prod [200]
+  ✓ POST /1/events/com.amazon.csm.nexusclient.prod [200]
+  ✓ POST /1/events/com.amazon.BotCXPolicy.na.prod.bd [200]
+  ✓ POST /1/batch/1/OE/ [204]
+  ✓ POST /1/events/com.amazon.csm.customsg.prod [200]
+  ✓ POST /1/events/com.amazon.csm.nexusclient.prod [200]
+  ✓ POST /1/events/com.amazon.eel.SearchAutocompleteUIServi [200]
+  ✓ POST /1/events/com.amazon.csm.csa.prod [200]
+  ✓ POST /1/events/com.amazon.eel.amazonlive.metrics.nexus [200]
+  ✓ POST /1/events/com.amazon.eel.amazonlive.metrics.nexus [200]
+  ✓ POST /1/events/com.amazon.eel.amazonlive.metrics.nexus [200]
+  ✓ POST /1/events/com.amazon.eel.amazonlive.metrics.nexus [200]
+  ✓ POST /1/events/com.amazon.csm.csa.prod [200]
+  ✓ GET /api/marketplaces/ATVPDKIKX0DER/products/B09B2SRGX [200]
+  ✓ POST /1/events/com.amazon.eel.amazonlive.metrics.nexus [200]
+  ✓ POST /1/events/com.amazon.eel.amazonlive.metrics.nexus [200]
+  ✓ POST /1/events/com.amazon.eel.amazonlive.metrics.nexus [200]
+  ✓ POST /1/events/com.amazon.eel.amazonlive.metrics.nexus [200]
+  ✓ POST /1/events/com.amazon.eel.amazonlive.metrics.nexus [200]
+  ✓ POST /1/events/com.amazon.eel.amazonlive.metrics.nexus [200]
+  ✓ POST /1/events/com.amazon.eel.amazonlive.metrics.nexus [200]
+  ✓ POST /1/events/com.amazon.csm.nexusclient.prod [200]
+  ✓ POST /1/events/com.amazon.BotCXPolicy.na.prod.bd [200]
+  ✓ POST /1/events/com.amazon.csm.csa.prod [200]
+  ✓ POST /1/batch/1/OE/ [204]
+  ✓ POST /1/events/com.amazon.csm.customsg.prod [200]
+  ✓ POST /1/events/com.amazon.csm.nexusclient.prod [200]
+  ✓ POST /1/events/com.amazon.csm.csa.prod [200]
+  ✓ POST /1/events/com.amazon.eel.SearchAutocompleteUIServi [200]
+  ✓ POST /1/events/com.amazon.csm.csa.prod [200]
+  ✓ POST /1/events/com.amazon.csm.nexusclient.prod [200]
+  ✓ POST /1/events/com.amazon.BotCXPolicy.na.prod.bd [200]
+  ✓ POST /1/events/com.amazon.eel.SearchAutocompleteUIServi [200]
+  ✓ POST /1/batch/1/OE/ [204]
+  ✓ POST /1/events/com.amazon.csm.nexusclient.prod [200]
+  ✓ POST /1/events/com.amazon.csm.customsg.prod [200]
+  ✓ POST /1/events/com.amazon.csm.csa.prod [200]
+  ✓ POST /1/events/com.amazon.csm.csa.prod [200]
+  ✓ POST /1/events/com.amazon.csm.nexusclient.prod [200]
+  ✓ POST /1/events/com.amazon.BotCXPolicy.na.prod.bd [200]
+  ✓ POST /1/events/com.amazon.eel.SearchAutocompleteUIServi [200]
+
+Stopping capture...
+Mint step 2/4: compiling artifacts...
+Loaded capture: cap_20260212_f275b9d8
+  Exchanges: 45
+Aggregating endpoints...
+  Endpoints: 10
+  After scope filter: 10
+  Scope drafts: 10 (0 need review)
+Mint step 3/4: creating toolpack...
+
+Mint complete: tp_834c72070def
+  Capture: cap_20260212_f275b9d8
+  Capture location: .caskmcp/captures/cap_20260212_f275b9d8
+  Artifact: art_9d34054bbdee
+  Toolpack: .caskmcp/toolpacks/tp_834c72070def/toolpack.yaml
+  Pending approvals: 10
+
+Next commands:
+  caskmcp run --toolpack .caskmcp/toolpacks/tp_834c72070def/toolpack.yaml
+  caskmcp gate allow --all --toolset readonly --lockfile .caskmcp/toolpacks/tp_834c72070def/lockfile/caskmcp.lock.pending.yaml
+  caskmcp drift --baseline .caskmcp/toolpacks/tp_834c72070def/artifact/baseline.json --capture-path .caskmcp/captures/cap_20260212_f275b9d8
+
+Connect to your AI agent:
+
+  Add to .mcp.json (works with any MCP client):
+    {
+      "mcpServers": {
+        "caskmcp": {
+          "command": "cask",
+          "args": ["run", "--toolpack", ".caskmcp/toolpacks/tp_834c72070def/toolpack.yaml"]
+        }
+      }
+    }
+
+  Or via Claude Code CLI:
+    claude mcp add caskmcp -- cask run --toolpack .caskmcp/toolpacks/tp_834c72070def/toolpack.yaml
+

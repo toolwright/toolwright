@@ -1,0 +1,11 @@
+--- committed
++++ fresh
+@@ -31679,7 +31679,7 @@
+               "created_at": "2016-11-28T22:03:59Z",
+               "created_by": "Yukihiro Matsumoto",
+               "curated": true,
+-              "description": "Ruby was developed by Yukihiro \"Matz\" Matsumoto in 1995 with the intent of having an easily readable programming language. It is integrated with the Rails framework to create dynamic web-applications. Ruby's syntax is similar to that of Perl and Python.",
++              "description": "Ruby was developed by\u00a0Yukihiro \"Matz\" Matsumoto\u00a0in 1995 with the intent of having an easily readable programming language. It is integrated with the Rails framework to create dynamic web-applications. Ruby's syntax is similar to that of Perl and Python.",
+               "display_name": "Ruby",
+               "featured": true,
+               "name": "ruby",

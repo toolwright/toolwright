@@ -1,0 +1,2270 @@
+{
+  "version": "1.0.0",
+  "schema_version": "1.0",
+  "name": "playwright_www_amazon_com_20260212_022109",
+  "generated_at": "2026-02-12T02:21:09.159016+00:00",
+  "allowed_hosts": [
+    "data.amazon.com",
+    "fls-na.amazon.com",
+    "unagi-na.amazon.com",
+    "unagi.amazon.com",
+    "www.amazon.com"
+  ],
+  "actions": [
+    {
+      "id": "get_marketplaces_atvpdkikx0der_products_b09b2srgxhb0dllscvzwb0fmjfzvchb0dh2cg61mb09pybqf56b08fj678ykb01fdeo5skb07bb4yxhwb0c9csvsnyb07t6fnlqvb0bnbh8521b073wj5m1bb09xmmzswwb0chdllqgxb071kgvlbbb004msmugib0cq71ztzvb0c6xvxpccb0fcybxgjxb0cx18d3km",
+      "tool_id": "250569f18e3a4804",
+      "name": "get_marketplaces_atvpdkikx0der_products_b09b2srgxhb0dllscvzwb0fmjfzvchb0dh2cg61mb09pybqf56b08fj678ykb01fdeo5skb07bb4yxhwb0c9csvsnyb07t6fnlqvb0bnbh8521b073wj5m1bb09xmmzswwb0chdllqgxb071kgvlbbb004msmugib0cq71ztzvb0c6xvxpccb0fcybxgjxb0cx18d3km",
+      "description": "Use this to browse or manage commerce data. List all B09B2SRGXH,B0DLLSCVZW,B0FMJFZVCH,B0DH2CG61M,B09PYBQF56,B08FJ678YK,B01FDEO5SK,B07BB4YXHW,B0C9CSVSNY,B07T6FNLQV,B0BNBH8521,B073WJ5M1B,B09XMMZSWW,B0CHDLLQGX,B071KGVLBB,B004MSMUGI,B0CQ71ZTZV,B0C6XVXPCC,B0FCYBXGJX,B0CX18D3KM. Returns: entities, resource, type",
+      "endpoint_id": "07fa8aa83f03d067",
+      "signature_id": "250569f18e3a4804",
+      "method": "GET",
+      "path": "/api/marketplaces/ATVPDKIKX0DER/products/B09B2SRGXH,B0DLLSCVZW,B0FMJFZVCH,B0DH2CG61M,B09PYBQF56,B08FJ678YK,B01FDEO5SK,B07BB4YXHW,B0C9CSVSNY,B07T6FNLQV,B0BNBH8521,B073WJ5M1B,B09XMMZSWW,B0CHDLLQGX,B071KGVLBB,B004MSMUGI,B0CQ71ZTZV,B0C6XVXPCC,B0FCYBXGJX,B0CX18D3KM",
+      "host": "data.amazon.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "marketplaces",
+        "read"
+      ],
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "entities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "entity": {
+                  "type": "object",
+                  "properties": {
+                    "asin": {
+                      "type": "string"
+                    },
+                    "buyingOptions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "callToAction": {
+                            "type": "object",
+                            "properties": {
+                              "entity": {
+                                "type": "object",
+                                "properties": {
+                                  "addToCart": {
+                                    "type": "object",
+                                    "properties": {
+                                      "data": {
+                                        "type": "object",
+                                        "properties": {
+                                          "displayString": {
+                                            "type": "string"
+                                          },
+                                          "parameters": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "properties": {
+                                                "name": {
+                                                  "type": "string"
+                                                },
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "name",
+                                                "value"
+                                              ]
+                                            }
+                                          },
+                                          "type": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "displayString",
+                                          "parameters",
+                                          "type"
+                                        ]
+                                      },
+                                      "url": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "data",
+                                      "url"
+                                    ]
+                                  },
+                                  "checkout": {
+                                    "type": "object",
+                                    "properties": {
+                                      "data": {
+                                        "type": "object",
+                                        "properties": {
+                                          "displayString": {
+                                            "type": "string"
+                                          },
+                                          "parameters": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "properties": {
+                                                "name": {
+                                                  "type": "string"
+                                                },
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "name",
+                                                "value"
+                                              ]
+                                            }
+                                          }
+                                        },
+                                        "required": [
+                                          "displayString",
+                                          "parameters"
+                                        ]
+                                      },
+                                      "url": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "data",
+                                      "url"
+                                    ]
+                                  },
+                                  "tangoCheckout": {
+                                    "type": "object",
+                                    "properties": {
+                                      "data": {
+                                        "type": "object",
+                                        "properties": {
+                                          "displayString": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "displayString"
+                                        ]
+                                      },
+                                      "url": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "data",
+                                      "url"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "addToCart",
+                                  "checkout",
+                                  "tangoCheckout"
+                                ]
+                              },
+                              "metadata": {
+                                "type": "object",
+                                "properties": {
+                                  "x-amzn-metrics-id": {
+                                    "type": "string"
+                                  },
+                                  "x-api-exp-data": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "x-amzn-metrics-id",
+                                  "x-api-exp-data"
+                                ]
+                              },
+                              "resource": {
+                                "type": "object",
+                                "properties": {
+                                  "types": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "url": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "types",
+                                  "url"
+                                ]
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "entity",
+                              "metadata",
+                              "resource",
+                              "type"
+                            ]
+                          },
+                          "dealBadge": {
+                            "type": "object",
+                            "properties": {
+                              "metadata": {
+                                "type": "object",
+                                "properties": {
+                                  "x-amzn-metrics-id": {
+                                    "type": "string"
+                                  },
+                                  "x-api-exp-data": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "x-amzn-metrics-id",
+                                  "x-api-exp-data"
+                                ]
+                              },
+                              "resource": {
+                                "type": "object",
+                                "properties": {
+                                  "types": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "url": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "types",
+                                  "url"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "metadata",
+                              "resource"
+                            ]
+                          },
+                          "dealDetails": {
+                            "type": "object",
+                            "properties": {
+                              "metadata": {
+                                "type": "object",
+                                "properties": {
+                                  "x-amzn-metrics-id": {
+                                    "type": "string"
+                                  },
+                                  "x-api-exp-data": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "x-amzn-metrics-id",
+                                  "x-api-exp-data"
+                                ]
+                              },
+                              "resource": {
+                                "type": "object",
+                                "properties": {
+                                  "types": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "url": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "types",
+                                  "url"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "metadata",
+                              "resource"
+                            ]
+                          },
+                          "price": {
+                            "type": "object",
+                            "properties": {
+                              "entity": {
+                                "type": "object",
+                                "properties": {
+                                  "priceToPay": {
+                                    "type": "object",
+                                    "properties": {
+                                      "impositions": {
+                                        "type": "array"
+                                      },
+                                      "label": {
+                                        "type": "string"
+                                      },
+                                      "moneyValueOrRange": {
+                                        "type": "object",
+                                        "properties": {
+                                          "value": {
+                                            "type": "object",
+                                            "properties": {
+                                              "amount": {
+                                                "type": "number"
+                                              },
+                                              "currencyCode": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "amount",
+                                              "currencyCode"
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "value"
+                                        ]
+                                      },
+                                      "priceMessage": {
+                                        "type": "object",
+                                        "properties": {}
+                                      },
+                                      "strikethrough": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "required": [
+                                      "impositions",
+                                      "label",
+                                      "moneyValueOrRange",
+                                      "priceMessage",
+                                      "strikethrough"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "priceToPay"
+                                ]
+                              },
+                              "metadata": {
+                                "type": "object",
+                                "properties": {
+                                  "x-amzn-metrics-id": {
+                                    "type": "string"
+                                  },
+                                  "x-api-exp-data": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "x-amzn-metrics-id",
+                                  "x-api-exp-data"
+                                ]
+                              },
+                              "resource": {
+                                "type": "object",
+                                "properties": {
+                                  "types": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "url": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "types",
+                                  "url"
+                                ]
+                              },
+                              "type": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "entity",
+                              "metadata",
+                              "resource",
+                              "type"
+                            ]
+                          },
+                          "type": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "callToAction",
+                          "dealBadge",
+                          "dealDetails",
+                          "price",
+                          "type"
+                        ]
+                      }
+                    },
+                    "productImages": {
+                      "type": "object",
+                      "properties": {
+                        "entity": {
+                          "type": "object",
+                          "properties": {
+                            "altText": {
+                              "type": "string"
+                            },
+                            "images": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "colorInformation": {
+                                    "type": "object",
+                                    "properties": {
+                                      "dominantColors": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "color": {
+                                              "type": "object",
+                                              "properties": {
+                                                "hexValue": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "required": [
+                                                "hexValue"
+                                              ]
+                                            },
+                                            "ratio": {
+                                              "type": "number"
+                                            }
+                                          },
+                                          "required": [
+                                            "color",
+                                            "ratio"
+                                          ]
+                                        }
+                                      },
+                                      "palette": {
+                                        "type": "object",
+                                        "properties": {
+                                          "leadColor": {
+                                            "type": "object",
+                                            "properties": {
+                                              "hexValue": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "hexValue"
+                                            ]
+                                          },
+                                          "secondaryColors": {
+                                            "type": "object",
+                                            "properties": {
+                                              "neutralColor": {
+                                                "type": "object",
+                                                "properties": {
+                                                  "hexValue": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "hexValue"
+                                                ]
+                                              },
+                                              "popColor": {
+                                                "type": "object",
+                                                "properties": {
+                                                  "hexValue": {
+                                                    "type": "string"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "hexValue"
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "neutralColor",
+                                              "popColor"
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "leadColor",
+                                          "secondaryColors"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "dominantColors",
+                                      "palette"
+                                    ]
+                                  },
+                                  "hiRes": {
+                                    "type": "object",
+                                    "properties": {
+                                      "extension": {
+                                        "type": "string"
+                                      },
+                                      "height": {
+                                        "type": "integer"
+                                      },
+                                      "physicalId": {
+                                        "type": "string"
+                                      },
+                                      "width": {
+                                        "type": "integer"
+                                      }
+                                    },
+                                    "required": [
+                                      "extension",
+                                      "height",
+                                      "physicalId",
+                                      "width"
+                                    ]
+                                  },
+                                  "lowRes": {
+                                    "type": "object",
+                                    "properties": {
+                                      "extension": {
+                                        "type": "string"
+                                      },
+                                      "height": {
+                                        "type": "integer"
+                                      },
+                                      "physicalId": {
+                                        "type": "string"
+                                      },
+                                      "width": {
+                                        "type": "integer"
+                                      }
+                                    },
+                                    "required": [
+                                      "extension",
+                                      "height",
+                                      "physicalId",
+                                      "width"
+                                    ]
+                                  },
+                                  "variant": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "colorInformation",
+                                  "hiRes",
+                                  "lowRes",
+                                  "variant"
+                                ]
+                              }
+                            }
+                          },
+                          "required": [
+                            "altText",
+                            "images"
+                          ]
+                        },
+                        "metadata": {
+                          "type": "object",
+                          "properties": {
+                            "x-api-exp-data": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "x-api-exp-data"
+                          ]
+                        },
+                        "resource": {
+                          "type": "object",
+                          "properties": {
+                            "types": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "url": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "types",
+                            "url"
+                          ]
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "entity",
+                        "metadata",
+                        "resource",
+                        "type"
+                      ]
+                    },
+                    "title": {
+                      "type": "object",
+                      "properties": {
+                        "entity": {
+                          "type": "object",
+                          "properties": {
+                            "displayString": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "displayString"
+                          ]
+                        },
+                        "metadata": {
+                          "type": "object",
+                          "properties": {
+                            "x-api-exp-data": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "x-api-exp-data"
+                          ]
+                        },
+                        "resource": {
+                          "type": "object",
+                          "properties": {
+                            "types": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "url": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "types",
+                            "url"
+                          ]
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "entity",
+                        "metadata",
+                        "resource",
+                        "type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "asin",
+                    "buyingOptions",
+                    "productImages",
+                    "title"
+                  ]
+                },
+                "resource": {
+                  "type": "object",
+                  "properties": {
+                    "types": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "url": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "types",
+                    "url"
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "entity",
+                "resource",
+                "type"
+              ]
+            }
+          },
+          "resource": {
+            "type": "object",
+            "properties": {
+              "types": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "types",
+              "url"
+            ]
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "entities",
+          "resource",
+          "type"
+        ]
+      },
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "create_batch_oe",
+      "tool_id": "ab1ff8befde81e62",
+      "name": "create_batch_oe",
+      "description": "Create a new OE",
+      "endpoint_id": "021981e66faefc20",
+      "signature_id": "ab1ff8befde81e62",
+      "method": "POST",
+      "path": "/{id}/batch/{id}/OE",
+      "host": "fls-na.amazon.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "mid": {
+            "type": "string"
+          },
+          "reqs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "csm": {
+                  "type": "object",
+                  "properties": {
+                    "f": {
+                      "type": "integer"
+                    },
+                    "k": {
+                      "type": "string"
+                    },
+                    "l": {
+                      "type": "object",
+                      "properties": {
+                        "csm": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "csm"
+                      ]
+                    },
+                    "s": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "f",
+                    "k",
+                    "l",
+                    "s"
+                  ]
+                },
+                "csmcount": {
+                  "type": "object",
+                  "properties": {
+                    "counter": {
+                      "type": "string"
+                    },
+                    "t": {
+                      "type": "integer"
+                    },
+                    "value": {
+                      "oneOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "counter",
+                    "t",
+                    "value"
+                  ]
+                },
+                "opfcsm-i": {
+                  "type": "object",
+                  "properties": {
+                    "attr": {
+                      "type": "object",
+                      "properties": {
+                        "action": {
+                          "type": "string"
+                        },
+                        "method": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "action",
+                        "method",
+                        "name"
+                      ]
+                    },
+                    "id": {
+                      "type": "integer"
+                    },
+                    "k": {
+                      "type": "string"
+                    },
+                    "n": {
+                      "type": "string"
+                    },
+                    "pid": {
+                      "type": "integer"
+                    },
+                    "s": {
+                      "type": "integer"
+                    },
+                    "sid": {
+                      "type": "integer"
+                    },
+                    "t": {
+                      "type": "integer"
+                    },
+                    "t0": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "k",
+                    "t"
+                  ]
+                },
+                "uedata": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "rid": {
+            "type": "string"
+          },
+          "sid": {
+            "type": "string"
+          },
+          "sn": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "mid",
+          "reqs",
+          "rid",
+          "sid",
+          "sn"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "batch",
+        "write"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "create_events_comamazonbot_cxpolicynaprodbd",
+      "tool_id": "da3f18410120cc25",
+      "name": "create_events_comamazonbot_cxpolicynaprodbd",
+      "description": "Create a new com.amazon.BotCXPolicy.na.prod.bd",
+      "endpoint_id": "73d63ac31c5b878d",
+      "signature_id": "da3f18410120cc25",
+      "method": "POST",
+      "path": "/{id}/events/com.amazon.BotCXPolicy.na.prod.bd",
+      "host": "unagi-na.amazon.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "additionalData": {
+                      "type": "string"
+                    },
+                    "sessionMetadata": {
+                      "type": "object",
+                      "properties": {
+                        "collectionStartTime": {
+                          "type": "integer"
+                        },
+                        "domain": {
+                          "type": "string"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "sessionDuration": {
+                          "type": "integer"
+                        },
+                        "sessionId": {
+                          "type": "string"
+                        },
+                        "timestamp": {
+                          "type": "string"
+                        },
+                        "uaFullVersion": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string"
+                        },
+                        "userAgent": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "collectionStartTime",
+                        "domain",
+                        "requestId",
+                        "sessionDuration",
+                        "sessionId",
+                        "timestamp",
+                        "uaFullVersion",
+                        "url",
+                        "userAgent"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "additionalData",
+                    "sessionMetadata"
+                  ]
+                }
+              },
+              "required": [
+                "data"
+              ]
+            }
+          }
+        },
+        "required": [
+          "events",
+          "id"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "events",
+        "write"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "create_events_comamazoneelamazonlivemetricsnexu",
+      "tool_id": "ff02cf87ceb4cc25",
+      "name": "create_events_comamazoneelamazonlivemetricsnexu",
+      "description": "Use this to handle authentication. Create a new com.amazon.eel.amazonlive.metrics.nexu",
+      "endpoint_id": "3b1d1d464cb18a8d",
+      "signature_id": "ff02cf87ceb4cc25",
+      "method": "POST",
+      "path": "/{id}/events/com.amazon.eel.amazonlive.metrics.nexus",
+      "host": "unagi-na.amazon.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "asin": {
+                      "type": "string"
+                    },
+                    "broadcast_id": {
+                      "type": "string"
+                    },
+                    "broadcast_id_type": {
+                      "type": "string"
+                    },
+                    "broadcast_status": {
+                      "type": "string"
+                    },
+                    "context": {
+                      "type": "string"
+                    },
+                    "customer_id": {
+                      "type": "string"
+                    },
+                    "event_id": {
+                      "type": "string"
+                    },
+                    "event_trigger_type": {
+                      "type": "string"
+                    },
+                    "event_type": {
+                      "type": "string"
+                    },
+                    "experience": {
+                      "type": "string"
+                    },
+                    "int_payload": {
+                      "oneOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "json_payload": {
+                      "type": "string"
+                    },
+                    "marketplace_id": {
+                      "type": "string"
+                    },
+                    "page_id": {
+                      "type": "string"
+                    },
+                    "page_type": {
+                      "type": "string"
+                    },
+                    "pip_active": {
+                      "type": "boolean"
+                    },
+                    "platform": {
+                      "type": "string"
+                    },
+                    "player_status": {
+                      "type": "string"
+                    },
+                    "promoted_item_id": {
+                      "type": "string"
+                    },
+                    "ref_marker": {
+                      "type": "string"
+                    },
+                    "reported_time": {
+                      "type": "integer"
+                    },
+                    "request_id": {
+                      "type": "string"
+                    },
+                    "session_id": {
+                      "type": "string"
+                    },
+                    "show_id": {
+                      "type": "string"
+                    },
+                    "slot_id": {
+                      "oneOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "slot_name": {
+                      "type": "string"
+                    },
+                    "stream_session_id": {
+                      "type": "string"
+                    },
+                    "string_payload": {
+                      "type": "string"
+                    },
+                    "traffic_type": {
+                      "type": "string"
+                    },
+                    "undefined": {
+                      "type": "string"
+                    },
+                    "user_agent": {
+                      "type": "string"
+                    },
+                    "weblab_ids": {
+                      "type": "string"
+                    },
+                    "widget": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "asin",
+                    "broadcast_id",
+                    "broadcast_id_type",
+                    "broadcast_status",
+                    "customer_id",
+                    "event_id",
+                    "event_trigger_type",
+                    "event_type",
+                    "experience",
+                    "int_payload",
+                    "json_payload",
+                    "marketplace_id",
+                    "page_id",
+                    "page_type",
+                    "pip_active",
+                    "platform",
+                    "player_status",
+                    "promoted_item_id",
+                    "ref_marker",
+                    "reported_time",
+                    "request_id",
+                    "session_id",
+                    "show_id",
+                    "slot_id",
+                    "slot_name",
+                    "stream_session_id",
+                    "string_payload",
+                    "traffic_type",
+                    "undefined",
+                    "user_agent",
+                    "weblab_ids",
+                    "widget"
+                  ]
+                }
+              },
+              "required": [
+                "data"
+              ]
+            }
+          }
+        },
+        "required": [
+          "events",
+          "id"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "events",
+        "write"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "create_events_comamazoncsmcsaprod",
+      "tool_id": "07efeb4a11ae1b76",
+      "name": "create_events_comamazoncsmcsaprod",
+      "description": "Create a new com.amazon.csm.csa.prod",
+      "endpoint_id": "05be2594c978a16a",
+      "signature_id": "07efeb4a11ae1b76",
+      "method": "POST",
+      "path": "/{id}/events/com.amazon.csm.csa.prod",
+      "host": "unagi.amazon.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "application": {
+                      "type": "string"
+                    },
+                    "attributes": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "meaningful": {
+                          "type": "string"
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "referrer": {
+                          "type": "string"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "server": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "transitionType": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "meaningful",
+                        "path",
+                        "referrer",
+                        "requestId",
+                        "server",
+                        "title",
+                        "transitionType",
+                        "url"
+                      ]
+                    },
+                    "clientData": {
+                      "type": "object",
+                      "properties": {
+                        "h": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "h"
+                      ]
+                    },
+                    "csmtags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "entities": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "meaningful": {
+                              "type": "string"
+                            },
+                            "path": {
+                              "type": "string"
+                            },
+                            "referrer": {
+                              "type": "string"
+                            },
+                            "requestId": {
+                              "type": "string"
+                            },
+                            "server": {
+                              "type": "string"
+                            },
+                            "title": {
+                              "type": "string"
+                            },
+                            "transitionType": {
+                              "type": "string"
+                            },
+                            "url": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "requestId"
+                          ]
+                        },
+                        "session": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id"
+                              ]
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "session"
+                      ]
+                    },
+                    "eventName": {
+                      "type": "string"
+                    },
+                    "eventType": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "lob": {
+                      "type": "string"
+                    },
+                    "messageId": {
+                      "type": "string"
+                    },
+                    "obfuscatedMarketplaceId": {
+                      "type": "string"
+                    },
+                    "pageInfo": {
+                      "type": "object",
+                      "properties": {
+                        "pti": {
+                          "type": "string"
+                        },
+                        "pty": {
+                          "type": "string"
+                        },
+                        "spty": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "pti",
+                        "pty",
+                        "spty"
+                      ]
+                    },
+                    "producerId": {
+                      "type": "string"
+                    },
+                    "referrer": {
+                      "type": "string"
+                    },
+                    "schemaId": {
+                      "type": "string"
+                    },
+                    "sessionId": {
+                      "type": "string"
+                    },
+                    "t": {
+                      "type": "string"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    },
+                    "transitionType": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "integer"
+                    },
+                    "viz": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "application",
+                    "messageId",
+                    "obfuscatedMarketplaceId",
+                    "producerId",
+                    "schemaId",
+                    "timestamp"
+                  ]
+                }
+              },
+              "required": [
+                "data"
+              ]
+            }
+          }
+        },
+        "required": [
+          "events",
+          "id"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "events",
+        "write"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "create_events_comamazoncsmcustomsgprod",
+      "tool_id": "812f8debff3f3a64",
+      "name": "create_events_comamazoncsmcustomsgprod",
+      "description": "Create a new com.amazon.csm.customsg.prod",
+      "endpoint_id": "778a33caec3bbe83",
+      "signature_id": "812f8debff3f3a64",
+      "method": "POST",
+      "path": "/{id}/events/com.amazon.csm.customsg.prod",
+      "host": "unagi.amazon.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "application": {
+                      "type": "string"
+                    },
+                    "c": {
+                      "type": "object",
+                      "properties": {
+                        "csa.customsg.baselineMetric": {
+                          "type": "object",
+                          "properties": {
+                            "f": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "f"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "csa.customsg.baselineMetric"
+                      ]
+                    },
+                    "entities": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "pageType": {
+                              "type": "string"
+                            },
+                            "requestId": {
+                              "type": "string"
+                            },
+                            "subPageType": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "pageType",
+                            "requestId",
+                            "subPageType"
+                          ]
+                        },
+                        "session": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "session"
+                      ]
+                    },
+                    "lob": {
+                      "type": "string"
+                    },
+                    "messageId": {
+                      "type": "string"
+                    },
+                    "obfuscatedMarketplaceId": {
+                      "type": "string"
+                    },
+                    "producerId": {
+                      "type": "string"
+                    },
+                    "schemaId": {
+                      "type": "string"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "application",
+                    "c",
+                    "entities",
+                    "lob",
+                    "messageId",
+                    "obfuscatedMarketplaceId",
+                    "producerId",
+                    "schemaId",
+                    "timestamp"
+                  ]
+                }
+              },
+              "required": [
+                "data"
+              ]
+            }
+          }
+        },
+        "required": [
+          "events",
+          "id"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "events",
+        "write"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "create_events_comamazoncsmnexusclientprod",
+      "tool_id": "2441192833f35b52",
+      "name": "create_events_comamazoncsmnexusclientprod",
+      "description": "Create a new com.amazon.csm.nexusclient.prod",
+      "endpoint_id": "5fc07ae0ed7fce17",
+      "signature_id": "2441192833f35b52",
+      "method": "POST",
+      "path": "/{id}/events/com.amazon.csm.nexusclient.prod",
+      "host": "unagi.amazon.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cs": {
+            "type": "object",
+            "properties": {
+              "dct": {
+                "type": "object",
+                "properties": {
+                  "#0": {
+                    "type": "string"
+                  },
+                  "#1": {
+                    "type": "string"
+                  },
+                  "#10": {
+                    "type": "string"
+                  },
+                  "#11": {
+                    "type": "string"
+                  },
+                  "#12": {
+                    "type": "string"
+                  },
+                  "#13": {
+                    "type": "string"
+                  },
+                  "#14": {
+                    "type": "string"
+                  },
+                  "#15": {
+                    "type": "string"
+                  },
+                  "#16": {
+                    "type": "string"
+                  },
+                  "#17": {
+                    "type": "string"
+                  },
+                  "#18": {
+                    "type": "string"
+                  },
+                  "#19": {
+                    "type": "string"
+                  },
+                  "#2": {
+                    "type": "string"
+                  },
+                  "#20": {
+                    "type": "string"
+                  },
+                  "#21": {
+                    "type": "string"
+                  },
+                  "#22": {
+                    "type": "string"
+                  },
+                  "#23": {
+                    "type": "string"
+                  },
+                  "#24": {
+                    "type": "string"
+                  },
+                  "#25": {
+                    "type": "string"
+                  },
+                  "#26": {
+                    "type": "string"
+                  },
+                  "#27": {
+                    "type": "string"
+                  },
+                  "#28": {
+                    "type": "string"
+                  },
+                  "#29": {
+                    "type": "string"
+                  },
+                  "#3": {
+                    "type": "string"
+                  },
+                  "#30": {
+                    "type": "string"
+                  },
+                  "#31": {
+                    "type": "string"
+                  },
+                  "#32": {
+                    "type": "string"
+                  },
+                  "#33": {
+                    "type": "string"
+                  },
+                  "#34": {
+                    "type": "string"
+                  },
+                  "#35": {
+                    "type": "string"
+                  },
+                  "#36": {
+                    "type": "string"
+                  },
+                  "#37": {
+                    "type": "string"
+                  },
+                  "#38": {
+                    "type": "string"
+                  },
+                  "#39": {
+                    "type": "string"
+                  },
+                  "#4": {
+                    "type": "string"
+                  },
+                  "#40": {
+                    "type": "string"
+                  },
+                  "#41": {
+                    "type": "string"
+                  },
+                  "#42": {
+                    "type": "string"
+                  },
+                  "#43": {
+                    "type": "string"
+                  },
+                  "#44": {
+                    "type": "string"
+                  },
+                  "#45": {
+                    "type": "string"
+                  },
+                  "#46": {
+                    "type": "string"
+                  },
+                  "#47": {
+                    "type": "string"
+                  },
+                  "#48": {
+                    "type": "string"
+                  },
+                  "#49": {
+                    "type": "string"
+                  },
+                  "#5": {
+                    "type": "string"
+                  },
+                  "#50": {
+                    "type": "string"
+                  },
+                  "#51": {
+                    "type": "string"
+                  },
+                  "#52": {
+                    "type": "string"
+                  },
+                  "#53": {
+                    "type": "string"
+                  },
+                  "#54": {
+                    "type": "string"
+                  },
+                  "#55": {
+                    "type": "string"
+                  },
+                  "#56": {
+                    "type": "string"
+                  },
+                  "#57": {
+                    "type": "string"
+                  },
+                  "#58": {
+                    "type": "string"
+                  },
+                  "#59": {
+                    "type": "string"
+                  },
+                  "#6": {
+                    "type": "string"
+                  },
+                  "#60": {
+                    "type": "string"
+                  },
+                  "#61": {
+                    "type": "string"
+                  },
+                  "#62": {
+                    "type": "string"
+                  },
+                  "#63": {
+                    "type": "string"
+                  },
+                  "#64": {
+                    "type": "string"
+                  },
+                  "#7": {
+                    "type": "string"
+                  },
+                  "#8": {
+                    "type": "string"
+                  },
+                  "#9": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "#0",
+                  "#1",
+                  "#10",
+                  "#11",
+                  "#12",
+                  "#13",
+                  "#14",
+                  "#15",
+                  "#16",
+                  "#17",
+                  "#18",
+                  "#19",
+                  "#2",
+                  "#20",
+                  "#3",
+                  "#4",
+                  "#5",
+                  "#6",
+                  "#7",
+                  "#8",
+                  "#9"
+                ]
+              }
+            },
+            "required": [
+              "dct"
+            ]
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "#0": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "#1": {
+                              "type": "integer"
+                            },
+                            "#10": {
+                              "type": "integer"
+                            },
+                            "#11": {
+                              "type": "integer"
+                            },
+                            "#2": {
+                              "type": "integer"
+                            },
+                            "#3": {
+                              "type": "integer"
+                            },
+                            "#4": {
+                              "type": "integer"
+                            },
+                            "#5": {
+                              "type": "integer"
+                            },
+                            "#6": {
+                              "type": "integer"
+                            },
+                            "#7": {
+                              "type": "integer"
+                            },
+                            "#8": {
+                              "type": "integer"
+                            },
+                            "#9": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "#1",
+                            "#2",
+                            "#3",
+                            "#4",
+                            "#5",
+                            "#6",
+                            "#7"
+                          ]
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "#10": {
+                      "type": "string"
+                    },
+                    "#11": {
+                      "oneOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "#12": {
+                      "oneOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "#13": {
+                      "type": "string"
+                    },
+                    "#14": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "#15": {
+                              "type": "string"
+                            },
+                            "#16": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "#15",
+                            "#16"
+                          ]
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "#15": {
+                      "type": "string"
+                    },
+                    "#16": {
+                      "type": "string"
+                    },
+                    "#17": {
+                      "type": "string"
+                    },
+                    "#18": {
+                      "type": "string"
+                    },
+                    "#19": {
+                      "type": "string"
+                    },
+                    "#2": {
+                      "type": "string"
+                    },
+                    "#20": {
+                      "type": "string"
+                    },
+                    "#21": {
+                      "type": "string"
+                    },
+                    "#22": {
+                      "type": "string"
+                    },
+                    "#23": {
+                      "type": "string"
+                    },
+                    "#25": {
+                      "type": "string"
+                    },
+                    "#27": {
+                      "type": "string"
+                    },
+                    "#4": {
+                      "type": "string"
+                    },
+                    "#6": {
+                      "type": "string"
+                    },
+                    "#8": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "#0",
+                    "#12"
+                  ]
+                }
+              },
+              "required": [
+                "data"
+              ]
+            }
+          }
+        },
+        "required": [
+          "cs",
+          "events",
+          "id"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "events",
+        "write"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "create_events_comamazoneelsearch_autocomplete_uiservice_metricsnexu",
+      "tool_id": "3d42ed0462395cb3",
+      "name": "create_events_comamazoneelsearch_autocomplete_uiservice_metricsnexu",
+      "description": "Create a new com.amazon.eel.SearchAutocompleteUIServiceMetrics.nexu",
+      "endpoint_id": "0694b583dc8b4e4e",
+      "signature_id": "3d42ed0462395cb3",
+      "method": "POST",
+      "path": "/{id}/events/com.amazon.eel.SearchAutocompleteUIServiceMetrics.nexus",
+      "host": "unagi.amazon.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "isError": {
+                      "type": "boolean"
+                    },
+                    "latency": {
+                      "type": "integer"
+                    },
+                    "marketplaceId": {
+                      "type": "string"
+                    },
+                    "metricName": {
+                      "type": "string"
+                    },
+                    "platform": {
+                      "type": "string"
+                    },
+                    "timestamp": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "isError",
+                    "latency",
+                    "marketplaceId",
+                    "metricName",
+                    "platform",
+                    "timestamp"
+                  ]
+                }
+              },
+              "required": [
+                "data"
+              ]
+            }
+          }
+        },
+        "required": [
+          "events",
+          "id"
+        ]
+      },
+      "risk_tier": "medium",
+      "confirmation_required": "on_risk",
+      "rate_limit_per_minute": 30,
+      "tags": [
+        "events",
+        "write"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_cart_add_to_cart_get_cart_items",
+      "tool_id": "55f16f38ed5fed67",
+      "name": "get_cart_add_to_cart_get_cart_items",
+      "description": "Use this to browse or manage commerce data. List all get cart items",
+      "endpoint_id": "627af11c254e340d",
+      "signature_id": "55f16f38ed5fed67",
+      "method": "GET",
+      "path": "/cart/add-to-cart/get-cart-items",
+      "host": "www.amazon.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "_": {
+            "type": "integer",
+            "example": "1770862851232"
+          },
+          "clientName": {
+            "type": "string",
+            "example": "SiteWideActionExecutor"
+          }
+        }
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "cart",
+        "read"
+      ],
+      "scopes": [
+        "first_party_only"
+      ]
+    },
+    {
+      "id": "get_cart_add_to_cart",
+      "tool_id": "d06bacd964fc98c2",
+      "name": "get_cart_add_to_cart",
+      "description": "Use this to browse or manage commerce data. Retrieve an add to cart by {id}. Returns: patcConfig",
+      "endpoint_id": "d6edee68cb347981",
+      "signature_id": "d06bacd964fc98c2",
+      "method": "GET",
+      "path": "/cart/add-to-cart/{id}",
+      "host": "www.amazon.com",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "clientName": {
+            "type": "string",
+            "example": "SiteWideActionExecutor"
+          },
+          "ref_": {
+            "type": "string",
+            "example": "ax_patc_cfg"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "risk_tier": "safe",
+      "confirmation_required": "never",
+      "rate_limit_per_minute": 120,
+      "tags": [
+        "cart",
+        "read"
+      ],
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "patcConfig": {
+            "type": "object",
+            "properties": {
+              "rules": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "conditions": {
+                      "type": "object",
+                      "properties": {
+                        "criteria": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "criteria": {
+                                "type": "null"
+                              },
+                              "equals": {
+                                "type": "string"
+                              },
+                              "field": {
+                                "type": "string"
+                              },
+                              "in": {
+                                "type": "null"
+                              },
+                              "operator": {
+                                "type": "null"
+                              }
+                            },
+                            "required": [
+                              "criteria",
+                              "equals",
+                              "field",
+                              "in",
+                              "operator"
+                            ]
+                          }
+                        },
+                        "operator": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "criteria",
+                        "operator"
+                      ]
+                    },
+                    "experimentFlags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "conditions",
+                    "experimentFlags",
+                    "id"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "rules"
+            ]
+          }
+        },
+        "required": [
+          "patcConfig"
+        ]
+      },
+      "scopes": [
+        "first_party_only"
+      ]
+    }
+  ],
+  "description": "Generated from capture cap_20260212_f275b9d8",
+  "capture_id": "cap_20260212_f275b9d8",
+  "scope": "first_party_only",
+  "default_confirmation": "on_risk"
+}

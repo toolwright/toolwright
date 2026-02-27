@@ -1,0 +1,167 @@
+Mint step 1/4: capturing traffic...
+  Start URL: https://www.walmart.com
+  Allowed hosts: *.walmart.com, *.walmartimages.com
+  Headless: True
+  Script: tests/e2e/walmart_capture.py
+
+Navigating to: https://www.walmart.com
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+  ✗ GET /orchestra/home/graphql/Location/26e4ca8c866334908 [412]
+  ✓ GET /dfwrs/3d0839e4-71d8/f14ddaeb-c87a-4523-95ec-eb8b4 [200]
+Running scripted capture: tests/e2e/walmart_capture.py
+  ✓ POST /si/elh9ie/obs [200]
+  ✓ POST /si/elh9ie/obs [200]
+  ✓ POST /si/elh9ie/obs [200]
+  ✓ POST /si/elh9ie/obs [200]
+  ✓ POST /si/elh9ie/obs [200]
+
+Stopping capture...
+Mint step 2/4: compiling artifacts...
+Loaded capture: cap_20260212_6873d157
+  Exchanges: 120
+Aggregating endpoints...
+  Endpoints: 116
+  After scope filter: 116
+  Flow edges: 114
+  Scope drafts: 116 (0 need review)
+Mint step 3/4: creating toolpack...
+
+Mint complete: tp_2d4984d157d4
+  Capture: cap_20260212_6873d157
+  Capture location: .caskmcp/captures/cap_20260212_6873d157
+  Artifact: art_e1d49a7ab9fe
+  Toolpack: .caskmcp/toolpacks/tp_2d4984d157d4/toolpack.yaml
+  Pending approvals: 116
+
+Next commands:
+  caskmcp run --toolpack .caskmcp/toolpacks/tp_2d4984d157d4/toolpack.yaml
+  caskmcp gate allow --all --toolset readonly --lockfile .caskmcp/toolpacks/tp_2d4984d157d4/lockfile/caskmcp.lock.pending.yaml
+  caskmcp drift --baseline .caskmcp/toolpacks/tp_2d4984d157d4/artifact/baseline.json --capture-path .caskmcp/captures/cap_20260212_6873d157
+
+Connect to your AI agent:
+
+  Add to .mcp.json (works with any MCP client):
+    {
+      "mcpServers": {
+        "caskmcp": {
+          "command": "cask",
+          "args": ["run", "--toolpack", ".caskmcp/toolpacks/tp_2d4984d157d4/toolpack.yaml"]
+        }
+      }
+    }
+
+  Or via Claude Code CLI:
+    claude mcp add caskmcp -- cask run --toolpack .caskmcp/toolpacks/tp_2d4984d157d4/toolpack.yaml
+

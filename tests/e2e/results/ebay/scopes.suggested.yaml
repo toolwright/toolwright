@@ -1,0 +1,212 @@
+version: '1.0'
+generated_at: '2026-02-12T02:22:18.089212+00:00'
+scope: first_party_only
+drafts:
+- endpoint_id: 90ab6c9254ff8de0
+  scope_name: write
+  confidence: 0.7
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST'
+- endpoint_id: 99c588aade114f34
+  scope_name: write
+  confidence: 0.7
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST'
+- endpoint_id: ced57ea035bc6193
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: d9f5d235c806c34d
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 62009008b256a46e
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 60f217b75c9a88ce
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 48b1a5c775871ddc
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: e52e83db40e288b4
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 3c3faf726afd940a
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 0611eb472a2fc46c
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 71203efd94b98488
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 21be8c60d1b7b4c2
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: d9ec1c931a6b30dd
+  scope_name: write
+  confidence: 0.7
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST'
+- endpoint_id: 4bf66fd4ee606e5b
+  scope_name: write
+  confidence: 0.7
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST'
+- endpoint_id: 0b5421537557c9b0
+  scope_name: write
+  confidence: 0.7
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST'
+- endpoint_id: 7b42f75369b21c00
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 51c3d0893e4bcb96
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 475f12c6e1ad5db8
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: 53ada5df10fa0a79
+  scope_name: read
+  confidence: 0.75
+  risk_tier: safe
+  risk_reasons: []
+  signals: []
+  review_required: false
+  explanation: 'Classified as ''read'' (risk: safe)'
+- endpoint_id: e2b9e135007c97cf
+  scope_name: write
+  confidence: 0.7
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST'
+- endpoint_id: 7672fddb71c146d3
+  scope_name: write
+  confidence: 0.7
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST'
+- endpoint_id: 54a76ac55ec7a0b8
+  scope_name: write
+  confidence: 0.7
+  risk_tier: medium
+  risk_reasons:
+  - state_changing
+  - write_operation
+  signals:
+  - 'state-changing method: POST'
+  review_required: false
+  explanation: 'Classified as ''write'' (risk: medium). Signals: state-changing method:
+    POST'

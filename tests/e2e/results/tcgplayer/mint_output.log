@@ -1,0 +1,72 @@
+Mint step 1/4: capturing traffic...
+  Start URL: https://www.tcgplayer.com
+  Allowed hosts: *.tcgplayer.com
+  Headless: True
+  Script: tests/e2e/tcgplayer_capture.py
+
+Navigating to: https://www.tcgplayer.com
+Running scripted capture: tests/e2e/tcgplayer_capture.py
+  ✓ GET /js/modules/discovery/mf-discovery.json [200]
+  ✓ GET /c/verticals/ [200]
+  ✓ GET /js/modules/seller/mf-seller.json [200]
+  ✓ GET /v2/user [200]
+  ✓ GET /v2/search/directInfo [200]
+  ✓ GET /c/verticals/ [200]
+  ✓ GET /js/modules/discovery/mf-discovery.json [200]
+  ✓ GET /js/modules/seller/mf-seller.json [200]
+  ✓ GET /v2/user [200]
+  ✓ GET /v2/search/directInfo [200]
+  ✓ GET /c/verticals/ [200]
+  ✓ GET /js/modules/discovery/mf-discovery.json [200]
+  ✓ GET /js/modules/seller/mf-seller.json [200]
+  ✓ GET /v2/user [200]
+  ✓ GET /v2/search/directInfo [200]
+  ✓ GET /c/verticals/ [200]
+  ✓ GET /js/modules/discovery/mf-discovery.json [200]
+  ✓ GET /js/modules/seller/mf-seller.json [200]
+  ✓ GET /v2/user [200]
+  ✓ GET /v2/search/directInfo [200]
+  ✓ GET /c/verticals/ [200]
+  ✓ GET /js/modules/discovery/mf-discovery.json [200]
+  ✓ GET /js/modules/seller/mf-seller.json [200]
+  ✓ GET /v2/user [200]
+  ✓ GET /v2/search/directInfo [200]
+
+Stopping capture...
+Mint step 2/4: compiling artifacts...
+Loaded capture: cap_20260212_6629993a
+  Exchanges: 25
+Aggregating endpoints...
+  Endpoints: 5
+  After scope filter: 5
+  Flow edges: 1
+  Scope drafts: 5 (0 need review)
+Mint step 3/4: creating toolpack...
+
+Mint complete: tp_426c82ec85db
+  Capture: cap_20260212_6629993a
+  Capture location: .caskmcp/captures/cap_20260212_6629993a
+  Artifact: art_3d3bd16fe939
+  Toolpack: .caskmcp/toolpacks/tp_426c82ec85db/toolpack.yaml
+  Pending approvals: 5
+
+Next commands:
+  caskmcp run --toolpack .caskmcp/toolpacks/tp_426c82ec85db/toolpack.yaml
+  caskmcp gate allow --all --toolset readonly --lockfile .caskmcp/toolpacks/tp_426c82ec85db/lockfile/caskmcp.lock.pending.yaml
+  caskmcp drift --baseline .caskmcp/toolpacks/tp_426c82ec85db/artifact/baseline.json --capture-path .caskmcp/captures/cap_20260212_6629993a
+
+Connect to your AI agent:
+
+  Add to .mcp.json (works with any MCP client):
+    {
+      "mcpServers": {
+        "caskmcp": {
+          "command": "cask",
+          "args": ["run", "--toolpack", ".caskmcp/toolpacks/tp_426c82ec85db/toolpack.yaml"]
+        }
+      }
+    }
+
+  Or via Claude Code CLI:
+    claude mcp add caskmcp -- cask run --toolpack .caskmcp/toolpacks/tp_426c82ec85db/toolpack.yaml
+
