@@ -3,10 +3,26 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from pathlib import Path
 
 import click
 
 from toolwright.utils.state import resolve_root
+
+
+def _resolve_gate_paths(toolpack_path: str) -> dict[str, str | None]:
+    """Resolve gate paths (tools, lockfile, policy, toolsets) from a toolpack.yaml."""
+    from toolwright.core.toolpack import load_toolpack, resolve_toolpack_paths
+
+    toolpack = load_toolpack(Path(toolpack_path))
+    resolved = resolve_toolpack_paths(toolpack=toolpack, toolpack_path=toolpack_path)
+    lockfile = str(resolved.approved_lockfile_path or resolved.pending_lockfile_path)
+    return {
+        "tools": str(resolved.tools_path),
+        "policy": str(resolved.policy_path) if resolved.policy_path else None,
+        "toolsets": str(resolved.toolsets_path) if resolved.toolsets_path else None,
+        "lockfile": lockfile,
+    }
 
 
 def register_approval_commands(
@@ -23,9 +39,14 @@ def register_approval_commands(
     @gate.command("sync")
     @click.option(
         "--tools", "-t",
-        required=True,
+        required=False,
         type=click.Path(exists=True),
         help="Path to tools.json manifest",
+    )
+    @click.option(
+        "--toolpack",
+        type=click.Path(exists=True),
+        help="Path to toolpack.yaml (auto-resolves tools, lockfile, policy, toolsets)",
     )
     @click.option(
         "--policy",
@@ -65,7 +86,8 @@ def register_approval_commands(
     @click.pass_context
     def gate_sync(
         ctx: click.Context,
-        tools: str,
+        tools: str | None,
+        toolpack: str | None,
         policy: str | None,
         toolsets: str | None,
         lockfile: str | None,
@@ -83,15 +105,28 @@ def register_approval_commands(
         \b
         Examples:
           toolwright gate sync --tools tools.json
+          toolwright gate sync --toolpack toolpack.yaml
           toolwright gate sync --tools tools.json --lockfile custom.lock.yaml
         """
+        if toolpack and tools:
+            raise click.UsageError("Cannot use both --toolpack and --tools. They are mutually exclusive.")
+        if not toolpack and not tools:
+            raise click.UsageError("Provide either --toolpack or --tools.")
+
+        if toolpack:
+            resolved = _resolve_gate_paths(toolpack)
+            tools = resolved["tools"]  # type: ignore[assignment]
+            policy = policy or resolved["policy"]
+            toolsets = toolsets or resolved["toolsets"]
+            lockfile = lockfile or resolved["lockfile"]
+
         from toolwright.cli.approve import run_approve_sync
 
         run_with_lock(
             ctx,
             "gate sync",
             lambda: run_approve_sync(
-                tools_path=tools,
+                tools_path=tools,  # type: ignore[arg-type]
                 policy_path=policy,
                 toolsets_path=toolsets,
                 lockfile_path=lockfile,
@@ -104,6 +139,11 @@ def register_approval_commands(
         )
 
     @gate.command("status")
+    @click.option(
+        "--toolpack",
+        type=click.Path(exists=True),
+        help="Path to toolpack.yaml (auto-resolves lockfile path)",
+    )
     @click.option(
         "--lockfile", "-l",
         type=click.Path(),
@@ -118,6 +158,7 @@ def register_approval_commands(
     @click.pass_context
     def gate_status(
         ctx: click.Context,
+        toolpack: str | None,
         lockfile: str | None,
         status_filter: str | None,
     ) -> None:
@@ -126,8 +167,13 @@ def register_approval_commands(
         \b
         Examples:
           toolwright gate status
+          toolwright gate status --toolpack toolpack.yaml
           toolwright gate status --status pending
         """
+        if toolpack and not lockfile:
+            resolved = _resolve_gate_paths(toolpack)
+            lockfile = resolved["lockfile"]
+
         from toolwright.cli.approve import run_approve_list
 
         run_approve_list(
@@ -138,6 +184,11 @@ def register_approval_commands(
 
     @gate.command("allow")
     @click.argument("tool_ids", nargs=-1)
+    @click.option(
+        "--toolpack",
+        type=click.Path(exists=True),
+        help="Path to toolpack.yaml (auto-resolves lockfile path)",
+    )
     @click.option(
         "--lockfile", "-l",
         type=click.Path(),
@@ -165,6 +216,7 @@ def register_approval_commands(
     def gate_allow(
         ctx: click.Context,
         tool_ids: tuple[str, ...],
+        toolpack: str | None,
         lockfile: str | None,
         all_pending: bool,
         toolset: str | None,
@@ -176,10 +228,15 @@ def register_approval_commands(
         \b
         Examples:
           toolwright gate allow get_users create_user
+          toolwright gate allow --all --toolpack toolpack.yaml
           toolwright gate allow --all
           toolwright gate allow get_users --by security@example.com
         """
-        # Interactive: no tool_ids, no --all, no --toolset → review flow
+        if toolpack and not lockfile:
+            resolved = _resolve_gate_paths(toolpack)
+            lockfile = resolved["lockfile"]
+
+        # Interactive: no tool_ids, no --all, no --toolset -> review flow
         if not tool_ids and not all_pending and not toolset and ctx.obj.get("interactive"):
             from toolwright.ui.flows.gate_review import gate_review_flow
 
@@ -210,6 +267,11 @@ def register_approval_commands(
     @gate.command("block")
     @click.argument("tool_ids", nargs=-1, required=True)
     @click.option(
+        "--toolpack",
+        type=click.Path(exists=True),
+        help="Path to toolpack.yaml (auto-resolves lockfile path)",
+    )
+    @click.option(
         "--lockfile", "-l",
         type=click.Path(),
         help="Path to lockfile (default: ./toolwright.lock.yaml)",
@@ -222,6 +284,7 @@ def register_approval_commands(
     def gate_block(
         ctx: click.Context,
         tool_ids: tuple[str, ...],
+        toolpack: str | None,
         lockfile: str | None,
         reason: str | None,
     ) -> None:
@@ -230,8 +293,13 @@ def register_approval_commands(
         \b
         Examples:
           toolwright gate block delete_all_users --reason "Too dangerous"
+          toolwright gate block tool1 tool2 --toolpack toolpack.yaml
           toolwright gate block tool1 tool2
         """
+        if toolpack and not lockfile:
+            resolved = _resolve_gate_paths(toolpack)
+            lockfile = resolved["lockfile"]
+
         from toolwright.cli.approve import run_approve_reject
 
         run_with_lock(
@@ -247,6 +315,11 @@ def register_approval_commands(
 
     @gate.command("check")
     @click.option(
+        "--toolpack",
+        type=click.Path(exists=True),
+        help="Path to toolpack.yaml (auto-resolves lockfile path)",
+    )
+    @click.option(
         "--lockfile", "-l",
         type=click.Path(),
         help="Path to lockfile (default: ./toolwright.lock.yaml)",
@@ -258,6 +331,7 @@ def register_approval_commands(
     @click.pass_context
     def gate_check(
         ctx: click.Context,
+        toolpack: str | None,
         lockfile: str | None,
         toolset: str | None,
     ) -> None:
@@ -271,8 +345,13 @@ def register_approval_commands(
         \b
         Examples:
           toolwright gate check
+          toolwright gate check --toolpack toolpack.yaml
           toolwright gate check --lockfile custom.lock.yaml
         """
+        if toolpack and not lockfile:
+            resolved = _resolve_gate_paths(toolpack)
+            lockfile = resolved["lockfile"]
+
         from toolwright.cli.approve import run_approve_check
 
         run_approve_check(
@@ -283,6 +362,11 @@ def register_approval_commands(
 
     @gate.command("snapshot")
     @click.option(
+        "--toolpack",
+        type=click.Path(exists=True),
+        help="Path to toolpack.yaml (auto-resolves lockfile path)",
+    )
+    @click.option(
         "--lockfile", "-l",
         type=click.Path(),
         help="Path to lockfile (default: ./toolwright.lock.yaml)",
@@ -291,12 +375,21 @@ def register_approval_commands(
         "--snapshot-dir",
         type=click.Path(),
         default=None,
-        help="Override snapshot destination directory (default: .toolwright/approvals/…).",
+        help="Override snapshot destination directory (default: .toolwright/approvals/...).",
     )
     @click.pass_context
-    def gate_snapshot(ctx: click.Context, lockfile: str | None, snapshot_dir: str | None) -> None:
+    def gate_snapshot(
+        ctx: click.Context,
+        toolpack: str | None,
+        lockfile: str | None,
+        snapshot_dir: str | None,
+    ) -> None:
         """Materialize a baseline snapshot for an approved lockfile."""
-        # Interactive: no --lockfile → snapshot flow
+        if toolpack and not lockfile:
+            resolved = _resolve_gate_paths(toolpack)
+            lockfile = resolved["lockfile"]
+
+        # Interactive: no --lockfile -> snapshot flow
         if lockfile is None and snapshot_dir is None and ctx.obj.get("interactive"):
             from toolwright.ui.flows.gate_snapshot import gate_snapshot_flow
 
@@ -321,14 +414,28 @@ def register_approval_commands(
 
     @gate.command("reseal")
     @click.option(
+        "--toolpack",
+        type=click.Path(exists=True),
+        help="Path to toolpack.yaml (auto-resolves lockfile path)",
+    )
+    @click.option(
         "--lockfile", "-l",
         type=click.Path(),
         help="Path to lockfile (default: ./toolwright.lock.yaml)",
     )
     @click.option("--toolset", help="Re-sign approvals for tools within a specific toolset only")
     @click.pass_context
-    def gate_reseal(ctx: click.Context, lockfile: str | None, toolset: str | None) -> None:
+    def gate_reseal(
+        ctx: click.Context,
+        toolpack: str | None,
+        lockfile: str | None,
+        toolset: str | None,
+    ) -> None:
         """Re-sign existing approval signatures (migration / repair helper)."""
+        if toolpack and not lockfile:
+            resolved = _resolve_gate_paths(toolpack)
+            lockfile = resolved["lockfile"]
+
         from toolwright.cli.approve import run_approve_resign
 
         run_with_lock(
