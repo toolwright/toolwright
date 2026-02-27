@@ -307,3 +307,46 @@ def test_compile_creates_toolpack_directory(tmp_path: Path, monkeypatch) -> None
 
     # compile output should mention the toolpack path
     assert "toolpack" in result.output.lower()
+
+
+def test_compile_next_steps_include_toolpack_path(tmp_path: Path, monkeypatch) -> None:
+    """After compile, next-steps output must include copy-pasteable commands
+    with the actual --toolpack <path> argument so users don't have to guess."""
+    session = _write_capture(tmp_path)
+    runner = CliRunner()
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(
+        cli,
+        [
+            "compile",
+            "--capture",
+            session.id,
+            "--scope",
+            "first_party_only",
+            "--format",
+            "all",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+
+    # Find the toolpack.yaml that was created
+    toolpacks_dir = tmp_path / ".toolwright" / "toolpacks"
+    toolpack_dirs = [p for p in toolpacks_dir.iterdir() if p.is_dir()]
+    assert len(toolpack_dirs) == 1
+    tp_dir = toolpack_dirs[0]
+    toolpack_yaml = tp_dir / "toolpack.yaml"
+    assert toolpack_yaml.exists()
+
+    # The compile output uses the relative path as returned by _package_toolpack
+    # (since root_path defaults to ".toolwright", the path is relative to cwd)
+    toolpack_id = tp_dir.name
+    expected_path = f".toolwright/toolpacks/{toolpack_id}/toolpack.yaml"
+
+    # Output must contain copy-pasteable next-step commands with the toolpack path
+    output = result.output
+    assert "Next steps:" in output, "Should show 'Next steps:' header"
+    assert f"toolwright gate sync --toolpack {expected_path}" in output
+    assert f"toolwright gate allow --all --toolpack {expected_path}" in output
+    assert f"toolwright serve --toolpack {expected_path}" in output

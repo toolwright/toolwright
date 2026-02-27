@@ -650,4 +650,7 @@ def run_compile(
             deterministic=deterministic,
         )
         click.echo(f"\nToolpack: {toolpack_file}")
-        click.echo("  Ready for: toolwright gate sync / toolwright gate allow --all / toolwright serve --toolpack")
+        click.echo("\nNext steps:")
+        click.echo(f"  toolwright gate sync --toolpack {toolpack_file}")
+        click.echo(f"  toolwright gate allow --all --toolpack {toolpack_file}")
+        click.echo(f"  toolwright serve --toolpack {toolpack_file}")
