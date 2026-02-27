@@ -14,9 +14,11 @@ from toolwright.branding import (
     PRODUCT_NAME,
 )
 from toolwright.cli.commands_approval import register_approval_commands
+from toolwright.cli.commands_auth import register_auth_check_command
 from toolwright.cli.commands_kill import register_kill_commands
 from toolwright.cli.commands_mcp import register_mcp_commands
 from toolwright.cli.commands_rules import register_rules_commands
+from toolwright.cli.commands_use import register_use_command
 from toolwright.cli.commands_workflow import register_workflow_commands
 from toolwright.utils.locks import RootLockError, clear_root_lock, root_command_lock
 from toolwright.utils.state import confirmation_store_path, resolve_root
@@ -64,6 +66,7 @@ CORE_COMMANDS = [
     "quarantine",
     "health",
     "run",
+    "use",
     "demo",
     "rename",
 ]
@@ -234,41 +237,20 @@ def status(ctx: click.Context, toolpack: str | None, json_mode: bool) -> None:
     """
     import json as _json
 
-    from toolwright.ui.discovery import find_toolpacks
     from toolwright.ui.ops import get_status
     from toolwright.ui.views.branding import render_plain_header, render_rich_header
     from toolwright.ui.views.status import render_json, render_plain, render_rich
 
     root: Path = ctx.obj.get("root", resolve_root())
 
-    # Resolve toolpack path
-    toolpack_path = toolpack
-    if not toolpack_path:
-        discovered = find_toolpacks(root)
-        if not discovered:
-            click.echo("No toolpacks found. Run 'toolwright mint' or 'toolwright init' first.", err=True)
-            sys.exit(1)
-        if len(discovered) == 1:
-            toolpack_path = str(discovered[0])
-        else:
-            # Multiple toolpacks — let user pick in interactive mode
-            if ctx.obj.get("interactive"):
-                from toolwright.ui.prompts import select_one
+    # Resolve toolpack path via resolution chain
+    from toolwright.utils.resolve import resolve_toolpack_path
 
-                paths = [str(p) for p in discovered]
-                labels = [p.parent.name for p in discovered]
-                toolpack_path = select_one(
-                    paths,
-                    labels=labels,
-                    prompt="Multiple toolpacks found. Select one",
-                )
-            else:
-                click.echo(
-                    f"Multiple toolpacks found ({len(discovered)}). "
-                    "Use --toolpack to specify which one.",
-                    err=True,
-                )
-                sys.exit(1)
+    try:
+        toolpack_path = str(resolve_toolpack_path(explicit=toolpack, root=root))
+    except (FileNotFoundError, click.UsageError) as exc:
+        click.echo(str(exc), err=True)
+        sys.exit(1)
 
     # Get status data
     try:
@@ -312,35 +294,16 @@ def dashboard(ctx: click.Context, toolpack: str | None) -> None:
       toolwright dashboard --toolpack .toolwright/toolpacks/stripe-api/toolpack.yaml
     """
     from toolwright.ui.dashboard import run_dashboard
-    from toolwright.ui.discovery import find_toolpacks
 
     root: Path = ctx.obj.get("root", resolve_root())
 
-    toolpack_path = toolpack
-    if not toolpack_path:
-        discovered = find_toolpacks(root)
-        if not discovered:
-            click.echo("No toolpacks found. Run 'toolwright mint' or 'toolwright init' first.", err=True)
-            sys.exit(1)
-        if len(discovered) == 1:
-            toolpack_path = str(discovered[0])
-        else:
-            if ctx.obj.get("interactive"):
-                from toolwright.ui.prompts import select_one
+    from toolwright.utils.resolve import resolve_toolpack_path
 
-                paths = [str(p) for p in discovered]
-                labels = [p.parent.name for p in discovered]
-                toolpack_path = select_one(
-                    paths, labels=labels,
-                    prompt="Multiple toolpacks found. Select one",
-                )
-            else:
-                click.echo(
-                    f"Multiple toolpacks found ({len(discovered)}). "
-                    "Use --toolpack to specify which one.",
-                    err=True,
-                )
-                sys.exit(1)
+    try:
+        toolpack_path = str(resolve_toolpack_path(explicit=toolpack, root=root))
+    except (FileNotFoundError, click.UsageError) as exc:
+        click.echo(str(exc), err=True)
+        sys.exit(1)
 
     run_dashboard(toolpack_path=toolpack_path, root=str(root))
 
@@ -441,15 +404,15 @@ def rename_cmd(ctx: click.Context, new_name: str, toolpack: str | None) -> None:
         return
 
     root = ctx.obj["root"] if ctx.obj else Path(".")
-    if toolpack is None:
-        from toolwright.ui.discovery import find_toolpacks
 
-        toolpacks = find_toolpacks(root)
-        if not toolpacks:
-            click.echo("No toolpack found. Use --toolpack to specify one.", err=True)
-            ctx.exit(1)
-            return
-        toolpack = str(toolpacks[0])
+    from toolwright.utils.resolve import resolve_toolpack_path
+
+    try:
+        toolpack = str(resolve_toolpack_path(explicit=toolpack, root=root))
+    except (FileNotFoundError, click.UsageError) as exc:
+        click.echo(str(exc), err=True)
+        ctx.exit(1)
+        return
 
     tp_path = Path(toolpack)
 
@@ -786,9 +749,8 @@ def mint(
 @cli.command("diff")
 @click.option(
     "--toolpack",
-    required=True,
     type=click.Path(exists=True),
-    help="Path to toolpack.yaml",
+    help="Path to toolpack.yaml (auto-resolved if not given)",
 )
 @click.option(
     "--baseline",
@@ -812,16 +774,20 @@ def mint(
 @click.pass_context
 def diff(
     ctx: click.Context,
-    toolpack: str,
+    toolpack: str | None,
     baseline: str | None,
     output: str | None,
     output_format: str,
 ) -> None:
     """Generate a risk-classified change report."""
+    from toolwright.utils.resolve import resolve_toolpack_path
+
+    resolved = str(resolve_toolpack_path(explicit=toolpack, root=ctx.obj.get("root")))
+
     from toolwright.cli.plan import run_plan
 
     run_plan(
-        toolpack_path=toolpack,
+        toolpack_path=resolved,
         baseline=baseline,
         output_dir=output,
         output_format=output_format,
@@ -833,9 +799,8 @@ def diff(
 @cli.command()
 @click.option(
     "--toolpack",
-    required=True,
     type=click.Path(exists=True),
-    help="Path to toolpack.yaml",
+    help="Path to toolpack.yaml (auto-resolved if not given)",
 )
 @click.option(
     "--runtime",
@@ -901,7 +866,7 @@ def diff(
 @click.pass_context
 def run(
     ctx: click.Context,
-    toolpack: str,
+    toolpack: str | None,
     runtime: str,
     print_config_and_exit: bool,
     toolset: str | None,
@@ -919,6 +884,10 @@ def run(
 
     For development with fine-grained path control, see `toolwright serve`.
     """
+    from toolwright.utils.resolve import resolve_toolpack_path
+
+    resolved_tp = str(resolve_toolpack_path(explicit=toolpack, root=ctx.obj.get("root")))
+
     from toolwright.cli.run import run_run
 
     resolved_confirm_store = confirm_store or str(
@@ -929,7 +898,7 @@ def run(
         ctx,
         "run",
         lambda: run_run(
-            toolpack_path=toolpack,
+            toolpack_path=resolved_tp,
             runtime=runtime,
             print_config_and_exit=print_config_and_exit,
             toolset=toolset,
@@ -944,7 +913,7 @@ def run(
             unsafe_no_lockfile=unsafe_no_lockfile,
             verbose=ctx.obj.get("verbose", False),
         ),
-        lock_id=str(Path(toolpack).resolve()),
+        lock_id=str(Path(resolved_tp).resolve()),
     )
 
 
@@ -1041,9 +1010,8 @@ Examples:
 )
 @click.option(
     "--toolpack",
-    required=True,
     type=click.Path(exists=True),
-    help="Path to toolpack.yaml",
+    help="Path to toolpack.yaml (auto-resolved if not given)",
 )
 @click.option(
     "--from",
@@ -1067,7 +1035,7 @@ Examples:
 @click.pass_context
 def repair(
     ctx: click.Context,
-    toolpack: str,
+    toolpack: str | None,
     from_: tuple[str, ...],
     output: str | None,
     auto_discover: bool,
@@ -1083,10 +1051,14 @@ def repair(
       approval_required Changes approved state or grants new capability
       manual            Requires investigation or new capture
     """
+    from toolwright.utils.resolve import resolve_toolpack_path
+
+    resolved = str(resolve_toolpack_path(explicit=toolpack, root=ctx.obj.get("root")))
+
     from toolwright.cli.repair import run_repair
 
     run_repair(
-        toolpack_path=toolpack,
+        toolpack_path=resolved,
         context_paths=list(from_),
         output_dir=output,
         auto_discover=auto_discover,
@@ -1106,9 +1078,8 @@ Examples:
 )
 @click.option(
     "--toolpack",
-    required=True,
     type=click.Path(exists=True),
-    help="Path to toolpack.yaml",
+    help="Path to toolpack.yaml (auto-resolved if not given)",
 )
 @click.option(
     "--mode",
@@ -1145,7 +1116,7 @@ Examples:
 @click.pass_context
 def verify(
     ctx: click.Context,
-    toolpack: str,
+    toolpack: str | None,
     mode: str,
     lockfile: str | None,
     playbook: str | None,
@@ -1157,11 +1128,15 @@ def verify(
     unknown_budget: float,
 ) -> None:
     """Run verification contracts (replay, outcomes, provenance)."""
+    from toolwright.utils.resolve import resolve_toolpack_path
+
+    resolved_tp = str(resolve_toolpack_path(explicit=toolpack, root=ctx.obj.get("root")))
+
     from toolwright.cli.verify import run_verify
 
     resolved_output = output or str(_default_root_path(ctx, "reports"))
     run_verify(
-        toolpack_path=toolpack,
+        toolpack_path=resolved_tp,
         mode=mode,
         lockfile_path=lockfile,
         playbook_path=playbook,
@@ -1283,6 +1258,7 @@ def demo(
 
 register_mcp_commands(cli=cli, run_with_lock=_run_with_lock)
 register_approval_commands(cli=cli, run_with_lock=_run_with_lock)
+register_use_command(cli=cli)
 register_workflow_commands(cli=cli)
 register_rules_commands(cli=cli)
 register_kill_commands(cli=cli)
@@ -1363,9 +1339,8 @@ Examples:
 )
 @click.option(
     "--toolpack",
-    required=True,
     type=click.Path(exists=True),
-    help="Path to toolpack.yaml",
+    help="Path to toolpack.yaml (auto-resolved if not given)",
 )
 @click.option(
     "--name",
@@ -1379,11 +1354,15 @@ Examples:
     show_default=True,
     help="Output format for config snippet",
 )
-def config(toolpack: str, name: str | None, output_format: str) -> None:
+def config(toolpack: str | None, name: str | None, output_format: str) -> None:
     """Print a ready-to-paste MCP client config snippet (Claude, Cursor, Codex)."""
+    from toolwright.utils.resolve import resolve_toolpack_path
+
+    resolved = str(resolve_toolpack_path(explicit=toolpack))
+
     from toolwright.cli.config import run_config
 
-    run_config(toolpack_path=toolpack, fmt=output_format, name_override=name)
+    run_config(toolpack_path=resolved, fmt=output_format, name_override=name)
 
 
 @cli.command(hidden=True)
@@ -2017,7 +1996,10 @@ def propose_reject(ctx: click.Context, proposal_id: str, reason: str, reviewed_b
 
 @cli.group()
 def auth() -> None:
-    """Manage authentication profiles for capture."""
+    """Manage authentication profiles and check auth configuration."""
+
+
+register_auth_check_command(auth_group=auth)
 
 
 @auth.command("login")

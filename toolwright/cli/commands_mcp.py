@@ -158,6 +158,15 @@ def register_mcp_commands(
             confirmation_store_path(ctx.obj.get("root", resolve_root()))
         )
 
+        # Auto-resolve toolpack if neither --toolpack nor --tools provided
+        if not toolpack and not tools:
+            try:
+                from toolwright.utils.resolve import resolve_toolpack_path
+
+                toolpack = str(resolve_toolpack_path(root=ctx.obj.get("root")))
+            except (FileNotFoundError, click.UsageError):
+                pass  # Let downstream handle missing tools/toolpack
+
         from toolwright.cli.mcp import run_mcp_serve
 
         lock_id = None

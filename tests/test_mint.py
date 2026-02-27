@@ -124,7 +124,7 @@ class TestMint:
 
         out = capsys.readouterr().out
         assert "Mint complete:" in out
-        assert "toolwright serve --toolpack" in out
+        assert "toolwright serve" in out
         assert "toolwright gate allow --all --toolset readonly" in out
 
         toolpack_files = list((tmp_path / "toolpacks").glob("*/toolpack.yaml"))

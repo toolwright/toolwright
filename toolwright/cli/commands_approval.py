@@ -35,6 +35,25 @@ def _resolve_gate_paths(toolpack_path: str) -> dict[str, str | None]:
     }
 
 
+def _auto_resolve_toolpack(
+    toolpack: str | None,
+    root: Path | None = None,
+) -> str | None:
+    """Auto-resolve toolpack path if not explicitly provided.
+
+    Returns the resolved path as a string, or None if resolution fails
+    (letting the caller handle the error case).
+    """
+    if toolpack:
+        return toolpack
+    try:
+        from toolwright.utils.resolve import resolve_toolpack_path
+
+        return str(resolve_toolpack_path(root=root))
+    except (FileNotFoundError, click.UsageError):
+        return None
+
+
 def register_approval_commands(
     *,
     cli: click.Group,
@@ -120,8 +139,17 @@ def register_approval_commands(
         """
         if toolpack and tools:
             raise click.UsageError("Cannot use both --toolpack and --tools. They are mutually exclusive.")
+
+        # Auto-resolve toolpack if neither --toolpack nor --tools provided
         if not toolpack and not tools:
-            raise click.UsageError("Provide either --toolpack or --tools.")
+            resolved_tp = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
+            if resolved_tp:
+                toolpack = resolved_tp
+            else:
+                from toolwright.utils.resolve import resolve_toolpack_path
+
+                # Let it raise with the actionable error message
+                resolve_toolpack_path(root=ctx.obj.get("root"))
 
         if toolpack:
             resolved = _resolve_gate_paths(toolpack)
@@ -180,6 +208,8 @@ def register_approval_commands(
           toolwright gate status --toolpack toolpack.yaml
           toolwright gate status --status pending
         """
+        if not toolpack and not lockfile:
+            toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
             resolved = _resolve_gate_paths(toolpack)
             lockfile = resolved["lockfile"]
@@ -242,6 +272,8 @@ def register_approval_commands(
           toolwright gate allow --all
           toolwright gate allow get_users --by security@example.com
         """
+        if not toolpack and not lockfile:
+            toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
             resolved = _resolve_gate_paths(toolpack)
             lockfile = resolved["lockfile"]
@@ -306,6 +338,8 @@ def register_approval_commands(
           toolwright gate block tool1 tool2 --toolpack toolpack.yaml
           toolwright gate block tool1 tool2
         """
+        if not toolpack and not lockfile:
+            toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
             resolved = _resolve_gate_paths(toolpack)
             lockfile = resolved["lockfile"]
@@ -358,6 +392,8 @@ def register_approval_commands(
           toolwright gate check --toolpack toolpack.yaml
           toolwright gate check --lockfile custom.lock.yaml
         """
+        if not toolpack and not lockfile:
+            toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
             resolved = _resolve_gate_paths(toolpack)
             lockfile = resolved["lockfile"]
@@ -401,6 +437,8 @@ def register_approval_commands(
           toolwright gate snapshot --toolpack toolpack.yaml
           toolwright gate snapshot --lockfile custom.lock.yaml
         """
+        if not toolpack and not lockfile:
+            toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
             resolved = _resolve_gate_paths(toolpack)
             lockfile = resolved["lockfile"]
@@ -454,6 +492,8 @@ def register_approval_commands(
           toolwright gate reseal --toolpack toolpack.yaml
           toolwright gate reseal --lockfile custom.lock.yaml
         """
+        if not toolpack and not lockfile:
+            toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
             resolved = _resolve_gate_paths(toolpack)
             lockfile = resolved["lockfile"]

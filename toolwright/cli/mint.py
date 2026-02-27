@@ -158,18 +158,19 @@ def run_mint(
     redactor = Redactor(profile=redactor_profile)
     session = redactor.redact_session(session)
 
-    # Auth detection: warn if API appears to require auth but none was provided
-    if not auth_profile:
-        from toolwright.core.auth.detector import detect_auth_requirements
+    # Auth detection
+    from toolwright.core.auth.detector import detect_auth_requirements
 
-        auth_req = detect_auth_requirements(session)
-        if auth_req.requires_auth:
-            click.echo(click.style("\nAuth detection:", fg="yellow"))
-            for ev in auth_req.evidence:
-                click.echo(f"  {ev}")
-            if auth_req.suggestion:
-                click.echo(f"  Suggestion: {auth_req.suggestion}")
-            click.echo()
+    auth_req = detect_auth_requirements(session)
+    auth_requirements_list = None
+
+    if auth_req.requires_auth and not auth_profile:
+        click.echo(click.style("\nAuth detection:", fg="yellow"))
+        for ev in auth_req.evidence:
+            click.echo(f"  {ev}")
+        if auth_req.suggestion:
+            click.echo(f"  Suggestion: {auth_req.suggestion}")
+        click.echo()
 
     output_base = Path(output_root)
 
@@ -207,13 +208,19 @@ def run_mint(
 
     effective_allowed_hosts = sorted(set(session.allowed_hosts or allowed_hosts))
 
-    toolpack_id = _generate_toolpack_id(
-        capture_id=session.id,
-        artifact_id=compile_result.artifact_id,
-        scope_name=scope_name,
-        start_url=start_url,
+    # Build auth requirements from detection results
+    from toolwright.core.toolpack import build_auth_requirements
+
+    auth_requirements_list = build_auth_requirements(
+        hosts=effective_allowed_hosts,
+        auth_type=auth_req.auth_type if auth_req.requires_auth else "none",
+    )
+
+    from toolwright.utils.resolve import generate_toolpack_slug
+
+    toolpack_id = generate_toolpack_slug(
         allowed_hosts=effective_allowed_hosts,
-        deterministic=deterministic,
+        root=output_base,
     )
     toolpack_dir = output_base / "toolpacks" / toolpack_id
     artifact_dir = toolpack_dir / "artifact"
@@ -289,6 +296,7 @@ def run_mint(
             lockfiles=lockfiles,
         ),
         runtime=runtime,
+        auth_requirements=auth_requirements_list if auth_requirements_list else None,
     )
 
     toolpack_file = toolpack_dir / "toolpack.yaml"
@@ -332,16 +340,22 @@ def run_mint(
     click.echo(f"  Toolpack: {toolpack_file}")
     click.echo(f"  Pending approvals: {sync_result.pending_count}")
 
+    # Show auth setup info (only when auth was actually detected)
+    if auth_requirements_list and any(ar.scheme != "none" for ar in auth_requirements_list):
+        click.echo(click.style("\nAuth detected:", fg="cyan"))
+        for ar in auth_requirements_list:
+            if ar.scheme != "none":
+                header_info = f" ({ar.header_name})" if ar.header_name else ""
+                click.echo(f"  {ar.host} requires: {ar.scheme}{header_info}")
+        click.echo("\nSet before serving:")
+        for ar in auth_requirements_list:
+            if ar.scheme != "none":
+                click.echo(f'  export {ar.env_var_name}="Bearer <your-token>"')
+
     click.echo("\nNext commands:")
-    click.echo(
-        "  toolwright gate allow --all --toolset readonly "
-        f"--lockfile {pending_lockfile}"
-    )
-    click.echo(f"  toolwright run --toolpack {toolpack_file}        # production (with doctor check)")
-    click.echo(f"  toolwright serve --toolpack {toolpack_file}      # development (fine-grained control)")
-    click.echo(
-        f"  toolwright drift --baseline {copied_baseline} --capture-path {capture_path}"
-    )
+    click.echo("  toolwright gate allow --all --toolset readonly")
+    click.echo("  toolwright run                                   # production (with doctor check)")
+    click.echo("  toolwright serve                                 # development (fine-grained control)")
 
     click.echo(build_mcp_integration_output(toolpack_path=toolpack_file))
 

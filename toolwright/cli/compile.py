@@ -514,12 +514,11 @@ def _package_toolpack(
     root = Path(root_path)
     allowed_hosts = sorted(set(session.allowed_hosts or []))
 
-    toolpack_id = _generate_toolpack_id(
-        capture_id=session.id,
-        artifact_id=compile_result.artifact_id,
-        scope_name=scope_name,
+    from toolwright.utils.resolve import generate_toolpack_slug
+
+    toolpack_id = generate_toolpack_slug(
         allowed_hosts=allowed_hosts,
-        deterministic=deterministic,
+        root=root,
     )
 
     toolpack_dir = root / "toolpacks" / toolpack_id

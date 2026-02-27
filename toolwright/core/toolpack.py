@@ -91,6 +91,16 @@ class ToolpackPaths(BaseModel):
     lockfiles: dict[str, str] = Field(default_factory=dict)
 
 
+class ToolpackAuthRequirement(BaseModel):
+    """Auth requirement detected during capture."""
+
+    host: str
+    scheme: str  # "bearer", "api_key", "cookie", "none"
+    location: str  # "header", "query", "cookie"
+    header_name: str | None = None  # "Authorization", "X-API-Key", etc.
+    env_var_name: str  # pre-computed: "TOOLWRIGHT_AUTH_API_STRIPE_COM"
+
+
 class Toolpack(BaseModel):
     """Toolpack metadata payload."""
 
@@ -106,6 +116,7 @@ class Toolpack(BaseModel):
     origin: ToolpackOrigin
     paths: ToolpackPaths
     runtime: ToolpackRuntime | None = None
+    auth_requirements: list[ToolpackAuthRequirement] | None = None
 
 
 @dataclass(frozen=True)
@@ -152,6 +163,52 @@ def write_toolpack(toolpack: Toolpack, toolpack_path: str | Path) -> None:
     payload: dict[str, Any] = toolpack.model_dump(mode="json")
     with open(resolved, "w") as f:
         yaml.safe_dump(payload, f, sort_keys=False)
+
+
+def build_auth_requirements(
+    *,
+    hosts: list[str],
+    auth_type: str,
+) -> list[ToolpackAuthRequirement]:
+    """Build ToolpackAuthRequirement list from detected auth type and hosts.
+
+    Pre-computes env_var_name so all consumers (auth check, mint output,
+    troubleshooting docs) show the exact same string.
+    """
+    import re
+
+    scheme_to_header: dict[str, str | None] = {
+        "bearer": "Authorization",
+        "api_key": "X-API-Key",
+        "cookie": None,
+        "none": None,
+        "unknown": None,
+        "redirect": None,
+    }
+
+    scheme_to_location: dict[str, str] = {
+        "bearer": "header",
+        "api_key": "header",
+        "cookie": "cookie",
+        "none": "header",
+        "unknown": "header",
+        "redirect": "header",
+    }
+
+    reqs: list[ToolpackAuthRequirement] = []
+    for host in hosts:
+        normalized = re.sub(r"[^A-Za-z0-9]", "_", host).upper()
+        env_var = f"TOOLWRIGHT_AUTH_{normalized}"
+        reqs.append(
+            ToolpackAuthRequirement(
+                host=host,
+                scheme=auth_type,
+                location=scheme_to_location.get(auth_type, "header"),
+                header_name=scheme_to_header.get(auth_type),
+                env_var_name=env_var,
+            )
+        )
+    return reqs
 
 
 def resolve_toolpack_paths(
