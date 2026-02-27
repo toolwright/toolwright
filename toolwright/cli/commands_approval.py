@@ -12,10 +12,20 @@ from toolwright.utils.state import resolve_root
 
 def _resolve_gate_paths(toolpack_path: str) -> dict[str, str | None]:
     """Resolve gate paths (tools, lockfile, policy, toolsets) from a toolpack.yaml."""
+    import sys
+
     from toolwright.core.toolpack import load_toolpack, resolve_toolpack_paths
 
-    toolpack = load_toolpack(Path(toolpack_path))
-    resolved = resolve_toolpack_paths(toolpack=toolpack, toolpack_path=toolpack_path)
+    try:
+        toolpack = load_toolpack(Path(toolpack_path))
+        resolved = resolve_toolpack_paths(toolpack=toolpack, toolpack_path=toolpack_path)
+    except (FileNotFoundError, ValueError) as e:
+        click.echo(f"Error loading toolpack: {e}", err=True)
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"Error loading toolpack {toolpack_path}: {e}", err=True)
+        sys.exit(1)
+
     lockfile = str(resolved.approved_lockfile_path or resolved.pending_lockfile_path)
     return {
         "tools": str(resolved.tools_path),
@@ -384,7 +394,13 @@ def register_approval_commands(
         lockfile: str | None,
         snapshot_dir: str | None,
     ) -> None:
-        """Materialize a baseline snapshot for an approved lockfile."""
+        """Materialize a baseline snapshot for an approved lockfile.
+
+        \b
+        Examples:
+          toolwright gate snapshot --toolpack toolpack.yaml
+          toolwright gate snapshot --lockfile custom.lock.yaml
+        """
         if toolpack and not lockfile:
             resolved = _resolve_gate_paths(toolpack)
             lockfile = resolved["lockfile"]
@@ -431,7 +447,13 @@ def register_approval_commands(
         lockfile: str | None,
         toolset: str | None,
     ) -> None:
-        """Re-sign existing approval signatures (migration / repair helper)."""
+        """Re-sign existing approval signatures (migration / repair helper).
+
+        \b
+        Examples:
+          toolwright gate reseal --toolpack toolpack.yaml
+          toolwright gate reseal --lockfile custom.lock.yaml
+        """
         if toolpack and not lockfile:
             resolved = _resolve_gate_paths(toolpack)
             lockfile = resolved["lockfile"]

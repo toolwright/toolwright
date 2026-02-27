@@ -4,20 +4,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import yaml
 from click.testing import CliRunner
 
 from tests.helpers import write_demo_toolpack
 from toolwright.cli.main import cli
-
-
-def _lockfile_path_from_toolpack(toolpack_file: Path) -> Path:
-    """Read the toolpack.yaml and return the absolute pending lockfile path."""
-    with open(toolpack_file) as f:
-        tp = yaml.safe_load(f)
-    lockfile_rel = tp["paths"]["lockfiles"].get("pending") or tp["paths"]["lockfiles"].get("approved")
-    assert lockfile_rel is not None
-    return toolpack_file.parent / lockfile_rel
 
 
 class TestGateSyncWithToolpack:

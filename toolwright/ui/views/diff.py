@@ -133,8 +133,9 @@ def render_rich(summary: DiffSummary, *, title: str = "Changes") -> RenderableTy
             style = _CATEGORY_STYLES.get(cat, "muted")
             parts.append(f"[{style}]{count} {cat}[/{style}]")
 
+    sep = " \u00b7 "
     footer = Text.from_markup(
-        f"  {summary.total} changes: {' \u00b7 '.join(parts)}\n"
+        f"  {summary.total} changes: {sep.join(parts)}\n"
         f"  Exit code: {summary.exit_code}"
     )
     items_renderables.append(footer)

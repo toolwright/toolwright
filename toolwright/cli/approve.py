@@ -329,6 +329,7 @@ def run_approve_tool(
                 count += 1
         manager.save()
         click.echo(f"Approved {count} tools")
+        click.echo(f"Lockfile: {manager.lockfile_path}")
         snapshot_ok = _maybe_materialize_snapshot(manager, root_path=Path(root_path))
         if not snapshot_ok and count > 0:
             _print_snapshot_guidance()
@@ -377,6 +378,7 @@ def run_approve_tool(
 
     if approved:
         click.echo(f"Approved: {', '.join(approved)}")
+        click.echo(f"Lockfile: {manager.lockfile_path}")
 
     if not_found:
         click.echo(f"Not found: {', '.join(not_found)}", err=True)

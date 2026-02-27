@@ -115,9 +115,8 @@ def run_capture_openapi(
             suffix = ".json" if source.endswith(".json") else ".yaml"
             if source.endswith((".yml", ".yaml")):
                 suffix = ".yaml"
-            tmp_file = tempfile.NamedTemporaryFile(suffix=suffix, delete=False)
-            tmp_file.write(content)
-            tmp_file.close()
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp_file:
+                tmp_file.write(content)
             source_path = Path(tmp_file.name)
         except Exception as e:
             click.echo(f"Error fetching URL: {e}", err=True)
@@ -167,12 +166,11 @@ def run_capture_openapi(
 
     # Clean up temp file from URL fetch
     if tmp_file is not None:
+        import contextlib
         import os
 
-        try:
+        with contextlib.suppress(OSError):
             os.unlink(tmp_file.name)
-        except OSError:
-            pass
 
 
 def _import_har(
