@@ -74,18 +74,18 @@ def run_init(
 
     # Print next steps — show all entry paths so users know their options.
     click.echo()
-    click.echo("What's next (pick the path that fits):")
+    click.echo("What's next:")
+    click.echo("  Try the demo:        toolwright demo")
+    click.echo("     Run the full pipeline on a sample API — no setup needed.")
+    click.echo()
     if detection.api_specs:
         spec = detection.api_specs[0]
-        click.echo(f"  A. toolwright capture import {spec} --input-format openapi -a <api-host>")
+        click.echo(f"  Import spec:         toolwright capture import {spec} --input-format openapi -a <api-host>")
         click.echo("     You have an OpenAPI spec — import it directly.")
     else:
-        click.echo("  A. toolwright mint <start-url> -a <api-host>")
-        click.echo("     Point toolwright at your app and capture live traffic (requires Playwright).")
-        click.echo("  B. toolwright capture import <file.har> -a <api-host>")
-        click.echo("     Import a HAR file from your browser's DevTools.")
-        click.echo("  C. toolwright capture import <spec> --input-format openapi -a <api-host>")
-        click.echo("     Import an OpenAPI spec (URL or local file).")
+        click.echo("  Browser capture:     toolwright mint <start-url> -a <api-host>")
+        click.echo("  Import HAR:          toolwright capture import <file.har> -a <api-host>")
+        click.echo("  Import OpenAPI:      toolwright capture import <spec> --input-format openapi -a <api-host>")
     click.echo()
     click.echo("  Then: toolwright gate allow --all   (approve tools)")
     click.echo("        toolwright serve --toolpack <path>   (start MCP server)")

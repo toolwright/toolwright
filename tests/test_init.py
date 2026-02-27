@@ -181,6 +181,28 @@ def test_init_next_steps_use_openapi_command(tmp_path: Path) -> None:
     assert "--policy <policy.yaml>" not in result.output
 
 
+# --- demo command in next steps ---
+
+def test_init_next_steps_mention_demo(tmp_path: Path) -> None:
+    """Init output must mention 'toolwright demo' so new users discover it."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["init", "--directory", str(tmp_path)])
+
+    assert result.exit_code == 0
+    assert "toolwright demo" in result.output
+
+
+def test_init_next_steps_demo_appears_before_mint(tmp_path: Path) -> None:
+    """Demo should be the first suggestion (easiest path for new users)."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["init", "--directory", str(tmp_path)])
+
+    assert result.exit_code == 0
+    demo_pos = result.output.index("toolwright demo")
+    mint_pos = result.output.index("toolwright mint")
+    assert demo_pos < mint_pos, "toolwright demo should appear before toolwright mint"
+
+
 # --- to_dict ---
 
 def test_detection_to_dict(tmp_path: Path) -> None:

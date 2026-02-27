@@ -47,7 +47,7 @@ def init_flow(
     cmd = ["toolwright", "init", "-d", directory]
     echo_plan([cmd], console=con)
 
-    if not confirm("Initialize Cask here?", default=True, console=con):
+    if not confirm("Initialize Toolwright here?", default=True, console=con):
         return
 
     # Execute
@@ -61,6 +61,9 @@ def init_flow(
         con.print(f"[error]Init failed: {exc}[/error]")
         return
 
-    con.print("[success]Cask initialized.[/success]")
-    con.print("Next: toolwright mint <url> -a <host>  or  toolwright capture import <file> -a <host>")
+    con.print("[success]Toolwright initialized.[/success]")
+    con.print("Next steps:")
+    con.print("  Try the demo:        toolwright demo")
+    con.print("  Browser capture:     toolwright mint <url> -a <host>")
+    con.print("  Import HAR/OpenAPI:  toolwright capture import <file> -a <host>")
     echo_summary([cmd], console=con)

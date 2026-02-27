@@ -45,7 +45,7 @@ class TestInitFlow:
             init_flow(directory="/my/project")
 
         output = mock_console.file.getvalue()  # type: ignore[attr-defined]
-        assert "Cask initialized" in output
+        assert "Toolwright initialized" in output
 
     def test_aborts_on_decline(self, mock_console: Console) -> None:
         from toolwright.ui.flows.init import init_flow
@@ -71,6 +71,20 @@ class TestInitFlow:
 
         output = mock_console.file.getvalue()  # type: ignore[attr-defined]
         assert "toolwright init -d /some/dir" in output
+
+    def test_shows_demo_in_next_steps(self, mock_console: Console) -> None:
+        """After init, next-steps must mention toolwright demo."""
+        from toolwright.ui.flows.init import init_flow
+
+        with (
+            patch("toolwright.ui.flows.init.err_console", mock_console),
+            patch("toolwright.ui.flows.init.confirm", return_value=True),
+            patch("toolwright.cli.init.run_init"),
+        ):
+            init_flow(directory="/my/project")
+
+        output = mock_console.file.getvalue()  # type: ignore[attr-defined]
+        assert "toolwright demo" in output
 
     def test_handles_init_failure(self, mock_console: Console) -> None:
         from toolwright.ui.flows.init import init_flow
