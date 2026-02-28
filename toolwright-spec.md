@@ -10,6 +10,12 @@
 
 ---
 
+> **Status (February 2026):** All five pillars complete. Published to PyPI as `toolwright`
+> v1.0.0a2. Production readiness hardening complete (8 phases, 60 files, +3,282/-1,916 lines).
+> 2,209 tests passing, 0 failures. 83 capabilities shipped. ~2,000 lines of dead code removed.
+> The implementation plan (Section 7) and "What's Missing" columns throughout are historical —
+> all items have been delivered. This document is preserved as an architectural record.
+
 ## Spec v1.1 — Post-Implementation Update (2026-02-28)
 
 This spec was written as a planning document before implementation. All planned work

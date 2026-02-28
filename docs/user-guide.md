@@ -430,6 +430,8 @@ toolwright serve --toolpack toolpack.yaml \
 
 ## Continuous Reconciliation (HEAL Pillar)
 
+Toolwright uses Kubernetes-style reconciliation for recovery of its own artifacts and runtime, and Terraform-style plan/apply for changes to what tools do.
+
 Start the MCP server with `--watch` and Toolwright continuously monitors your tools for API drift, schema changes, and endpoint failures. When issues are detected, repairs are classified and handled automatically or queued for your review.
 
 ### Watch mode

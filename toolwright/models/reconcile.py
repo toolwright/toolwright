@@ -80,6 +80,11 @@ class ToolReconcileState(BaseModel):
     pending_repair: str | None = None
     version: int = 0
 
+    # Repair retry budget
+    consecutive_repair_failures: int = 0
+    repair_suspended: bool = False
+    first_failure_at: float | None = None
+
 
 # ---------------------------------------------------------------------------
 # Aggregate reconciliation state

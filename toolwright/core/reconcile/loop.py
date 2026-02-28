@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -298,6 +299,9 @@ class ReconcileLoop:
 
     # -- Auto-repair -------------------------------------------------------
 
+    _REPAIR_MAX_FAILURES = 3
+    _REPAIR_WINDOW_SECONDS = 3600  # 1 hour
+
     def _handle_repair(self, tool_id: str, drift_report: DriftReport) -> None:
         """Create a repair plan from a DriftReport and apply it.
 
@@ -305,9 +309,19 @@ class ReconcileLoop:
           - BREAKING changes -> APPROVAL_REQUIRED / GATE_SYNC
           - ADDITIVE changes -> SAFE / VERIFY_CONTRACTS
           - All others       -> MANUAL / INVESTIGATE
+
+        Tracks consecutive repair failures per tool. After 3 failures
+        within a 1-hour window, auto-heal is suspended for that tool.
         """
         tool_state = self._state.tools.get(tool_id)
         if tool_state is None:
+            return
+
+        # Skip if repair is suspended for this tool
+        if tool_state.repair_suspended:
+            logger.debug(
+                "Skipping repair for %s — auto-heal suspended", tool_id,
+            )
             return
 
         patches: list[PatchItem] = []
@@ -367,6 +381,37 @@ class ReconcileLoop:
                     EventKind.APPROVAL_QUEUED,
                     tool_id,
                     f"Patch {pr.patch_id} queued: {pr.reason}",
+                )
+
+        # Track repair success/failure for retry budget
+        any_applied = any(pr.applied for pr in result.results)
+        if any_applied:
+            tool_state.consecutive_repair_failures = 0
+            tool_state.repair_suspended = False
+            tool_state.first_failure_at = None
+            logger.info(
+                "Patch applied to %s, will verify on next probe cycle",
+                tool_id,
+            )
+        elif result.total > 0:
+            now = time.time()
+            # Reset window if first failure was >1 hour ago
+            if (
+                tool_state.first_failure_at is not None
+                and now - tool_state.first_failure_at > self._REPAIR_WINDOW_SECONDS
+            ):
+                tool_state.consecutive_repair_failures = 0
+                tool_state.first_failure_at = None
+            if tool_state.first_failure_at is None:
+                tool_state.first_failure_at = now
+            tool_state.consecutive_repair_failures += 1
+            if tool_state.consecutive_repair_failures >= self._REPAIR_MAX_FAILURES:
+                tool_state.repair_suspended = True
+                logger.warning(
+                    "Auto-heal suspended for %s after %d consecutive failures. "
+                    "Run `toolwright repair plan` to review manually.",
+                    tool_id,
+                    tool_state.consecutive_repair_failures,
                 )
 
         # Increment version after repair processing
