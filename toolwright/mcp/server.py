@@ -342,7 +342,7 @@ class ToolwrightMCPServer:
         if sys.platform == "win32":
             return  # signal.SIGTERM not reliably supported on Windows
 
-        def _handle_sigterm(signum: int, frame: Any) -> None:
+        def _handle_sigterm(_signum: int, _frame: Any) -> None:
             logger.info("Received SIGTERM, shutting down gracefully")
             # Use os._exit to ensure immediate clean termination even inside
             # asyncio event loops which may catch or defer SystemExit.

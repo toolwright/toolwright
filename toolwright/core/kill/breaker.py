@@ -11,6 +11,7 @@ State is persisted to JSON for durability across server restarts.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
 import time
@@ -186,7 +187,5 @@ class CircuitBreakerRegistry:
 
         # Keep a backup
         bak_path = self._state_path.with_suffix(self._state_path.suffix + ".bak")
-        try:
+        with contextlib.suppress(OSError):
             bak_path.write_text(content, encoding="utf-8")
-        except OSError:
-            pass  # Best-effort backup

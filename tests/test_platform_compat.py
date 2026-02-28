@@ -77,14 +77,13 @@ class TestConfigPathExpansion:
 
 
 class TestPythonVersionGuard:
-    """Python version check in __init__.py."""
+    """Python version is guarded via requires-python in pyproject.toml."""
 
-    def test_version_check_present(self) -> None:
-        """__init__.py must have a version check."""
-        import inspect
+    def test_requires_python_in_pyproject(self) -> None:
+        """pyproject.toml must declare requires-python >= 3.11."""
+        from pathlib import Path
 
-        import toolwright
-
-        source = inspect.getsource(toolwright)
-        assert "version_info" in source
-        assert "3, 11" in source or "(3, 11)" in source
+        root = Path(__file__).resolve().parent.parent
+        pyproject = root / "pyproject.toml"
+        content = pyproject.read_text(encoding="utf-8")
+        assert 'requires-python = ">=3.11"' in content
