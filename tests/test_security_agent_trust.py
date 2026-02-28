@@ -1,7 +1,9 @@
-"""Security tests: agent-created rules must be DRAFT, enable_tool must not be exposed.
+"""Security tests: agent trust boundary enforcement.
 
 Phase 1.1: _add_rule() must force status=DRAFT and created_by="agent"
 Phase 1.2: toolwright_enable_tool must NOT appear in meta-tool list
+Phase 8.1: Agent cannot read signing keys or auth tokens via meta-tools.
+           Agent meta-tool responses are reasonably sized.
 """
 
 from __future__ import annotations
@@ -97,3 +99,103 @@ async def test_kill_tool_still_in_meta_tool_list(rules_server: ToolwrightMetaMCP
     assert "toolwright_kill_tool" in tool_names, (
         "toolwright_kill_tool should remain in meta-tool list"
     )
+
+
+# ------------------------------------------------------------------
+# Phase 8.1  Agent cannot read signing keys via meta-tools
+# ------------------------------------------------------------------
+
+SENSITIVE_FRAGMENTS = [
+    "PRIVATE KEY",
+    "private_key",
+    "signing_key",
+    "_signing_key",
+    "confirmation_signing",
+    "ed25519",
+    "BEGIN PRIVATE",
+    "BEGIN RSA",
+    "BEGIN EC",
+    "secret_key",
+]
+
+
+@pytest.fixture
+def full_server(tmp_path: Path) -> ToolwrightMetaMCPServer:
+    """Server with all pillars configured on disk so every handler can respond."""
+    rules_path = tmp_path / "rules.json"
+    rules_path.write_text("[]")
+    cb_path = tmp_path / "circuit_breaker.json"
+    cb_path.write_text("{}")
+    state_dir = tmp_path / "state"
+    state_dir.mkdir()
+    return ToolwrightMetaMCPServer(
+        rules_path=str(rules_path),
+        circuit_breaker_path=str(cb_path),
+        state_dir=str(state_dir),
+    )
+
+
+@pytest.mark.asyncio
+async def test_no_signing_keys_in_meta_tool_responses(full_server: ToolwrightMetaMCPServer) -> None:
+    """No meta-tool response should contain signing key material."""
+    # Gather responses from every tool that can respond without a manifest
+    tool_calls = [
+        ("toolwright_quarantine_report", {}),
+        ("toolwright_list_rules", {}),
+        ("toolwright_reconcile_status", {}),
+        ("toolwright_pending_repairs", {}),
+    ]
+
+    for tool_name, args in tool_calls:
+        result = await full_server._handle_call_tool(tool_name, args)
+        for content in result:
+            text = content.text
+            for fragment in SENSITIVE_FRAGMENTS:
+                assert fragment.lower() not in text.lower(), (
+                    f"Signing key fragment '{fragment}' found in response of {tool_name}: {text[:200]}"
+                )
+
+
+@pytest.mark.asyncio
+async def test_no_auth_tokens_in_meta_tool_responses(full_server: ToolwrightMetaMCPServer) -> None:
+    """No meta-tool response should leak confirmation tokens or signing material."""
+    # Create a rule and then list rules to check output
+    await full_server._add_rule({
+        "kind": "prohibition",
+        "target_tool_id": "test_tool",
+        "description": "test rule",
+    })
+
+    result = await full_server._handle_call_tool("toolwright_list_rules", {})
+    for content in result:
+        text = content.text
+        # Ensure no signing key material leaks
+        for fragment in SENSITIVE_FRAGMENTS:
+            assert fragment.lower() not in text.lower(), (
+                f"Auth/signing fragment '{fragment}' found in list_rules response"
+            )
+
+
+# ------------------------------------------------------------------
+# Phase 8.1  Agent meta-tool responses are reasonably sized
+# ------------------------------------------------------------------
+
+MAX_RESPONSE_CHARS = 800  # ~200 tokens
+
+
+@pytest.mark.asyncio
+async def test_meta_tool_responses_under_size_limit(full_server: ToolwrightMetaMCPServer) -> None:
+    """Every meta-tool response must be under 800 chars (~200 tokens) when data is minimal."""
+    tool_calls = [
+        ("toolwright_quarantine_report", {}),
+        ("toolwright_list_rules", {}),
+        ("toolwright_reconcile_status", {}),
+        ("toolwright_pending_repairs", {}),
+    ]
+
+    for tool_name, args in tool_calls:
+        result = await full_server._handle_call_tool(tool_name, args)
+        total_chars = sum(len(c.text) for c in result)
+        assert total_chars <= MAX_RESPONSE_CHARS, (
+            f"{tool_name} response is {total_chars} chars, exceeds {MAX_RESPONSE_CHARS} limit"
+        )

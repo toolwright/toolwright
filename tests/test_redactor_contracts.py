@@ -1,6 +1,19 @@
-"""Tests for strict redaction pipeline contracts."""
+"""Tests for strict redaction pipeline contracts.
+
+Covers:
+- Bearer token redaction
+- JWT token redaction
+- Basic auth redaction
+- API key redaction
+- Vendor-specific tokens (ghp_, sk_live_, AKIA*)
+- Cookie/set-cookie header redaction
+- JSON body keys with sensitive names
+- Body truncation and schema zero
+"""
 
 from __future__ import annotations
+
+import json
 
 from toolwright.core.capture.redactor import Redactor
 from toolwright.models.capture import HttpExchange, HTTPMethod
@@ -190,3 +203,226 @@ def test_schema_zero_short_strings_replaced() -> None:
     assert result["a"] == ""
     assert result["b"] == ""
     assert result["c"] == ""
+
+
+# ------------------------------------------------------------------
+# Phase 8.2  JWT token redaction
+# ------------------------------------------------------------------
+
+
+def test_jwt_token_redacted_in_body() -> None:
+    """JWT tokens (eyJ...) must be redacted from request/response bodies."""
+    jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"
+    exchange = HttpExchange(
+        url="https://api.example.com/auth",
+        method=HTTPMethod.POST,
+        request_body=f"token={jwt}",
+        response_body=f'{{"access_token": "{jwt}"}}',
+        response_status=200,
+        response_content_type="application/json",
+    )
+
+    redacted = Redactor().redact_exchange(exchange)
+
+    assert jwt not in (redacted.request_body or "")
+    assert "[REDACTED_JWT]" in (redacted.request_body or "")
+    assert jwt not in (redacted.response_body or "")
+    assert "[REDACTED_JWT]" in (redacted.response_body or "")
+
+
+# ------------------------------------------------------------------
+# Phase 8.2  Basic auth redaction
+# ------------------------------------------------------------------
+
+
+def test_basic_auth_redacted_in_body() -> None:
+    """Basic auth credentials must be redacted from bodies."""
+    basic_cred = "Basic dXNlcjpwYXNzd29yZA=="
+    exchange = HttpExchange(
+        url="https://api.example.com/login",
+        method=HTTPMethod.POST,
+        request_body=f"Authorization: {basic_cred}",
+        response_status=200,
+        response_body="ok",
+        response_content_type="text/plain",
+    )
+
+    redacted = Redactor().redact_exchange(exchange)
+
+    assert "dXNlcjpwYXNzd29yZA==" not in (redacted.request_body or "")
+    assert "[REDACTED_BASIC]" in (redacted.request_body or "")
+
+
+# ------------------------------------------------------------------
+# Phase 8.2  API key redaction
+# ------------------------------------------------------------------
+
+
+def test_api_key_redacted_in_body() -> None:
+    """API keys in common formats must be redacted from bodies."""
+    body = 'api_key="sk_test_abc123xyz"'
+    exchange = HttpExchange(
+        url="https://api.example.com/config",
+        method=HTTPMethod.GET,
+        response_status=200,
+        response_body=body,
+        response_content_type="text/plain",
+    )
+
+    redacted = Redactor().redact_exchange(exchange)
+
+    assert "sk_test_abc123xyz" not in (redacted.response_body or "")
+    assert "[REDACTED]" in (redacted.response_body or "")
+
+
+# ------------------------------------------------------------------
+# Phase 8.2  Vendor-specific token redaction (ghp_, sk_live_, AKIA*)
+# ------------------------------------------------------------------
+
+
+def test_bearer_vendor_tokens_redacted() -> None:
+    """Vendor-specific tokens used as bearer tokens must be redacted."""
+    # GitHub personal access token
+    ghp_token = "bearer ghp_1234567890abcdef1234567890abcdef12345678"
+    exchange = HttpExchange(
+        url="https://api.github.com/repos",
+        method=HTTPMethod.GET,
+        request_body=ghp_token,
+        response_status=200,
+        response_body="ok",
+        response_content_type="text/plain",
+    )
+
+    redacted = Redactor().redact_exchange(exchange)
+    assert "ghp_" not in (redacted.request_body or "")
+    assert "[REDACTED_BEARER]" in (redacted.request_body or "")
+
+
+def test_stripe_live_key_redacted_as_bearer() -> None:
+    """Stripe live keys used as bearer tokens must be redacted."""
+    stripe_key = "bearer sk_live_abc123def456ghi789"
+    exchange = HttpExchange(
+        url="https://api.stripe.com/v1/charges",
+        method=HTTPMethod.POST,
+        request_body=stripe_key,
+        response_status=200,
+        response_body="ok",
+        response_content_type="text/plain",
+    )
+
+    redacted = Redactor().redact_exchange(exchange)
+    assert "sk_live_" not in (redacted.request_body or "")
+    assert "[REDACTED_BEARER]" in (redacted.request_body or "")
+
+
+def test_aws_access_key_id_redacted_as_api_key() -> None:
+    """AWS access key IDs in api_key fields must be redacted."""
+    aws_body = 'api_key="AKIAIOSFODNN7EXAMPLE"'
+    exchange = HttpExchange(
+        url="https://sts.amazonaws.com",
+        method=HTTPMethod.POST,
+        request_body=aws_body,
+        response_status=200,
+        response_body="ok",
+        response_content_type="text/plain",
+    )
+
+    redacted = Redactor().redact_exchange(exchange)
+    assert "AKIAIOSFODNN7EXAMPLE" not in (redacted.request_body or "")
+
+
+# ------------------------------------------------------------------
+# Phase 8.2  Cookie header redaction
+# ------------------------------------------------------------------
+
+
+def test_cookie_header_redacted() -> None:
+    """Cookie and Set-Cookie headers must always be redacted."""
+    exchange = HttpExchange(
+        url="https://example.com/page",
+        method=HTTPMethod.GET,
+        request_headers={"Cookie": "session=abc123; csrftoken=xyz789"},
+        response_headers={"Set-Cookie": "session=def456; Path=/; HttpOnly"},
+        response_status=200,
+        response_content_type="text/html",
+    )
+
+    redacted = Redactor().redact_exchange(exchange)
+
+    assert redacted.request_headers["Cookie"] == "[REDACTED]"
+    assert redacted.response_headers["Set-Cookie"] == "[REDACTED]"
+
+
+# ------------------------------------------------------------------
+# Phase 8.2  JSON body keys with sensitive names
+# ------------------------------------------------------------------
+
+
+def test_json_body_sensitive_keys_redacted() -> None:
+    """JSON body keys matching SENSITIVE_PARAMS must be redacted."""
+    body_json = {
+        "username": "admin",
+        "password": "super_secret_123",
+        "token": "tok_abc123",
+        "api_key": "key_xyz789",
+        "access_token": "at_abc123",
+        "refresh_token": "rt_xyz789",
+        "data": "safe_value",
+    }
+    body_text = json.dumps(body_json)
+
+    exchange = HttpExchange(
+        url="https://api.example.com/auth",
+        method=HTTPMethod.POST,
+        request_body=body_text,
+        request_body_json=body_json,
+        response_status=200,
+        response_body="ok",
+        response_content_type="text/plain",
+    )
+
+    redacted = Redactor().redact_exchange(exchange)
+
+    # Dict-level redaction of sensitive keys
+    rj = redacted.request_body_json
+    assert rj is not None
+    assert rj["password"] == "[REDACTED]"
+    assert rj["token"] == "[REDACTED]"
+    assert rj["api_key"] == "[REDACTED]"
+    assert rj["access_token"] == "[REDACTED]"
+    assert rj["refresh_token"] == "[REDACTED]"
+    # Non-sensitive keys preserved
+    assert rj["username"] == "admin"
+    assert rj["data"] == "safe_value"
+
+
+def test_nested_json_sensitive_keys_redacted() -> None:
+    """Nested JSON dicts with sensitive keys must be recursively redacted."""
+    body_json = {
+        "credentials": {
+            "token": "tok_inner",
+            "secret": "s3cr3t",
+        },
+        "config": {
+            "name": "test",
+        },
+    }
+    body_text = json.dumps(body_json)
+
+    exchange = HttpExchange(
+        url="https://api.example.com/settings",
+        method=HTTPMethod.PUT,
+        request_body=body_text,
+        request_body_json=body_json,
+        response_status=200,
+        response_body="ok",
+        response_content_type="text/plain",
+    )
+
+    redacted = Redactor().redact_exchange(exchange)
+
+    rj = redacted.request_body_json
+    assert rj is not None
+    assert rj["credentials"]["token"] == "[REDACTED]"
+    assert rj["credentials"]["secret"] == "[REDACTED]"
+    assert rj["config"]["name"] == "test"
