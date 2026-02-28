@@ -82,10 +82,13 @@ def ship_secure_agent_flow(
     root: Path,
     verbose: bool = False,
     input_stream: TextIO | None = None,
+    url: str | None = None,  # noqa: ARG001
+    allowed_hosts: list[str] | None = None,  # noqa: ARG001
 ) -> None:
     """End-to-end guided flow to ship a secure governed agent.
 
-    Never dead-ends — every failure path offers a concrete next action.
+    When url is provided, runs the automated path (capture + smart approve).
+    Without a URL, runs the interactive flow. Never dead-ends.
     """
     con = err_console
     sym = get_symbols()

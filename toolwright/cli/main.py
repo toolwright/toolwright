@@ -315,21 +315,36 @@ def dashboard(ctx: click.Context, toolpack: str | None) -> None:
 
 
 @cli.command()
+@click.argument("url", required=False, default=None)
+@click.option(
+    "-a", "--allowed-host",
+    multiple=True,
+    help="API host(s) to capture (used with URL argument)",
+)
 @click.pass_context
-def ship(ctx: click.Context) -> None:
+def ship(ctx: click.Context, url: str | None, allowed_host: tuple[str, ...]) -> None:
     """Ship a governed agent end-to-end.
 
     The flagship guided lifecycle: capture, review, approve, snapshot,
     verify, and serve — all in one flow.
 
+    Optionally pass a URL to run the automated path (capture + compile +
+    smart approve + serve). Without a URL, runs the interactive flow.
+
     \b
     Examples:
-      toolwright ship
+      toolwright ship                                      # Interactive
+      toolwright ship https://app.example.com -a api.example.com  # Automated
     """
     from toolwright.ui.flows.ship import ship_secure_agent_flow
 
     root: Path = ctx.obj.get("root", resolve_root())
-    ship_secure_agent_flow(root=root, verbose=ctx.obj.get("verbose", False))
+    ship_secure_agent_flow(
+        root=root,
+        verbose=ctx.obj.get("verbose", False),
+        url=url,
+        allowed_hosts=list(allowed_host) if allowed_host else None,
+    )
 
 
 def _default_root_path(ctx: click.Context, *parts: str) -> Path:
@@ -1210,6 +1225,11 @@ def verify(
     is_flag=True,
     help="Generate a fixture toolpack without running the prove flow",
 )
+@click.option(
+    "--offline",
+    is_flag=True,
+    help="Compile-only mode (no server). Same as --generate-only.",
+)
 @click.pass_context
 def demo(
     ctx: click.Context,
@@ -1220,6 +1240,7 @@ def demo(
     smoke: bool,
     smoke_scenarios: str,
     generate_only: bool,
+    offline: bool,
 ) -> None:
     """One-command proof of governance enforcement.
 
@@ -1229,11 +1250,12 @@ def demo(
     \b
     Examples:
       toolwright demo                          # Offline proof flow
+      toolwright demo --offline                # Compile-only (no server)
       toolwright demo --live                   # Live browser proof
       toolwright demo --smoke                  # Smoke test matrix
       toolwright demo --generate-only          # Generate fixture toolpack only
     """
-    if generate_only:
+    if generate_only or offline:
         from toolwright.cli.demo import run_demo
 
         _run_with_lock(
