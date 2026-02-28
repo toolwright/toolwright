@@ -69,7 +69,7 @@ class TestGateAllowWithToolpack:
         runner = CliRunner()
         result = runner.invoke(cli, [
             "--root", root_path,
-            "gate", "allow", "--all",
+            "gate", "allow", "--all", "--yes",
             "--toolpack", str(toolpack_file),
         ])
         assert result.exit_code == 0, f"Unexpected exit: {result.output}"
@@ -88,7 +88,7 @@ class TestGateCheckWithToolpack:
         # First approve all so check passes
         runner.invoke(cli, [
             "--root", root_path,
-            "gate", "allow", "--all",
+            "gate", "allow", "--all", "--yes",
             "--toolpack", str(toolpack_file),
         ])
 
@@ -113,7 +113,7 @@ class TestGateSnapshotWithToolpack:
         # First approve all
         runner.invoke(cli, [
             "--root", root_path,
-            "gate", "allow", "--all",
+            "gate", "allow", "--all", "--yes",
             "--toolpack", str(toolpack_file),
         ])
 

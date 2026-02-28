@@ -107,7 +107,7 @@ def test_gate_allow_prints_next_steps(tmp_path: Path) -> None:
     # Then approve all
     result = runner.invoke(
         cli,
-        ["gate", "allow", "--all", "--lockfile", str(lockfile_path)],
+        ["gate", "allow", "--all", "--yes", "--lockfile", str(lockfile_path)],
     )
 
     assert result.exit_code == 0

@@ -287,20 +287,8 @@ class ToolwrightMetaMCPServer:
                     "required": ["tool_id"],
                 },
             ),
-            types.Tool(
-                name="toolwright_enable_tool",
-                description="Re-enable a killed tool by closing its circuit breaker.",
-                inputSchema={
-                    "type": "object",
-                    "properties": {
-                        "tool_id": {
-                            "type": "string",
-                            "description": "ID of the tool to enable",
-                        },
-                    },
-                    "required": ["tool_id"],
-                },
-            ),
+            # toolwright_enable_tool removed: agents must not re-enable killed tools.
+            # Re-enabling requires human intervention via CLI.
             types.Tool(
                 name="toolwright_quarantine_report",
                 description="List all tools with tripped or manually killed circuit breakers.",
@@ -481,7 +469,6 @@ class ToolwrightMetaMCPServer:
             "toolwright_health_check": lambda: self._health_check(arguments),
             # KILL
             "toolwright_kill_tool": lambda: self._kill_tool(arguments),
-            "toolwright_enable_tool": lambda: self._enable_tool(arguments),
             "toolwright_quarantine_report": lambda: self._quarantine_report(),
             # CORRECT
             "toolwright_add_rule": lambda: self._add_rule(arguments),
@@ -1124,7 +1111,7 @@ class ToolwrightMetaMCPServer:
 
         from uuid import uuid4
 
-        from toolwright.models.rule import BehavioralRule, RuleKind
+        from toolwright.models.rule import BehavioralRule, RuleKind, RuleStatus
 
         target = arguments.get("target_tool_id", "")
         description = arguments.get("description", "")
@@ -1146,8 +1133,10 @@ class ToolwrightMetaMCPServer:
             rule_id=str(uuid4()),
             kind=RuleKind(kind),
             description=description,
+            status=RuleStatus.DRAFT,
             target_tool_ids=[target] if target else [],
             config=config,
+            created_by="agent",
         )
 
         self.rule_engine.add_rule(rule)

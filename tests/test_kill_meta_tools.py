@@ -54,10 +54,11 @@ class TestKillMetaToolsRegistered:
         assert "toolwright_kill_tool" in names
 
     @pytest.mark.asyncio
-    async def test_enable_tool_listed(self, meta_server: ToolwrightMetaMCPServer):
+    async def test_enable_tool_not_listed(self, meta_server: ToolwrightMetaMCPServer):
+        """toolwright_enable_tool removed: agents must not re-enable killed tools."""
         tools = await meta_server._handle_list_tools()
         names = [t.name for t in tools]
-        assert "toolwright_enable_tool" in names
+        assert "toolwright_enable_tool" not in names
 
     @pytest.mark.asyncio
     async def test_quarantine_report_listed(self, meta_server: ToolwrightMetaMCPServer):
@@ -97,29 +98,18 @@ class TestKillTool:
         assert "error" in data
 
 
-class TestEnableTool:
-    """toolwright_enable_tool forces circuit breaker closed."""
+class TestEnableToolRemoved:
+    """toolwright_enable_tool is removed: agents must not re-enable killed tools."""
 
     @pytest.mark.asyncio
-    async def test_enable_tool(self, meta_server: ToolwrightMetaMCPServer):
-        # Kill first, then enable
-        await meta_server._handle_call_tool(
-            "toolwright_kill_tool", {"tool_id": "get_user", "reason": "testing"}
-        )
+    async def test_enable_tool_returns_unknown(self, meta_server: ToolwrightMetaMCPServer):
+        """Calling the removed enable_tool should return an unknown-tool error."""
         result = await meta_server._handle_call_tool(
             "toolwright_enable_tool", {"tool_id": "get_user"}
         )
         data = json.loads(result[0].text)
-        assert data["tool_id"] == "get_user"
-        assert data["state"] == "closed"
-
-    @pytest.mark.asyncio
-    async def test_enable_requires_tool_id(self, meta_server: ToolwrightMetaMCPServer):
-        result = await meta_server._handle_call_tool(
-            "toolwright_enable_tool", {}
-        )
-        data = json.loads(result[0].text)
         assert "error" in data
+        assert "Unknown tool" in data["error"]
 
 
 class TestQuarantineReport:

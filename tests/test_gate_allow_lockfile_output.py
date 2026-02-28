@@ -30,7 +30,7 @@ class TestGateAllowPrintsLockfilePath:
         # Allow all
         result = runner.invoke(
             cli,
-            ["--root", root_path, "gate", "allow", "--all", "--toolpack", str(toolpack_file)],
+            ["--root", root_path, "gate", "allow", "--all", "--yes", "--toolpack", str(toolpack_file)],
         )
         assert result.exit_code == 0, f"Allow failed: {result.output}"
         assert "Lockfile:" in result.output, f"Missing lockfile path in output: {result.output}"

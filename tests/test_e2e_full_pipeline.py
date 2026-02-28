@@ -277,14 +277,17 @@ class TestMetaServerE2E:
         assert data["total"] == 1
         assert data["tools"][0]["tool_id"] == "get_user"
 
-        # 6. Enable get_user
+        # 6. Enable via agent is blocked (removed for security)
         result = await server._handle_call_tool(
             "toolwright_enable_tool", {"tool_id": "get_user"}
         )
         data = json.loads(result[0].text)
-        assert data["state"] == "closed"
+        assert "error" in data, "enable_tool should be rejected for agents"
 
-        # 7. Quarantine now empty
+        # 7. Re-enable via circuit breaker directly (simulates human CLI path)
+        server.circuit_breaker.enable_tool("get_user")
+
+        # 8. Quarantine now empty
         result = await server._handle_call_tool("toolwright_quarantine_report", {})
         data = json.loads(result[0].text)
         assert data["total"] == 0

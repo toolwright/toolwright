@@ -21,7 +21,7 @@ def test_approve_materializes_snapshot(tmp_path: Path) -> None:
     runner = CliRunner()
     result = runner.invoke(
         cli,
-        ["gate", "allow", "--all", "--lockfile", str(lockfile_path)],
+        ["gate", "allow", "--all", "--yes", "--lockfile", str(lockfile_path)],
     )
 
     assert result.exit_code == 0
@@ -43,7 +43,7 @@ def test_approve_promotes_pending_lockfile(tmp_path: Path) -> None:
     runner = CliRunner()
     result = runner.invoke(
         cli,
-        ["gate", "allow", "--all", "--lockfile", str(pending_lockfile)],
+        ["gate", "allow", "--all", "--yes", "--lockfile", str(pending_lockfile)],
     )
 
     assert result.exit_code == 0
@@ -75,6 +75,7 @@ def test_approve_seeds_toolpack_trust_store(tmp_path: Path) -> None:
             "gate",
             "allow",
             "--all",
+            "--yes",
             "--lockfile",
             str(pending_lockfile),
         ],

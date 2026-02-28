@@ -96,6 +96,18 @@ def host_matches_allowlist(host: str, allowed_hosts: set[str]) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Metadata endpoints (unconditionally blocked)
+# ---------------------------------------------------------------------------
+
+_METADATA_ENDPOINTS: frozenset[str] = frozenset(
+    {
+        "169.254.169.254",  # AWS IMDSv1/v2, GCP, Azure
+        "169.254.170.2",  # AWS ECS task metadata
+        "fd00:ec2::254",  # AWS IPv6 metadata
+    }
+)
+
+# ---------------------------------------------------------------------------
 # IP validation
 # ---------------------------------------------------------------------------
 
@@ -170,13 +182,13 @@ def validate_network_target(
     """Resolve *host* and validate **all** resulting IPs.
 
     Fail-closed: if *any* resolved IP is disallowed the entire target is
-    blocked.  The cloud metadata endpoint ``169.254.169.254`` is hard-blocked
-    regardless of the allowlist.
+    blocked.  Cloud metadata endpoints (``169.254.169.254``, ``169.254.170.2``,
+    ``fd00:ec2::254``) are hard-blocked regardless of the allowlist.
     """
     ips = resolved_ips(host)
     for ip in ips:
-        # Hard-block cloud metadata endpoint.
-        if str(ip) == "169.254.169.254":
+        # Hard-block cloud metadata endpoints -- not overridable by allowlist.
+        if str(ip) in _METADATA_ENDPOINTS:
             raise RuntimeBlockError(
                 ReasonCode.DENIED_HOST_RESOLUTION_FAILED,
                 f"Resolved host '{host}' to cloud metadata endpoint {ip}",

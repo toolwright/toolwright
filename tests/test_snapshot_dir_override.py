@@ -23,7 +23,7 @@ class TestMaterializeSnapshotOverride:
 
         # Approve first so snapshot can proceed
         runner = CliRunner()
-        runner.invoke(cli, ["gate", "allow", "--all", "--lockfile", str(lockfile_path)])
+        runner.invoke(cli, ["gate", "allow", "--all", "--yes", "--lockfile", str(lockfile_path)])
 
         from toolwright.core.approval.snapshot import materialize_snapshot
 
@@ -43,7 +43,7 @@ class TestMaterializeSnapshotOverride:
         lockfile_path = toolpack_file.parent / "lockfile" / "toolwright.lock.pending.yaml"
 
         runner = CliRunner()
-        runner.invoke(cli, ["gate", "allow", "--all", "--lockfile", str(lockfile_path)])
+        runner.invoke(cli, ["gate", "allow", "--all", "--yes", "--lockfile", str(lockfile_path)])
 
         from toolwright.core.approval.snapshot import materialize_snapshot
 
@@ -56,7 +56,7 @@ class TestMaterializeSnapshotOverride:
         lockfile_path = toolpack_file.parent / "lockfile" / "toolwright.lock.pending.yaml"
 
         runner = CliRunner()
-        runner.invoke(cli, ["gate", "allow", "--all", "--lockfile", str(lockfile_path)])
+        runner.invoke(cli, ["gate", "allow", "--all", "--yes", "--lockfile", str(lockfile_path)])
 
         from toolwright.core.approval.snapshot import materialize_snapshot
 
@@ -79,7 +79,7 @@ class TestGateSnapshotCLIOverride:
         lockfile_path = toolpack_file.parent / "lockfile" / "toolwright.lock.pending.yaml"
 
         runner = CliRunner()
-        runner.invoke(cli, ["gate", "allow", "--all", "--lockfile", str(lockfile_path)])
+        runner.invoke(cli, ["gate", "allow", "--all", "--yes", "--lockfile", str(lockfile_path)])
 
         approved_lockfile = toolpack_file.parent / "lockfile" / "toolwright.lock.yaml"
         custom_dir = toolpack_file.parent / "snapshot"
@@ -96,7 +96,7 @@ class TestGateSnapshotCLIOverride:
         lockfile_path = toolpack_file.parent / "lockfile" / "toolwright.lock.pending.yaml"
 
         runner = CliRunner()
-        runner.invoke(cli, ["gate", "allow", "--all", "--lockfile", str(lockfile_path)])
+        runner.invoke(cli, ["gate", "allow", "--all", "--yes", "--lockfile", str(lockfile_path)])
 
         approved_lockfile = toolpack_file.parent / "lockfile" / "toolwright.lock.yaml"
         custom_dir = toolpack_file.parent / "snapshot"
@@ -122,7 +122,7 @@ class TestGateSyncPreservesSnapshotDir:
         lockfile_path = toolpack_file.parent / "lockfile" / "toolwright.lock.pending.yaml"
 
         runner = CliRunner()
-        runner.invoke(cli, ["gate", "allow", "--all", "--lockfile", str(lockfile_path)])
+        runner.invoke(cli, ["gate", "allow", "--all", "--yes", "--lockfile", str(lockfile_path)])
 
         approved_lockfile = toolpack_file.parent / "lockfile" / "toolwright.lock.yaml"
 
@@ -159,7 +159,7 @@ class TestCheckCIWithCustomSnapshotDir:
         lockfile_path = toolpack_file.parent / "lockfile" / "toolwright.lock.pending.yaml"
 
         runner = CliRunner()
-        runner.invoke(cli, ["gate", "allow", "--all", "--lockfile", str(lockfile_path)])
+        runner.invoke(cli, ["gate", "allow", "--all", "--yes", "--lockfile", str(lockfile_path)])
 
         approved_lockfile = toolpack_file.parent / "lockfile" / "toolwright.lock.yaml"
         custom_dir = toolpack_file.parent / "snapshot"
@@ -187,7 +187,7 @@ class TestGitignoreWarning:
         lockfile_path = toolpack_file.parent / "lockfile" / "toolwright.lock.pending.yaml"
 
         runner = CliRunner()
-        runner.invoke(cli, ["gate", "allow", "--all", "--lockfile", str(lockfile_path)])
+        runner.invoke(cli, ["gate", "allow", "--all", "--yes", "--lockfile", str(lockfile_path)])
 
         approved_lockfile = toolpack_file.parent / "lockfile" / "toolwright.lock.yaml"
 
@@ -207,7 +207,7 @@ class TestGitignoreWarning:
         lockfile_path = toolpack_file.parent / "lockfile" / "toolwright.lock.pending.yaml"
 
         runner = CliRunner()
-        runner.invoke(cli, ["gate", "allow", "--all", "--lockfile", str(lockfile_path)])
+        runner.invoke(cli, ["gate", "allow", "--all", "--yes", "--lockfile", str(lockfile_path)])
 
         approved_lockfile = toolpack_file.parent / "lockfile" / "toolwright.lock.yaml"
         custom_dir = toolpack_file.parent / "snapshot"

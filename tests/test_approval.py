@@ -670,7 +670,7 @@ class TestApprovalCLI:
         # Approve all
         result = runner.invoke(
             cli,
-            ["gate", "allow", "--all", "--lockfile", str(lockfile_path)],
+            ["gate", "allow", "--all", "--yes", "--lockfile", str(lockfile_path)],
         )
 
         assert result.exit_code == 0
@@ -736,7 +736,7 @@ class TestApprovalCLI:
 
         runner.invoke(
             cli,
-            ["gate", "allow", "--all", "--lockfile", str(lockfile_path)],
+            ["gate", "allow", "--all", "--yes", "--lockfile", str(lockfile_path)],
         )
 
         result = runner.invoke(

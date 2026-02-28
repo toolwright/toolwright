@@ -112,6 +112,11 @@ def register_approval_commands(
         show_default=True,
         help="Remove tools no longer present in the manifest from the lockfile",
     )
+    @click.option(
+        "--yes", "-y",
+        is_flag=True,
+        help="Skip confirmation prompt (required with --prune-removed)",
+    )
     @click.pass_context
     def gate_sync(
         ctx: click.Context,
@@ -124,6 +129,7 @@ def register_approval_commands(
         scope: str | None,
         deterministic: bool,
         prune_removed: bool,
+        yes: bool,
     ) -> None:
         """Sync lockfile with a tools manifest.
 
@@ -157,6 +163,12 @@ def register_approval_commands(
             policy = policy or resolved["policy"]
             toolsets = toolsets or resolved["toolsets"]
             lockfile = lockfile or resolved["lockfile"]
+
+        if prune_removed and not yes:
+            click.echo("This will remove approval records for tools no longer in the manifest.")
+            if not click.confirm("Proceed?", default=False):
+                click.echo("Aborted.")
+                raise SystemExit(0)
 
         from toolwright.cli.approve import run_approve_sync
 
@@ -240,6 +252,11 @@ def register_approval_commands(
         help="Approve all pending tools",
     )
     @click.option(
+        "--yes", "-y",
+        is_flag=True,
+        help="Skip confirmation prompt (required with --all)",
+    )
+    @click.option(
         "--toolset",
         help="Approve tools within a specific toolset",
     )
@@ -259,6 +276,7 @@ def register_approval_commands(
         toolpack: str | None,
         lockfile: str | None,
         all_pending: bool,
+        yes: bool,
         toolset: str | None,
         approved_by: str | None,
         reason: str | None,
@@ -288,6 +306,12 @@ def register_approval_commands(
                 verbose=ctx.obj.get("verbose", False),
             )
             return
+
+        if all_pending and not yes:
+            click.echo("This will approve ALL pending tools.")
+            if not click.confirm("Proceed?", default=False):
+                click.echo("Aborted.")
+                raise SystemExit(0)
 
         from toolwright.cli.approve import run_approve_tool
 

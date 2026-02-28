@@ -58,7 +58,7 @@ class TestGateAllowSnapshotGuidance:
         # Now approve all — no toolpack.yaml exists so snapshot can't materialize
         result = runner.invoke(cli, [
             "--root", root_path,
-            "gate", "allow", "--all",
+            "gate", "allow", "--all", "--yes",
             "--lockfile", str(lockfile_path),
         ])
         assert result.exit_code == 0
@@ -86,7 +86,7 @@ class TestGateAllowSnapshotGuidance:
         # Approve all tools
         result = runner.invoke(cli, [
             "--root", root_path,
-            "gate", "allow", "--all",
+            "gate", "allow", "--all", "--yes",
             "--lockfile", str(lockfile_path),
         ])
         assert result.exit_code == 0
