@@ -114,6 +114,25 @@ def register_mcp_commands(
         default=None,
         help="Auto-heal policy (requires --watch): off, safe, or all",
     )
+    @click.option(
+        "--http",
+        "use_http",
+        is_flag=True,
+        help="Use HTTP transport (StreamableHTTP) instead of stdio",
+    )
+    @click.option(
+        "--host",
+        default="127.0.0.1",
+        show_default=True,
+        help="Host to bind the HTTP server to (requires --http)",
+    )
+    @click.option(
+        "--port",
+        type=int,
+        default=8745,
+        show_default=True,
+        help="Port for the HTTP server (requires --http)",
+    )
     @click.pass_context
     def serve(
         ctx: click.Context,
@@ -136,6 +155,9 @@ def register_mcp_commands(
         watch: bool,
         watch_config: str | None,
         auto_heal: str | None,
+        use_http: bool,
+        host: str,
+        port: int,
     ) -> None:
         """Start the governed MCP server on stdio transport.
 
@@ -222,6 +244,9 @@ def register_mcp_commands(
                 watch=watch,
                 watch_config_path=watch_config,
                 auto_heal_override=auto_heal,
+                transport="http" if use_http else "stdio",
+                host=host,
+                port=port,
             ),
             lock_id=lock_id,
         )

@@ -759,6 +759,13 @@ class ToolwrightMCPServer:
                 ),
             )
 
+    def run_http(self, *, host: str = "127.0.0.1", port: int = 8745) -> None:
+        """Start the HTTP transport (StreamableHTTP via Starlette/uvicorn)."""
+        from toolwright.mcp.http_transport import ToolwrightHTTPApp
+
+        app = ToolwrightHTTPApp(self, host=host, port=port)
+        app.run()
+
     async def close(self) -> None:
         if self._http_client:
             await self._http_client.aclose()
@@ -783,6 +790,9 @@ def run_mcp_server(
     watch: bool = False,
     watch_config_path: str | None = None,
     auto_heal_override: str | None = None,
+    transport: str = "stdio",
+    host: str = "127.0.0.1",
+    port: int = 8745,
 ) -> None:
     """Run the Toolwright MCP server."""
     server = ToolwrightMCPServer(
@@ -828,16 +838,20 @@ def run_mcp_server(
             breaker_registry=server.circuit_breaker,
         )
 
-    async def main() -> None:
-        try:
-            if reconcile_loop is not None:
-                await reconcile_loop.start()
-                logger.info("Reconciliation loop started (watch mode)")
-            await server.run_stdio()
-        finally:
-            if reconcile_loop is not None:
-                await reconcile_loop.stop()
-                logger.info("Reconciliation loop stopped")
-            await server.close()
+    if transport == "http":
+        # HTTP transport runs its own event loop via uvicorn
+        server.run_http(host=host, port=port)
+    else:
+        async def main() -> None:
+            try:
+                if reconcile_loop is not None:
+                    await reconcile_loop.start()
+                    logger.info("Reconciliation loop started (watch mode)")
+                await server.run_stdio()
+            finally:
+                if reconcile_loop is not None:
+                    await reconcile_loop.stop()
+                    logger.info("Reconciliation loop stopped")
+                await server.close()
 
-    asyncio.run(main())
+        asyncio.run(main())
