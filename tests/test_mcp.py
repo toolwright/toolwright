@@ -264,13 +264,14 @@ class TestToolwrightMCPServer:
         assert server.enforcer.policy.name == "Test Policy"
 
     def test_build_description_low_risk(self, tools_file: Path) -> None:
-        """Test description building for low-risk tool."""
+        """Test description building for low-risk tool (compact mode default)."""
         server = ToolwrightMCPServer(tools_path=tools_file)
         action = server.actions["get_users"]
 
         desc = server._build_description(action)
 
-        assert desc == "Get list of users"
+        assert "Get list of users" in desc
+        assert "GET" in desc
         assert "[Risk:" not in desc
 
     def test_build_description_high_risk(self, tools_file: Path) -> None:

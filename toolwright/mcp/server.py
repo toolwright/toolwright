@@ -265,6 +265,7 @@ class ToolwrightMCPServer:
             execute_request_fn=lambda action, args: self._execute_request(action, args),
         )
 
+        self.compact_descriptions: bool = True
         self.server = Server("toolwright")
         self._register_handlers()
         self._http_client: httpx.AsyncClient | None = None
@@ -385,10 +386,10 @@ class ToolwrightMCPServer:
         )
 
     def _build_description(self, action: dict[str, Any]) -> str:
-        desc: str = action.get("description", f"{action.get('method', 'GET')} {action.get('path', '/')}")
-        risk = action.get("risk_tier", "low")
-        if risk in ("high", "critical"):
-            desc += f" [Risk: {risk}]"
+        from toolwright.mcp.description import optimize_description
+
+        compact = getattr(self, "compact_descriptions", True)
+        desc = optimize_description(action, compact=compact)
         if action.get("confirmation_required") == "always":
             desc += " [Requires confirmation]"
         return desc
@@ -790,6 +791,9 @@ def run_mcp_server(
     watch: bool = False,
     watch_config_path: str | None = None,
     auto_heal_override: str | None = None,
+    verbose_tools: bool = False,
+    tool_filter: str | None = None,
+    max_risk: str | None = None,
     transport: str = "stdio",
     host: str = "127.0.0.1",
     port: int = 8745,
@@ -811,6 +815,16 @@ def run_mcp_server(
         rules_path=rules_path,
         circuit_breaker_path=circuit_breaker_path,
     )
+
+    # Context efficiency: apply tool filters and description mode
+    server.compact_descriptions = not verbose_tools
+    if tool_filter or max_risk:
+        from toolwright.mcp.description import filter_actions
+
+        server.actions = filter_actions(
+            server.actions, tools_glob=tool_filter, max_risk=max_risk
+        )
+        server.pipeline.actions = server.actions
 
     reconcile_loop = None
     if watch:
