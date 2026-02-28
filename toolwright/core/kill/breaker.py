@@ -12,11 +12,14 @@ State is persisted to JSON for durability across server restarts.
 from __future__ import annotations
 
 import json
+import logging
 import time
 from enum import StrEnum
 from pathlib import Path
 
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 
 class BreakerState(StrEnum):
@@ -162,15 +165,28 @@ class CircuitBreakerRegistry:
             data = json.loads(self._state_path.read_text())
             for tool_id, breaker_data in data.items():
                 self._breakers[tool_id] = ToolCircuitBreaker.model_validate(breaker_data)
-        except (json.JSONDecodeError, ValueError):
+        except (json.JSONDecodeError, ValueError) as exc:
+            logger.error(
+                "Corrupt circuit breaker state at %s: %s. Starting fresh.",
+                self._state_path,
+                exc,
+            )
             self._breakers = {}
 
     def _save(self) -> None:
-        """Persist state to JSON file atomically."""
+        """Persist state to JSON file atomically, with backup."""
         from toolwright.utils.files import atomic_write_text
 
         data = {
             tool_id: breaker.model_dump(mode="json")
             for tool_id, breaker in self._breakers.items()
         }
-        atomic_write_text(self._state_path, json.dumps(data, indent=2))
+        content = json.dumps(data, indent=2)
+        atomic_write_text(self._state_path, content)
+
+        # Keep a backup
+        bak_path = self._state_path.with_suffix(self._state_path.suffix + ".bak")
+        try:
+            bak_path.write_text(content, encoding="utf-8")
+        except OSError:
+            pass  # Best-effort backup
