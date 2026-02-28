@@ -47,19 +47,18 @@ pip install toolwright
 toolwright demo
 ```
 
-Compiles a governed toolpack from bundled traffic, runs a reconciliation cycle, starts the HTTP dashboard, and opens your browser. You see the living system.
+Compiles a governed toolpack from bundled traffic, enforces fail-closed gates, and writes a full audit log. Exit `0` means every safety check passed.
 
 ## Commands
 
 **Getting started:**
 
 ```bash
-toolwright demo          # see the living system (browser opens)
-toolwright demo --offline  # compile-only (CI mode)
+toolwright demo          # see it work (60 seconds)
 toolwright ship          # build + approve + serve (your API)
 toolwright ship <url>    # one-command onboarding from URL
-toolwright serve         # run your governed MCP server
-toolwright serve --http  # serve over HTTP with dashboard
+toolwright serve         # run your governed MCP server (stdio)
+toolwright serve --http  # serve over HTTP with web dashboard
 ```
 
 **Operations:**

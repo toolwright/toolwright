@@ -654,7 +654,7 @@ Verify auth configuration for the active toolpack. Shows per-host and global env
 
 ---
 
-## TRANSPORT -- HTTP & Dashboard (Phase 10)
+## SERVE -- HTTP Transport & Dashboard
 
 ### CAP-CROSS-017: Request Pipeline Abstraction
 
@@ -722,6 +722,16 @@ Filter served tools by glob pattern and max risk ceiling.
 
 - CLI: `toolwright serve --tools "get_*" --max-risk medium`
 
+### CAP-CROSS-030: Rich Startup Card
+
+Formatted startup banner showing tool count, risk breakdown, context budget, URLs.
+
+- `toolwright/mcp/startup_card.py` -> `render_startup_card()`
+
+---
+
+## GOVERN -- Smart Defaults & Client Integration
+
 ### CAP-CROSS-025: Smart Gate Defaults
 
 Risk-based auto-approval during ship flow. Low/medium auto-approved, high prompted (default Yes), critical prompted (default No).
@@ -737,14 +747,9 @@ Detect and configure Claude Desktop and Cursor MCP client configs.
 - Platforms: macOS, Linux, Windows
 - Safety: `.bak` backup before modify, refuse on JSON parse error
 
-### CAP-CROSS-027: Notification Engine & Webhooks
+---
 
-Dispatch events to configured webhook channels with event filtering.
-
-- `toolwright/core/notify/engine.py` -> `NotificationEngine`
-- `toolwright/core/notify/webhook.py` -> `WebhookConfig`, `build_payload()`, `send_webhook()`
-- Slack auto-detection via URL, Block Kit format
-- Never crashes on unreachable webhooks
+## SHARE -- Toolpack Distribution
 
 ### CAP-CROSS-028: Toolpack Sharing (.twp Bundles)
 
@@ -756,6 +761,19 @@ Package toolpacks into signed .twp bundles (gzipped tar) for distribution.
 - Signature: SHA256 content hash with self-signed verification
 - Excludes: private keys, auth tokens, state files
 
+---
+
+## OBSERVE -- Notifications & Telemetry
+
+### CAP-CROSS-027: Notification Engine & Webhooks
+
+Dispatch events to configured webhook channels with event filtering.
+
+- `toolwright/core/notify/engine.py` -> `NotificationEngine`
+- `toolwright/core/notify/webhook.py` -> `WebhookConfig`, `build_payload()`, `send_webhook()`
+- Slack auto-detection via URL, Block Kit format
+- Never crashes on unreachable webhooks
+
 ### CAP-CROSS-029: Observability (Tracing & Metrics)
 
 No-op tracer (OTEL-compatible) and hand-rolled Prometheus metrics registry.
@@ -764,9 +782,3 @@ No-op tracer (OTEL-compatible) and hand-rolled Prometheus metrics registry.
 - Tracer: no-op fallback when opentelemetry not installed
 - Metrics: counters, gauges, histograms with Prometheus text exposition
 - No external deps required; optional OTEL/prometheus-client for production
-
-### CAP-CROSS-030: Rich Startup Card
-
-Formatted startup banner showing tool count, risk breakdown, context budget, URLs.
-
-- `toolwright/mcp/startup_card.py` -> `render_startup_card()`
