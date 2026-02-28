@@ -193,7 +193,8 @@ toolwright gate block delete_all_users --reason "Too dangerous"
 # Check approval status (CI-friendly)
 toolwright gate check
 # List current status
-toolwright gate status```
+toolwright gate status
+```
 
 ### Signed approvals
 
@@ -235,7 +236,8 @@ Actions: `allow`, `deny`, `confirm` (requires out-of-band token grant via `toolw
 Detect API surface changes between your baseline and current state:
 
 ```bash
-toolwright drift```
+toolwright drift
+```
 
 For CI, use the `--format markdown` flag and wire it into your GitHub Actions (see README).
 
@@ -244,7 +246,8 @@ For CI, use the `--format markdown` flag and wire it into your GitHub Actions (s
 When something breaks, `toolwright repair` diagnoses and proposes fixes:
 
 ```bash
-toolwright repair```
+toolwright repair
+```
 
 5-phase lifecycle: preflight → diagnosis → repair plan → guided resolution → re-verification. Fixes are classified as safe (auto-apply), approval-required, or manual.
 
@@ -253,7 +256,8 @@ toolwright repair```
 Run assertion-based contracts:
 
 ```bash
-toolwright verify```
+toolwright verify
+```
 
 Contracts check replay parity, provenance, and outcome consistency.
 
@@ -262,7 +266,8 @@ Contracts check replay parity, provenance, and outcome consistency.
 See governance health and recommended next action:
 
 ```bash
-toolwright status```
+toolwright status
+```
 
 ### Change reports
 
@@ -286,7 +291,8 @@ Set auth via environment variable to avoid tokens in shell history:
 
 ```bash
 export TOOLWRIGHT_AUTH_HEADER="Bearer your-token-here"
-toolwright serve```
+toolwright serve
+```
 
 ### Per-host auth
 
@@ -295,7 +301,8 @@ For toolpacks covering multiple APIs, set per-host env vars:
 ```bash
 export TOOLWRIGHT_AUTH_API_GITHUB_COM="Bearer github-token"
 export TOOLWRIGHT_AUTH_API_STRIPE_COM="Bearer stripe-token"
-toolwright serve```
+toolwright serve
+```
 
 Per-host naming: replace dots and hyphens with underscores, uppercase everything. `api.github.com` becomes `TOOLWRIGHT_AUTH_API_GITHUB_COM`.
 
@@ -510,7 +517,8 @@ intervals:
 ### Start serving
 
 ```bash
-toolwright serve```
+toolwright serve
+```
 
 The server enforces multiple safety layers on every tool call:
 
@@ -558,7 +566,8 @@ Full-screen Textual dashboard for toolpack-scoped governance overview:
 
 ```bash
 pip install "toolwright[tui]"
-toolwright dashboard```
+toolwright dashboard
+```
 
 Falls back to `toolwright status` output when Textual is not installed.
 
