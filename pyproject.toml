@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "toolwright"
-version = "1.0.0a1"
+version = "1.0.0a2"
 description = "Self-expanding, self-repairing, human-correctable tool infrastructure for AI agents"
 readme = "README.md"
 license = "MIT"
