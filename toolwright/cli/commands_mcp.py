@@ -114,6 +114,40 @@ def register_mcp_commands(
         default=None,
         help="Auto-heal policy (requires --watch): off, safe, or all",
     )
+    @click.option(
+        "--verbose-tools",
+        is_flag=True,
+        help="Use full verbose tool descriptions instead of compact ones",
+    )
+    @click.option(
+        "--tool-filter",
+        help="Glob pattern to filter tools by name (e.g. 'get_*')",
+    )
+    @click.option(
+        "--max-risk",
+        type=click.Choice(["low", "medium", "high", "critical"]),
+        default=None,
+        help="Maximum risk tier to expose (filters out higher-risk tools)",
+    )
+    @click.option(
+        "--http",
+        "use_http",
+        is_flag=True,
+        help="Use HTTP transport (StreamableHTTP) instead of stdio",
+    )
+    @click.option(
+        "--host",
+        default="127.0.0.1",
+        show_default=True,
+        help="Host to bind the HTTP server to (requires --http)",
+    )
+    @click.option(
+        "--port",
+        type=int,
+        default=8745,
+        show_default=True,
+        help="Port for the HTTP server (requires --http)",
+    )
     @click.pass_context
     def serve(
         ctx: click.Context,
@@ -136,6 +170,12 @@ def register_mcp_commands(
         watch: bool,
         watch_config: str | None,
         auto_heal: str | None,
+        verbose_tools: bool,
+        tool_filter: str | None,
+        max_risk: str | None,
+        use_http: bool,
+        host: str,
+        port: int,
     ) -> None:
         """Start the governed MCP server on stdio transport.
 
@@ -222,6 +262,12 @@ def register_mcp_commands(
                 watch=watch,
                 watch_config_path=watch_config,
                 auto_heal_override=auto_heal,
+                verbose_tools=verbose_tools,
+                tool_filter=tool_filter,
+                max_risk=max_risk,
+                transport="http" if use_http else "stdio",
+                host=host,
+                port=port,
             ),
             lock_id=lock_id,
         )

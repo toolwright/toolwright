@@ -50,10 +50,9 @@ from toolwright.mcp._compat import (
 from toolwright.mcp._compat import (
     mcp_types as types,
 )
+from toolwright.mcp.pipeline import RequestPipeline
 from toolwright.models.decision import (
     DecisionContext,
-    DecisionRequest,
-    DecisionType,
     NetworkSafetyConfig,
     ReasonCode,
 )
@@ -253,6 +252,20 @@ class ToolwrightMCPServer:
                 state_path=Path(circuit_breaker_path)
             )
 
+        self.pipeline = RequestPipeline(
+            actions=self.actions,
+            decision_engine=self.decision_engine,
+            decision_context=self.decision_context,
+            decision_trace=self.decision_trace,
+            audit_logger=self.audit_logger,
+            dry_run=self.dry_run,
+            rule_engine=self.rule_engine,
+            session_history=self.session_history,
+            circuit_breaker=self.circuit_breaker,
+            execute_request_fn=lambda action, args: self._execute_request(action, args),
+        )
+
+        self.compact_descriptions: bool = True
         self.server = Server("toolwright")
         self._register_handlers()
         self._http_client: httpx.AsyncClient | None = None
@@ -320,310 +333,37 @@ class ToolwrightMCPServer:
             name: str,
             arguments: dict[str, Any] | None,
         ) -> Any:
-            arguments = arguments or {}
-            action = self.actions.get(name)
-            if not action:
-                self._emit_decision_trace(
-                    tool_id=name,
-                    scope_id=self.toolset_name,
-                    request_fingerprint=None,
-                    decision=DecisionType.DENY.value,
-                    reason_code=ReasonCode.DENIED_UNKNOWN_ACTION.value,
-                    reason=f"Unknown tool: {name}",
-                )
-                payload: dict[str, Any] = {"error": f"Unknown tool: {name}"}
-                if hasattr(types, "CallToolResult"):
-                    return types.CallToolResult(
-                        content=[types.TextContent(type="text", text=json.dumps(payload))],
-                        isError=True,
-                    )
-                return [types.TextContent(type="text", text=json.dumps(payload))]
-
-            method, path, host = self._resolve_action_endpoint(action)
-            tool_id = str(action.get("tool_id") or action.get("signature_id") or name)
-            confirmation_token_id = (
-                arguments.get("confirmation_token_id")
-                or arguments.get("_confirmation_token_id")
-            )
-            call_args = {
-                k: v
-                for k, v in arguments.items()
-                if k not in {"confirmation_token_id", "_confirmation_token_id"}
-            }
-            effective_args = self._apply_fixed_body(action, call_args)
-
-            request = DecisionRequest(
-                tool_id=tool_id,
-                action_name=name,
-                method=method,
-                path=path,
-                host=host,
-                params=effective_args,
+            result = await self.pipeline.execute(
+                name,
+                arguments or {},
                 toolset_name=self.toolset_name,
-                confirmation_token_id=str(confirmation_token_id) if confirmation_token_id else None,
-                source="mcp",
-                mode="execute",
             )
-            decision = self.decision_engine.evaluate(request, self.decision_context)
+            return self._format_mcp_result(result)
 
-            if decision.decision == DecisionType.CONFIRM:
-                if decision.confirmation_token_id:
-                    import sys
+    def _format_mcp_result(self, result: Any) -> Any:
+        """Convert a PipelineResult to MCP wire format."""
+        from toolwright.mcp.pipeline import PipelineResult
 
-                    sys.stderr.write(
-                        f"[toolwright] Confirmation required for {name}. "
-                        f"Run: toolwright confirm grant {decision.confirmation_token_id}\\n"
-                    )
-                self._emit_decision_trace(
-                    tool_id=tool_id,
-                    scope_id=self.toolset_name,
-                    request_fingerprint=str(decision.audit_fields.get("request_digest"))
-                    if decision.audit_fields.get("request_digest")
-                    else None,
-                    decision=decision.decision.value,
-                    reason_code=decision.reason_code.value,
-                    reason=decision.reason_message,
-                )
-                payload = {
-                    "status": "confirmation_required",
-                    "decision": decision.decision.value,
-                    "reason_code": decision.reason_code.value,
-                    "reason": decision.reason_message,
-                    "confirmation_token_id": decision.confirmation_token_id,
-                    "action": name,
-                }
-                if hasattr(types, "CallToolResult"):
-                    return types.CallToolResult(
-                        content=[types.TextContent(type="text", text=json.dumps(payload))],
-                        isError=False,
-                    )
-                return [types.TextContent(type="text", text=json.dumps(payload))]
+        if not isinstance(result, PipelineResult):
+            return result
 
-            if decision.decision == DecisionType.DENY:
-                self._emit_decision_trace(
-                    tool_id=tool_id,
-                    scope_id=self.toolset_name,
-                    request_fingerprint=str(decision.audit_fields.get("request_digest"))
-                    if decision.audit_fields.get("request_digest")
-                    else None,
-                    decision=decision.decision.value,
-                    reason_code=decision.reason_code.value,
-                    reason=decision.reason_message,
-                )
-                payload = {
-                    "status": "blocked",
-                    "decision": decision.decision.value,
-                    "reason_code": decision.reason_code.value,
-                    "reason": decision.reason_message,
-                    "action": name,
-                    "audit_fields": decision.audit_fields,
-                }
-                if hasattr(types, "CallToolResult"):
-                    return types.CallToolResult(
-                        content=[types.TextContent(type="text", text=json.dumps(payload))],
-                        isError=True,
-                    )
-                return [types.TextContent(type="text", text=json.dumps(payload))]
+        # Structured output: return raw dict for MCP structuredContent
+        if result.is_structured:
+            return result.payload
 
-            # CORRECT pillar: behavioral rule check
-            if self.rule_engine is not None and self.session_history is not None:
-                rule_eval = self.rule_engine.evaluate(
-                    tool_id, method, host, effective_args, self.session_history
-                )
-                if not rule_eval.allowed:
-                    self._emit_decision_trace(
-                        tool_id=tool_id,
-                        scope_id=self.toolset_name,
-                        request_fingerprint=None,
-                        decision=DecisionType.DENY.value,
-                        reason_code=ReasonCode.DENIED_BEHAVIORAL_RULE.value,
-                        reason=rule_eval.feedback,
-                    )
-                    payload = {
-                        "status": "blocked",
-                        "decision": DecisionType.DENY.value,
-                        "reason_code": ReasonCode.DENIED_BEHAVIORAL_RULE.value,
-                        "reason": rule_eval.feedback,
-                        "action": name,
-                    }
-                    if hasattr(types, "CallToolResult"):
-                        return types.CallToolResult(
-                            content=[types.TextContent(type="text", text=json.dumps(payload))],
-                            isError=True,
-                        )
-                    return [types.TextContent(type="text", text=json.dumps(payload))]
+        # Raw (non-envelope dict): return as-is for MCP
+        if result.is_raw:
+            return result.payload
 
-            # KILL pillar: circuit breaker check
-            if self.circuit_breaker is not None:
-                cb_allowed, cb_reason = self.circuit_breaker.should_allow(tool_id)
-                if not cb_allowed:
-                    self._emit_decision_trace(
-                        tool_id=tool_id,
-                        scope_id=self.toolset_name,
-                        request_fingerprint=None,
-                        decision=DecisionType.DENY.value,
-                        reason_code=ReasonCode.DENIED_CIRCUIT_BREAKER_OPEN.value,
-                        reason=cb_reason,
-                    )
-                    payload = {
-                        "status": "blocked",
-                        "decision": DecisionType.DENY.value,
-                        "reason_code": ReasonCode.DENIED_CIRCUIT_BREAKER_OPEN.value,
-                        "reason": cb_reason,
-                        "action": name,
-                    }
-                    if hasattr(types, "CallToolResult"):
-                        return types.CallToolResult(
-                            content=[types.TextContent(type="text", text=json.dumps(payload))],
-                            isError=True,
-                        )
-                    return [types.TextContent(type="text", text=json.dumps(payload))]
-
-            if self.dry_run:
-                self._emit_decision_trace(
-                    tool_id=tool_id,
-                    scope_id=self.toolset_name,
-                    request_fingerprint=str(decision.audit_fields.get("request_digest"))
-                    if decision.audit_fields.get("request_digest")
-                    else None,
-                    decision=DecisionType.ALLOW.value,
-                    reason_code=decision.reason_code.value,
-                    reason="Dry run execution",
-                )
-                payload = {
-                    "status": "dry_run",
-                    "action": name,
-                    "method": method,
-                    "path": path,
-                    "arguments": effective_args,
-                    "message": "Request would be sent (dry run mode)",
-                    "decision": decision.decision.value,
-                    "reason_code": decision.reason_code.value,
-                }
-                if hasattr(types, "CallToolResult"):
-                    return types.CallToolResult(
-                        content=[types.TextContent(type="text", text=json.dumps(payload))],
-                        isError=False,
-                    )
-                return [types.TextContent(type="text", text=json.dumps(payload))]
-
-            try:
-                response = await self._execute_request(action, effective_args)
-                self._emit_decision_trace(
-                    tool_id=tool_id,
-                    scope_id=self.toolset_name,
-                    request_fingerprint=str(decision.audit_fields.get("request_digest"))
-                    if decision.audit_fields.get("request_digest")
-                    else None,
-                    decision=DecisionType.ALLOW.value,
-                    reason_code=decision.reason_code.value,
-                    reason="Execution allowed",
-                )
-                # CORRECT pillar: record successful call in session history
-                if self.session_history is not None:
-                    result_summary = str(response.get("status_code", ""))[:100] if isinstance(response, dict) else ""
-                    self.session_history.record(tool_id, method, host, effective_args, result_summary)
-                # KILL pillar: record success
-                if self.circuit_breaker is not None:
-                    self.circuit_breaker.record_success(tool_id)
-                # Return structured content when possible so clients can validate outputSchema.
-                #
-                # `_execute_request` returns a response envelope:
-                #   {"status": "...", "status_code": <int>, "action": "<name>", "data": <parsed json/text>}
-                #
-                # For tools that define an output_schema, that schema typically targets the *upstream*
-                # JSON body (the "data" field), not our envelope. So when output_schema exists,
-                # return `data` as structured content when it's an object, and fall back to
-                # unstructured output for non-object JSON (arrays/scalars) because MCP structuredContent
-                # is an object-only field.
-                if isinstance(response, dict):
-                    is_envelope = (
-                        "status_code" in response
-                        and "data" in response
-                        and "action" in response
-                    )
-                    if not is_envelope:
-                        return response
-
-                    status_code = response.get("status_code")
-                    payload_data = response.get("data")
-                    if isinstance(status_code, int) and status_code >= 400:
-                        if hasattr(types, "CallToolResult"):
-                            return types.CallToolResult(
-                                content=[types.TextContent(type="text", text=json.dumps(response))],
-                                isError=True,
-                            )
-                        return [types.TextContent(type="text", text=json.dumps(response))]
-
-                    if "output_schema" in action:
-                        if isinstance(payload_data, dict):
-                            return payload_data
-                        if hasattr(types, "CallToolResult"):
-                            return types.CallToolResult(
-                                content=[types.TextContent(type="text", text=json.dumps(payload_data))],
-                                isError=False,
-                            )
-                        return [types.TextContent(type="text", text=json.dumps(payload_data))]
-
-                    return response
-                if hasattr(types, "CallToolResult"):
-                    return types.CallToolResult(
-                        content=[types.TextContent(type="text", text=json.dumps(response))],
-                        isError=False,
-                    )
-                return [types.TextContent(type="text", text=json.dumps(response))]
-            except RuntimeBlockError as blocked:
-                if self.circuit_breaker is not None:
-                    self.circuit_breaker.record_failure(tool_id, blocked.message)
-                self._emit_decision_trace(
-                    tool_id=tool_id,
-                    scope_id=self.toolset_name,
-                    request_fingerprint=str(decision.audit_fields.get("request_digest"))
-                    if decision.audit_fields.get("request_digest")
-                    else None,
-                    decision=DecisionType.DENY.value,
-                    reason_code=blocked.reason_code.value,
-                    reason=blocked.message,
-                )
-                payload = {
-                    "status": "blocked",
-                    "action": name,
-                    "decision": DecisionType.DENY.value,
-                    "reason_code": blocked.reason_code.value,
-                    "reason": blocked.message,
-                }
-                if hasattr(types, "CallToolResult"):
-                    return types.CallToolResult(
-                        content=[types.TextContent(type="text", text=json.dumps(payload))],
-                        isError=True,
-                    )
-                return [types.TextContent(type="text", text=json.dumps(payload))]
-            except Exception as e:
-                if self.circuit_breaker is not None:
-                    self.circuit_breaker.record_failure(tool_id, str(e))
-                logger.exception("Error executing %s", name)
-                self._emit_decision_trace(
-                    tool_id=tool_id,
-                    scope_id=self.toolset_name,
-                    request_fingerprint=str(decision.audit_fields.get("request_digest"))
-                    if decision.audit_fields.get("request_digest")
-                    else None,
-                    decision=DecisionType.DENY.value,
-                    reason_code=ReasonCode.ERROR_INTERNAL.value,
-                    reason=str(e),
-                )
-                payload = {
-                    "status": "error",
-                    "action": name,
-                    "reason_code": ReasonCode.ERROR_INTERNAL.value,
-                    "error": str(e),
-                }
-                if hasattr(types, "CallToolResult"):
-                    return types.CallToolResult(
-                        content=[types.TextContent(type="text", text=json.dumps(payload))],
-                        isError=True,
-                    )
-                return [types.TextContent(type="text", text=json.dumps(payload))]
+        # Standard success/error: wrap in CallToolResult with TextContent
+        payload = result.payload
+        text = json.dumps(payload) if not isinstance(payload, str) else payload
+        if hasattr(types, "CallToolResult"):
+            return types.CallToolResult(
+                content=[types.TextContent(type="text", text=text)],
+                isError=result.is_error,
+            )
+        return [types.TextContent(type="text", text=text)]
 
     def _emit_decision_trace(
         self,
@@ -646,10 +386,10 @@ class ToolwrightMCPServer:
         )
 
     def _build_description(self, action: dict[str, Any]) -> str:
-        desc: str = action.get("description", f"{action.get('method', 'GET')} {action.get('path', '/')}")
-        risk = action.get("risk_tier", "low")
-        if risk in ("high", "critical"):
-            desc += f" [Risk: {risk}]"
+        from toolwright.mcp.description import optimize_description
+
+        compact = getattr(self, "compact_descriptions", True)
+        desc = optimize_description(action, compact=compact)
         if action.get("confirmation_required") == "always":
             desc += " [Requires confirmation]"
         return desc
@@ -1020,6 +760,13 @@ class ToolwrightMCPServer:
                 ),
             )
 
+    def run_http(self, *, host: str = "127.0.0.1", port: int = 8745) -> None:
+        """Start the HTTP transport (StreamableHTTP via Starlette/uvicorn)."""
+        from toolwright.mcp.http_transport import ToolwrightHTTPApp
+
+        app = ToolwrightHTTPApp(self, host=host, port=port)
+        app.run()
+
     async def close(self) -> None:
         if self._http_client:
             await self._http_client.aclose()
@@ -1044,6 +791,12 @@ def run_mcp_server(
     watch: bool = False,
     watch_config_path: str | None = None,
     auto_heal_override: str | None = None,
+    verbose_tools: bool = False,
+    tool_filter: str | None = None,
+    max_risk: str | None = None,
+    transport: str = "stdio",
+    host: str = "127.0.0.1",
+    port: int = 8745,
 ) -> None:
     """Run the Toolwright MCP server."""
     server = ToolwrightMCPServer(
@@ -1062,6 +815,16 @@ def run_mcp_server(
         rules_path=rules_path,
         circuit_breaker_path=circuit_breaker_path,
     )
+
+    # Context efficiency: apply tool filters and description mode
+    server.compact_descriptions = not verbose_tools
+    if tool_filter or max_risk:
+        from toolwright.mcp.description import filter_actions
+
+        server.actions = filter_actions(
+            server.actions, tools_glob=tool_filter, max_risk=max_risk
+        )
+        server.pipeline.actions = server.actions
 
     reconcile_loop = None
     if watch:
@@ -1089,16 +852,20 @@ def run_mcp_server(
             breaker_registry=server.circuit_breaker,
         )
 
-    async def main() -> None:
-        try:
-            if reconcile_loop is not None:
-                await reconcile_loop.start()
-                logger.info("Reconciliation loop started (watch mode)")
-            await server.run_stdio()
-        finally:
-            if reconcile_loop is not None:
-                await reconcile_loop.stop()
-                logger.info("Reconciliation loop stopped")
-            await server.close()
+    if transport == "http":
+        # HTTP transport runs its own event loop via uvicorn
+        server.run_http(host=host, port=port)
+    else:
+        async def main() -> None:
+            try:
+                if reconcile_loop is not None:
+                    await reconcile_loop.start()
+                    logger.info("Reconciliation loop started (watch mode)")
+                await server.run_stdio()
+            finally:
+                if reconcile_loop is not None:
+                    await reconcile_loop.stop()
+                    logger.info("Reconciliation loop stopped")
+                await server.close()
 
-    asyncio.run(main())
+        asyncio.run(main())

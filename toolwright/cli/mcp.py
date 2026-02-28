@@ -31,6 +31,12 @@ def run_mcp_serve(
     watch: bool = False,
     watch_config_path: str | None = None,
     auto_heal_override: str | None = None,
+    verbose_tools: bool = False,
+    tool_filter: str | None = None,
+    max_risk: str | None = None,
+    transport: str = "stdio",
+    host: str = "127.0.0.1",
+    port: int = 8745,
 ) -> None:
     """Run the MCP server command."""
     resolved_toolpack = None
@@ -259,6 +265,12 @@ def run_mcp_serve(
             watch=watch,
             watch_config_path=watch_config_path,
             auto_heal_override=auto_heal_override,
+            verbose_tools=verbose_tools,
+            tool_filter=tool_filter,
+            max_risk=max_risk,
+            transport=transport,
+            host=host,
+            port=port,
         )
     except ValueError as exc:
         click.echo(f"Error: {exc}", err=True)

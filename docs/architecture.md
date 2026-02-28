@@ -12,11 +12,11 @@ February 2026
 
 The v1 release baseline is locked to:
 
-`mint -> diff -> gate -> run -> drift -> verify`
+`mint -> diff -> gate -> serve -> drift -> verify`
 
 Canonical command surface:
 
-- Core: `init`, `mint`, `diff`, `gate`, `serve`, `run`, `drift`, `verify`, `demo`
+- Core: `init`, `mint`, `diff`, `gate`, `serve`, `drift`, `verify`, `demo`
 - More: `capture`, `workflow`, `auth`
 - Advanced (behind `--help-all`): `compile`, `bundle`, `lint`, `doctor`, `config`, `inspect`, `enforce`, `migrate`
 - No aliases -- one best name per command
@@ -52,7 +52,7 @@ That creates the wrong v1 product shape:
 * It competes head-on with runtime gateway and governance vendors.
 * It delays the real wedge: deterministic tool supply chain plus outcome verification plus drift gates in CI.
 
-This update reframes Toolwright as a **build system** that produces **standard artifacts** (toolpack, lockfile, verification contract, evidence) that runtime layers can enforce. The control plane exists, but it is **human and CI first**, and **never** a channel for agents to request more power.
+This update reframes Toolwright as a **build system** that produces **standard artifacts** (toolpack, lockfile, verification contract, evidence) that runtime layers can enforce. The control plane exists, but it is **human and CI first**, and **never** a channel for agents to gain more power.
 
 ---
 
@@ -96,10 +96,10 @@ By the end of vNext, Toolwright must support:
 
 ### 1.2 Non-goals (locked)
 
-1. **No agent-driven scope expansion**
+1. **No unilateral agent scope expansion**
 
-* No tool that allows an agent to request more privileges.
-* No “negotiation” interface where agents ask for expanded access.
+* Agents may propose new capabilities as DRAFT proposals, but no agent action
+  bypasses the human approval gate. Agents cannot approve their own proposals.
 
 2. **No agent-led approvals**
 
@@ -182,6 +182,21 @@ Toolwright does not need a “meta MCP server” to be valuable. The primary val
 
 ---
 
+## 3.5 Design philosophy
+
+Toolwright behaves like an immune system for agent-to-API connections:
+
+1. **Detection** — continuous monitoring catches drift, failures, and schema changes before agents encounter them.
+2. **Response** — circuit breakers isolate failing tools immediately; policy rules block prohibited actions at call time.
+3. **Repair** — classified patches (SAFE / APPROVAL_REQUIRED / MANUAL) restore tools to working state, with snapshots for rollback.
+4. **Memory** — lockfiles, decision traces, and baseline snapshots preserve the approved state so recovery always has a reference point.
+
+The key design boundary: Toolwright is autonomous about **maintenance** (detecting drift, tripping breakers, applying safe patches) but never autonomous about **escalation** (approving new tools, activating rules, granting capabilities). Every escalation requires a human gate.
+
+See §10.2.6 for the formal definition of autonomous capability growth and where the boundary sits.
+
+---
+
 ## 4. Architecture [SHIPPED]
 
 ### 4.1 Core runtime engine
@@ -227,6 +242,10 @@ Not allowed:
 * any tool that expands access
 * any tool that grants approvals
 * any tool that executes upstream calls
+
+Agents may create DRAFT proposals via `toolwright_request_capability` and
+`toolwright_suggest_rule`. These are draft-only; the Control Plane API does
+not execute or approve them.
 
 This preserves the useful parts from the earlier “meta” tooling list, without turning it into an escalation interface. 
 
@@ -1048,7 +1067,6 @@ Optional later:
 * `toolwright diff` -- risk-classified change report
 * `toolwright gate sync|allow|block|check|status|snapshot|reseal` -- approval workflow
 * `toolwright serve` -- MCP server (stdio) under lockfile enforcement
-* `toolwright run` -- execute toolpack with policy enforcement
 * `toolwright drift` -- detect capability surface changes
 * `toolwright verify` -- run verification contracts
 * `toolwright demo` -- offline governance proof loop
@@ -1062,7 +1080,7 @@ Optional later:
 ### 12.3 Advanced commands (behind `--help-all`)
 
 * `toolwright compile`, `toolwright bundle`, `toolwright lint`, `toolwright doctor`, `toolwright config`
-* `toolwright inspect`, `toolwright enforce`, `toolwright migrate`
+* `toolwright inspect`, `toolwright enforce`, `toolwright migrate`, `toolwright run`
 * `toolwright confirm`, `toolwright propose`, `toolwright scope`, `toolwright compliance`, `toolwright state`
 
 ---
@@ -1201,5 +1219,5 @@ You are “done” when:
 
 4. No escalation channels exist:
 
-* no agent tool requests more privileges
+* no agent tool grants itself more privileges
 * no in-protocol approval interface exposed to agents

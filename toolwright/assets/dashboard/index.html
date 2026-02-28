@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toolwright Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Toolwright</h1>
+  <span id="status" class="status-dot"></span>
+</header>
+
+<section id="hero" class="cards">
+  <div class="card">
+    <div class="card-label">Tools</div>
+    <div id="tool-count" class="card-value">—</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Health</div>
+    <div id="health-pct" class="card-value">—</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Uptime</div>
+    <div id="uptime" class="card-value">—</div>
+  </div>
+</section>
+
+<section id="tools-section">
+  <h2>Tools</h2>
+  <table id="tools-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Method</th>
+        <th>Path</th>
+        <th>Risk</th>
+      </tr>
+    </thead>
+    <tbody id="tools-body"></tbody>
+  </table>
+</section>
+
+<section id="events-section">
+  <h2>Events</h2>
+  <div id="events-feed"></div>
+</section>
+
+<script src="app.js"></script>
+</body>
+</html>
