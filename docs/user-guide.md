@@ -418,6 +418,90 @@ toolwright serve --toolpack toolpack.yaml \
 
 ---
 
+## Continuous Reconciliation (HEAL Pillar)
+
+Start the MCP server with `--watch` and Toolwright continuously monitors your tools for API drift, schema changes, and endpoint failures. When issues are detected, repairs are classified and handled automatically or queued for your review.
+
+### Watch mode
+
+```bash
+toolwright serve --watch --auto-heal safe
+```
+
+Three auto-heal levels:
+
+- `off` — detect drift and failures, but never auto-apply repairs
+- `safe` — auto-apply patches classified as SAFE (e.g., new optional response fields)
+- `all` — auto-apply SAFE and APPROVAL_REQUIRED patches (use with caution)
+
+Probe intervals are configured per risk tier:
+
+| Risk tier | Default interval |
+|-----------|-----------------|
+| Critical | 120s |
+| High | 300s |
+| Medium | 600s |
+| Low | 1800s |
+
+### Checking status
+
+```bash
+# Per-tool health overview
+toolwright watch status
+
+# Filtered event log
+toolwright watch log --tool search_api --last 10
+```
+
+### Repair workflow
+
+When drift or failures are detected, use the Terraform-style repair workflow:
+
+```bash
+# See what changed and what needs fixing
+toolwright repair plan
+
+# Apply classified repairs
+toolwright repair apply
+```
+
+Repairs are classified by patch safety:
+
+- **SAFE** (green) — auto-apply without review (e.g., new optional fields)
+- **APPROVAL_REQUIRED** (yellow) — needs human approval (e.g., path changes)
+- **MANUAL** (red) — requires investigation (e.g., endpoint removed)
+
+> Patch safety classifies how a repair can be applied. Not to be confused with risk tiers (low/medium/high/critical), which classify tools.
+
+### Snapshots and rollback
+
+Every auto-repair is preceded by a snapshot. If something goes wrong, restore the exact previous state:
+
+```bash
+# List available snapshots
+toolwright snapshots
+
+# Restore a previous state
+toolwright rollback <snapshot-id>
+```
+
+Pruning keeps a maximum of 20 snapshots and protects those referenced by pending repairs or active repair plans.
+
+### Watch configuration
+
+Override defaults in `.toolwright/watch.yaml`:
+
+```yaml
+auto_heal: safe
+intervals:
+  critical: 120
+  high: 300
+  medium: 600
+  low: 1800
+```
+
+---
+
 ## MCP Server
 
 ### Start serving
@@ -448,6 +532,25 @@ toolwright config --format codex
 
 ## Dashboard
 
+### Web Dashboard
+
+When serving over HTTP, Toolwright includes a built-in web dashboard at the server root:
+
+```bash
+toolwright serve --http
+# Dashboard: http://localhost:8745/?t=tw_...
+```
+
+The dashboard provides:
+
+- **Hero cards** — tool count, health %, uptime
+- **Tools table** — name, method, path, risk tier
+- **Live event feed** — SSE-powered real-time events (tool calls, decisions, drift, breaker trips)
+
+Auth: the token is passed via URL query parameter on first load, then stripped from the browser URL bar.
+
+### TUI Dashboard
+
 Full-screen Textual dashboard for toolpack-scoped governance overview:
 
 ```bash
@@ -470,7 +573,7 @@ Falls back to `toolwright status` output when Textual is not installed.
 | `toolwright init` | Initialize Toolwright in your project |
 | `toolwright mint <url>` | Capture traffic and compile a governed toolpack |
 | `toolwright gate allow\|block\|check\|status` | Approve, block, or audit tools via signed lockfile |
-| `toolwright serve` | Start the governed MCP server (stdio) |
+| `toolwright serve` | Start the governed MCP server (stdio or `--http`) |
 | `toolwright diff` | Generate a risk-classified change report |
 | `toolwright drift` | Detect API surface changes against a baseline |
 | `toolwright verify` | Run verification contracts (replay, outcomes, provenance) |

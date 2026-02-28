@@ -182,6 +182,21 @@ Toolwright does not need a “meta MCP server” to be valuable. The primary val
 
 ---
 
+## 3.5 Design philosophy
+
+Toolwright behaves like an immune system for agent-to-API connections:
+
+1. **Detection** — continuous monitoring catches drift, failures, and schema changes before agents encounter them.
+2. **Response** — circuit breakers isolate failing tools immediately; policy rules block prohibited actions at call time.
+3. **Repair** — classified patches (SAFE / APPROVAL_REQUIRED / MANUAL) restore tools to working state, with snapshots for rollback.
+4. **Memory** — lockfiles, decision traces, and baseline snapshots preserve the approved state so recovery always has a reference point.
+
+The key design boundary: Toolwright is autonomous about **maintenance** (detecting drift, tripping breakers, applying safe patches) but never autonomous about **escalation** (approving new tools, activating rules, granting capabilities). Every escalation requires a human gate.
+
+See §10.2.6 for the formal definition of autonomous capability growth and where the boundary sits.
+
+---
+
 ## 4. Architecture [SHIPPED]
 
 ### 4.1 Core runtime engine

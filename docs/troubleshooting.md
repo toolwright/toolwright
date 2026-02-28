@@ -194,6 +194,34 @@ rm .toolwright/state/circuit_breakers.json
 toolwright serve --toolpack .toolwright/toolpacks/my-api/toolpack.yaml
 ```
 
+## Reconciliation & Watch Mode
+
+### `--watch` mode isn't detecting API changes
+
+Reconciliation probes endpoints on a risk-tier schedule (critical: 120s, high: 300s, medium: 600s, low: 1800s). If drift isn't being detected:
+
+1. Verify watch is running: `toolwright watch status`
+2. Check that the endpoint is actually reachable from your environment
+3. Review the event log for probe errors: `toolwright watch log --tool <tool_name> --last 10`
+
+### Auto-heal applied an unwanted patch
+
+Every auto-repair is preceded by a snapshot. Restore the previous state:
+
+```bash
+toolwright snapshots           # find the snapshot before the unwanted patch
+toolwright rollback <snapshot-id>
+```
+
+To prevent future auto-applies, set `--auto-heal off` or configure specific tools in `.toolwright/watch.yaml`.
+
+### Watch mode stopped after a failure
+
+If the reconciliation loop exits unexpectedly, check the server logs for the root cause. Common issues:
+
+- State file corruption: delete `.toolwright/state/watch_state.json` and restart
+- Permission errors on the state directory: ensure `.toolwright/state/` is writable
+
 ## MCP Client Connection
 
 ### Claude Desktop can't connect to Toolwright MCP server

@@ -76,7 +76,7 @@ toolwright watch status  # reconciliation status
 
 APIs change silently. Tools break with no warning. Nobody knows until the agent starts failing. And giving an AI agent API access today still means writing MCP tool definitions by hand, then hoping it doesn't call a destructive endpoint.
 
-Toolwright automates tool creation and adds the safety and operational layers that are missing: every tool is risk-classified, every action is auditable, and misbehaving tools are automatically circuit-broken before they can cascade.
+Toolwright closes that gap. It compiles tools from real API traffic, classifies them by risk, enforces approval gates before anything can run, and automatically circuit-breaks tools that start failing -- before the failures cascade to your agent.
 
 ## How It Stays Safe
 
@@ -154,11 +154,11 @@ All paths converge: capture → compile → approve → serve.
 |-----------|-------------|----------|
 | **Connect** | Compile MCP tools from any API source (browser, spec, HAR, OTEL) | Stable |
 | **Govern** | Risk classification, cryptographic signing, approval gates, audit logging | Stable |
-| **Heal** | Drift detection, auto-repair, continuous reconciliation, snapshots & rollback | Stable |
+| **Heal** | Drift detection, auto-repair, continuous reconciliation, snapshots & rollback | Stable (incl. reconciliation & auto-heal) |
 | **Kill** | Per-tool circuit breakers with auto-recovery and manual kill switches | Stable |
 | **Correct** | Persistent behavioral rules with agent suggestion and human-gated activation | Stable |
 
-73 capabilities. 2000 tests.
+73 capabilities. 2000+ tests.
 
 Agents introspect their own governance via MCP meta-tools -- check risk summaries, diagnose failures, manage circuit breakers, and read behavioral rules. Agents can also propose new API capabilities and suggest behavioral rules; both create DRAFT proposals that require human approval before taking effect.
 
