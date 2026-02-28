@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import sys
 import time
 from collections.abc import Generator
 from contextlib import contextmanager
@@ -38,15 +39,29 @@ class RootLockInfo:
 
 
 def _pid_alive(pid: int) -> bool:
+    """Check if a process is running. Cross-platform."""
     if pid <= 0:
         return False
+    if sys.platform == "win32":
+        try:
+            import ctypes
+
+            kernel32 = ctypes.windll.kernel32  # type: ignore[attr-defined]
+            SYNCHRONIZE = 0x00100000
+            handle = kernel32.OpenProcess(SYNCHRONIZE, False, pid)
+            if handle:
+                kernel32.CloseHandle(handle)
+                return True
+            return False
+        except (AttributeError, OSError):
+            return False
     try:
         os.kill(pid, 0)
         return True
     except ProcessLookupError:
         return False
     except PermissionError:
-        return True
+        return True  # Process exists but owned by another user
 
 
 def _read_lock_info(path: Path) -> RootLockInfo | None:

@@ -22,6 +22,8 @@ def atomic_write_text(path: Path, data: str) -> None:
 
 def _fsync_directory(path: Path) -> None:
     """Best-effort fsync on a directory after atomic replace."""
+    if not hasattr(os, "O_DIRECTORY"):
+        return  # Windows: no directory fsync needed
     try:
         fd = os.open(path, os.O_DIRECTORY)
     except OSError:

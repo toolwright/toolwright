@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import platform
 from pathlib import Path
 from typing import Any
@@ -91,7 +92,7 @@ def config_flow(
     paths = _CLIENT_CONFIG_PATHS.get(client, {})
     target_path = paths.get(system)
     if target_path:
-        expanded = Path(target_path).expanduser()
+        expanded = Path(os.path.expandvars(target_path)).expanduser()
         con.print()
         con.print(f"[heading]Target config file:[/heading] {expanded}")
         con.print("[muted]Copy the snippet above into that file.[/muted]")

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import getpass
 import hashlib
 import json
 import os
@@ -329,7 +330,7 @@ def resolve_approval_root(
 
 def resolve_approver(actor: str | None) -> str:
     """Resolve approver identity and enforce optional allowlist."""
-    resolved = actor or os.environ.get("USER") or "unknown"
+    resolved = actor or getpass.getuser()
     allowlist = os.environ.get("TOOLWRIGHT_APPROVERS", "").strip()
     if not allowlist:
         return resolved
