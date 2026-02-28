@@ -52,7 +52,7 @@ That creates the wrong v1 product shape:
 * It competes head-on with runtime gateway and governance vendors.
 * It delays the real wedge: deterministic tool supply chain plus outcome verification plus drift gates in CI.
 
-This update reframes Toolwright as a **build system** that produces **standard artifacts** (toolpack, lockfile, verification contract, evidence) that runtime layers can enforce. The control plane exists, but it is **human and CI first**, and **never** a channel for agents to request more power.
+This update reframes Toolwright as a **build system** that produces **standard artifacts** (toolpack, lockfile, verification contract, evidence) that runtime layers can enforce. The control plane exists, but it is **human and CI first**, and **never** a channel for agents to gain more power.
 
 ---
 
@@ -96,10 +96,10 @@ By the end of vNext, Toolwright must support:
 
 ### 1.2 Non-goals (locked)
 
-1. **No agent-driven scope expansion**
+1. **No unilateral agent scope expansion**
 
-* No tool that allows an agent to request more privileges.
-* No “negotiation” interface where agents ask for expanded access.
+* Agents may propose new capabilities as DRAFT proposals, but no agent action
+  bypasses the human approval gate. Agents cannot approve their own proposals.
 
 2. **No agent-led approvals**
 
@@ -227,6 +227,10 @@ Not allowed:
 * any tool that expands access
 * any tool that grants approvals
 * any tool that executes upstream calls
+
+Agents may create DRAFT proposals via `toolwright_request_capability` and
+`toolwright_suggest_rule`. These are draft-only; the Control Plane API does
+not execute or approve them.
 
 This preserves the useful parts from the earlier “meta” tooling list, without turning it into an escalation interface. 
 
@@ -1201,5 +1205,5 @@ You are “done” when:
 
 4. No escalation channels exist:
 
-* no agent tool requests more privileges
+* no agent tool grants itself more privileges
 * no in-protocol approval interface exposed to agents

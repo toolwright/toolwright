@@ -132,9 +132,13 @@ The MCP server blocks requests to hosts not in the toolpack's allowlist. This is
 1. Re-capture traffic including the new host: `toolwright mint ... -a new-host.example.com`
 2. Or manually add it to the toolpack configuration
 
-### SSRF / metadata endpoint blocked
+### SSRF / private range / metadata endpoint blocked
 
-Toolwright blocks requests to cloud metadata endpoints (169.254.169.254, fd00::, etc.) and private IP ranges by default. This is a security feature and cannot be bypassed.
+Toolwright enforces network safety at two levels:
+
+- **Cloud metadata endpoints** (169.254.169.254, fd00::, etc.) are unconditionally blocked. No flag overrides this.
+- **Private IP ranges** (10.x, 172.16-31.x, 192.168.x) are blocked by default. Use `--allow-private-cidr` to allow specific private ranges when needed (e.g., internal APIs). All requests to private ranges are audit-logged.
+- **Redirects** are blocked by default. Use `--allow-redirects` to permit redirects; SSRF checks still apply to each redirect target.
 
 ### Auth pre-check failures
 

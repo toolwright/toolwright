@@ -173,6 +173,8 @@ Log all approval/denial/execution decisions with reason codes, timestamps, and f
 
 Prevent SSRF attacks, validate URLs, restrict private CIDR access, enforce redirect allowlists.
 
+- Cloud metadata endpoints (169.254.169.254, fd00::) are unconditionally blocked; no flag overrides this.
+- Private CIDR and redirects are blocked by default; `--allow-private-cidr` and `--allow-redirects` opt in.
 - `toolwright/core/network_safety.py` -> Network validation
 - CLI flags: `--allow-private-cidr`, `--allow-redirects`
 
@@ -594,6 +596,7 @@ Meta-tool for agents to request new API capabilities. Creates PENDING proposals 
 - Output: concise plain-text with proposal_id, endpoint count, and next-step guidance
 - Proposals stored at: `<state_dir>/proposals/drafts/<proposal_id>.json`
 - Tests: `tests/test_request_capability_meta.py`
+- Note: capability proposals use PENDING status (distinct from DRAFT status used by behavioral rules in CAP-CORRECT-009). Both require human activation before taking effect.
 
 ### CAP-CROSS-016: Reconciliation Meta-Tools
 

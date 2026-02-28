@@ -37,7 +37,7 @@ pip install -e ".[dev]"
 
 The fastest way to go from zero to a governed MCP server:
 
-### 1. Prove it works (30 seconds)
+### 1. See it work (30 seconds)
 
 ```bash
 toolwright demo
@@ -45,15 +45,7 @@ toolwright demo
 
 Builds a governed toolpack from bundled traffic, proves fail-closed enforcement, and writes an auditable decision log. Exit `0` means every gate held.
 
-### 2. Initialize your project
-
-```bash
-toolwright init
-```
-
-Creates the `.toolwright/` directory structure. Detects existing captures, OpenAPI specs, and auth configurations in your project.
-
-### 3. Ship it
+### 2. Build your tools
 
 ```bash
 toolwright ship
@@ -70,7 +62,7 @@ Walks you through the full lifecycle interactively:
 
 If any stage fails, `toolwright ship` tells you exactly what went wrong and what to do next.
 
-### 4. Connect to your AI client
+### 3. Connect to your AI client
 
 ```bash
 toolwright config
@@ -79,6 +71,17 @@ toolwright config
 Generates a ready-to-paste config snippet for Claude Desktop, Cursor, or Codex.
 
 > **Auto-resolution:** When your project has a single toolpack, `--toolpack` is optional on all commands. See [Toolpack Resolution](#toolpack-resolution) below.
+
+### Fine-grained control
+
+For power users who want to run each stage individually:
+
+```bash
+toolwright init                     # set up project
+toolwright mint <url> -a <host>     # capture + compile
+toolwright gate allow --all         # approve tools
+toolwright serve                    # start MCP server
+```
 
 ---
 
@@ -218,7 +221,7 @@ rules:
     action: confirm
 ```
 
-Actions: `allow`, `deny`, `confirm` (requires HMAC challenge), `budget` (rate-limited), `audit` (log-only).
+Actions: `allow`, `deny`, `confirm` (requires out-of-band token grant via `toolwright confirm grant`), `budget` (rate-limited), `audit` (log-only).
 
 ---
 
@@ -428,7 +431,7 @@ The server enforces multiple safety layers on every tool call:
 - **Policy evaluation** — priority-ordered rules (allow, deny, confirm, budget, audit)
 - **Rate limiting** — per-minute/per-hour budgets with sliding-window tracking
 - **Network safety** — SSRF protection, metadata endpoint blocking, redirect validation
-- **Confirmation flow** — HMAC-signed challenge tokens for sensitive operations
+- **Confirmation flow** — single-use tokens for sensitive operations (`toolwright confirm grant`)
 - **Redaction** — strips auth headers, tokens, PII from all captured data
 - **Dry-run mode** — evaluate policy without executing upstream calls
 

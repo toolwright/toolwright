@@ -42,7 +42,10 @@ A discovered API operation (method + path + host). Endpoints are the raw materia
 Permission boundary defining what a tool is allowed to do. Scopes classify endpoints as read, write, delete, etc. and assign risk tiers.
 
 **Risk Tier**
-Classification of an endpoint's risk level: `safe`, `low`, `medium`, `high`, or `critical`. Determined by HTTP method, path keywords, auth sensitivity, and PII presence.
+Classification of an endpoint's risk level: `low`, `medium`, `high`, or `critical`. Determined by HTTP method, path keywords, auth sensitivity, and PII presence.
+
+**Patch Safety**
+Classification of how a repair can be applied: `SAFE` (auto-apply without review), `APPROVAL_REQUIRED` (needs human approval), or `MANUAL` (requires investigation). Not to be confused with risk tiers (low/medium/high/critical), which classify tools. The `--auto-heal safe` flag means "auto-apply patches classified as SAFE," not "auto-heal low-risk tools."
 
 **Redaction**
 Automatic removal of sensitive data (cookies, tokens, API keys, PII) from captured traffic and evidence bundles. Enabled by default.
@@ -60,6 +63,12 @@ Ed25519 digital signature on each lockfile entry. Proves who approved what and w
 
 **Fail-Closed**
 Default enforcement mode. If a tool is not explicitly approved in the lockfile, it cannot execute. No lockfile = no runtime. No exceptions.
+
+**Runtime Confirmation**
+Out-of-band human confirmation for sensitive tool calls at runtime. When a policy
+rule requires `confirm`, the MCP server pauses and issues a single-use token. The
+operator grants via `toolwright confirm grant <token>`. Distinct from gate approval
+(compile-time lockfile signing via `toolwright gate allow`).
 
 ## Runtime
 

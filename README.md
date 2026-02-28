@@ -49,18 +49,28 @@ toolwright demo
 
 Compiles a governed toolpack from bundled traffic, enforces fail-closed gates, and writes a full audit log. Exit `0` means every safety check passed.
 
-## Quick Start
+## Commands
+
+**Getting started:**
 
 ```bash
-toolwright init                           # set up project
-toolwright mint <url> -a <api-host>       # capture traffic + compile tools
-toolwright gate allow --all               # approve discovered tools
-toolwright auth check                     # verify your API token works
-toolwright serve                          # start MCP server
-toolwright config                         # get config for Claude Desktop / Cursor
+toolwright demo          # see it work (60 seconds)
+toolwright ship          # build + approve + serve (your API)
+toolwright serve         # run your governed MCP server
 ```
 
-Or use `toolwright ship` for a guided walkthrough that runs each step interactively.
+**Operations:**
+
+```bash
+toolwright drift         # check for API changes
+toolwright repair plan   # see what needs fixing
+toolwright repair apply  # apply fixes
+toolwright kill <tool>   # emergency stop a tool
+toolwright quarantine    # list stopped tools
+toolwright watch status  # reconciliation status
+```
+
+**All commands:** `toolwright --help`
 
 ## Why This Exists
 
@@ -70,13 +80,13 @@ Toolwright automates tool creation and adds the safety and operational layers th
 
 ## How It Stays Safe
 
-**Credentials never touch disk.** Captured traffic is redacted -- tokens, cookies, API keys, and PII are stripped automatically. Auth is injected at runtime via environment variables, never stored in toolpacks.
+**Secrets are redacted before anything reaches disk.** Captured traffic is redacted in memory -- tokens, cookies, API keys, and PII are stripped before toolpacks, logs, and evidence bundles are written. Auth is injected at runtime via environment variables, never stored in any artifact Toolwright produces.
 
 **Nothing runs without approval.** Toolwright is fail-closed. Every tool must pass through a gate review before it can execute. The approval is cryptographically signed and recorded in a tamper-evident lockfile. If a tool isn't explicitly approved, it doesn't run. There is no "allow by default" mode.
 
 **You see everything before it ships.** During compilation, every tool is classified by risk tier -- critical (destructive operations), high (writes), medium (sensitive reads), low (read-only). You approve tools individually or by tier, with full visibility into what each one does.
 
-**Agents propose, you decide.** Agents can request new API capabilities and suggest behavioral rules through MCP meta-tools. Both create DRAFT proposals that require your explicit activation. The agent never gains a capability it didn't ask for, and you never approve something you haven't reviewed.
+**Agents propose, you decide.** Agents can propose new API capabilities and suggest behavioral rules through MCP meta-tools. Both create DRAFT proposals that require your explicit activation. The agent never gains a capability it didn't ask for, and you never approve something you haven't reviewed.
 
 ## When APIs Break
 
@@ -150,7 +160,7 @@ All paths converge: capture → compile → approve → serve.
 
 73 capabilities. 2000 tests.
 
-Agents introspect their own governance via MCP meta-tools -- check risk summaries, diagnose failures, manage circuit breakers, and read behavioral rules. Agents can also request new API capabilities and suggest behavioral rules; both create DRAFT proposals that require human approval before taking effect.
+Agents introspect their own governance via MCP meta-tools -- check risk summaries, diagnose failures, manage circuit breakers, and read behavioral rules. Agents can also propose new API capabilities and suggest behavioral rules; both create DRAFT proposals that require human approval before taking effect.
 
 ## Install
 

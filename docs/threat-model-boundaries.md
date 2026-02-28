@@ -6,7 +6,9 @@ This document states what v1 is designed to defend and what it does not claim.
 
 - Unapproved capability expansion at runtime.
 - Silent lockfile bypass in normal safe mode.
-- Unsafe egress targets via scheme, redirect, and DNS/IP validation.
+- Unsafe egress targets:
+  - **Unconditionally blocked** (no flag overrides): cloud metadata endpoints (169.254.169.254, fd00::), non-http/https URL schemes.
+  - **Default-blocked, opt-in relaxation**: private CIDR ranges (`--allow-private-cidr`), redirects (`--allow-redirects`). Each redirect hop is re-validated against the host allowlist.
 - Confirmation token replay/mismatch attacks.
 - Secret leakage through default artifact/report/MCP surfaces (redaction pipeline).
 
