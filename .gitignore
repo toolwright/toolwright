@@ -41,3 +41,8 @@ htmlcov/
 # Jupyter
 .ipynb_checkpoints/
 demos/screenplays/.terminal_demo_studio_runs/
+
+# Development MD Files
+CLAUDE.md
+findings.md
+progress.md
