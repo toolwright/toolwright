@@ -93,6 +93,22 @@ toolwright drift
 toolwright repair
 ```
 
+**Continuous reconciliation.** Start the MCP server with `--watch` and Toolwright monitors every tool on a risk-tier schedule. When drift is detected, safe patches auto-apply; risky ones queue for your review:
+
+```bash
+toolwright serve --watch --auto-heal safe
+toolwright watch status                    # see per-tool health
+toolwright repair plan                     # Terraform-style diff
+toolwright repair apply                    # apply with confirmation
+```
+
+**Snapshots and rollback.** Every auto-repair is preceded by a snapshot. If something goes wrong, restore the exact previous state:
+
+```bash
+toolwright snapshots                       # list available snapshots
+toolwright rollback <snapshot-id>          # restore
+```
+
 ## Start Where You Are
 
 | You have... | Run |
@@ -111,13 +127,13 @@ All paths converge: capture → compile → approve → serve.
 |-----------|-------------|----------|
 | **Connect** | Compile MCP tools from any API source (browser, spec, HAR, OTEL) | Stable |
 | **Govern** | Risk classification, cryptographic signing, approval gates, audit logging | Stable |
-| **Heal** | Drift detection, failure diagnosis, guided repair | Beta |
-| **Kill** | Per-tool circuit breakers with auto-recovery and manual kill switches | Beta |
-| **Correct** | Persistent behavioral rules enforced across agent sessions | Early |
+| **Heal** | Drift detection, auto-repair, continuous reconciliation, snapshots & rollback | Stable |
+| **Kill** | Per-tool circuit breakers with auto-recovery and manual kill switches | Stable |
+| **Correct** | Persistent behavioral rules with agent suggestion and human-gated activation | Stable |
 
-58 capabilities. 1600+ tests.
+73 capabilities. 2000 tests.
 
-Agents can also introspect their own governance via MCP meta-tools — check risk summaries, diagnose failures, manage circuit breakers, and read behavioral rules.
+Agents introspect their own governance via MCP meta-tools — check risk summaries, diagnose failures, manage circuit breakers, and read behavioral rules. Agents can also request new API capabilities and suggest behavioral rules; both create DRAFT proposals that require human approval before taking effect.
 
 ## Install
 
