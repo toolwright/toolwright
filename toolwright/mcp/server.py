@@ -9,6 +9,9 @@ import json
 import logging
 import os
 import re
+import signal
+import sys
+import time
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode, urljoin, urlparse
@@ -164,6 +167,8 @@ class ToolwrightMCPServer:
 
         self.lockfile_manager: LockfileManager | None = None
         self.lockfile_digest_current: str | None = None
+        self._lockfile_mtime: float = 0.0
+        self._last_lockfile_check: float = 0.0
         if self.lockfile_path is not None:
             manager = LockfileManager(self.lockfile_path)
             if not manager.exists():
@@ -171,6 +176,8 @@ class ToolwrightMCPServer:
             lockfile = manager.load()
             self.lockfile_manager = manager
             self.lockfile_digest_current = compute_lockfile_digest(lockfile.model_dump(mode="json"))
+            if self.lockfile_path.exists():
+                self._lockfile_mtime = self.lockfile_path.stat().st_mtime
 
         self.actions: dict[str, dict[str, Any]] = {}
         self.actions_by_tool_id: dict[str, dict[str, Any]] = {}
@@ -268,6 +275,7 @@ class ToolwrightMCPServer:
         self.compact_descriptions: bool = True
         self.server = Server("toolwright")
         self._register_handlers()
+        self._register_signal_handlers()
         self._http_client: httpx.AsyncClient | None = None
         self._nextjs_build_id_cache: dict[str, str] = {}
 
@@ -303,6 +311,45 @@ class ToolwrightMCPServer:
 
         return tool.status == ApprovalStatus.APPROVED
 
+    def _maybe_reload_lockfile(self) -> None:
+        """Reload lockfile if it has changed on disk (checked at most every 5s)."""
+        if self.lockfile_path is None or self.lockfile_manager is None:
+            return
+        now = time.monotonic()
+        if now - self._last_lockfile_check < 5.0:
+            return
+        self._last_lockfile_check = now
+        try:
+            current_mtime = self.lockfile_path.stat().st_mtime
+        except OSError:
+            return  # File gone or unreadable -- keep last known good
+        if current_mtime == self._lockfile_mtime:
+            return
+        try:
+            lockfile = self.lockfile_manager.load()
+            self.lockfile_digest_current = compute_lockfile_digest(
+                lockfile.model_dump(mode="json")
+            )
+            self._lockfile_mtime = current_mtime
+            self.decision_context.lockfile_digest_current = self.lockfile_digest_current
+            logger.info("Reloaded lockfile (mtime changed)")
+        except Exception as exc:
+            logger.error("Failed to reload lockfile: %s", exc)
+            # Keep last known good state
+
+    def _register_signal_handlers(self) -> None:
+        """Register graceful shutdown handlers (SIGTERM)."""
+        if sys.platform == "win32":
+            return  # signal.SIGTERM not reliably supported on Windows
+
+        def _handle_sigterm(signum: int, frame: Any) -> None:
+            logger.info("Received SIGTERM, shutting down gracefully")
+            # Use os._exit to ensure immediate clean termination even inside
+            # asyncio event loops which may catch or defer SystemExit.
+            os._exit(0)
+
+        signal.signal(signal.SIGTERM, _handle_sigterm)
+
     def _register_handlers(self) -> None:
         @self.server.list_tools()  # type: ignore
         async def handle_list_tools() -> list[types.Tool]:
@@ -333,12 +380,23 @@ class ToolwrightMCPServer:
             name: str,
             arguments: dict[str, Any] | None,
         ) -> Any:
-            result = await self.pipeline.execute(
-                name,
-                arguments or {},
-                toolset_name=self.toolset_name,
-            )
-            return self._format_mcp_result(result)
+            self._maybe_reload_lockfile()
+            try:
+                result = await self.pipeline.execute(
+                    name,
+                    arguments or {},
+                    toolset_name=self.toolset_name,
+                )
+                return self._format_mcp_result(result)
+            except Exception as exc:
+                logger.error("Unhandled error in tool call '%s': %s", name, exc, exc_info=True)
+                text = f"Internal error: {type(exc).__name__}: {exc}"
+                if hasattr(types, "CallToolResult"):
+                    return types.CallToolResult(
+                        content=[types.TextContent(type="text", text=text)],
+                        isError=True,
+                    )
+                return [types.TextContent(type="text", text=text)]
 
     def _format_mcp_result(self, result: Any) -> Any:
         """Convert a PipelineResult to MCP wire format."""

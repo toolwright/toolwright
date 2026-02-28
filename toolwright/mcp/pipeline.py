@@ -143,6 +143,21 @@ class RequestPipeline:
         if not action:
             return self._handle_unknown_tool(ctx)
 
+        # Stage 1b: Validate arguments against input_schema (if present)
+        input_schema = action.get("input_schema")
+        if input_schema and isinstance(input_schema, dict):
+            try:
+                import jsonschema
+
+                jsonschema.validate(instance=ctx.call_args, schema=input_schema)
+            except jsonschema.ValidationError as ve:
+                return PipelineResult(
+                    payload=f"Invalid arguments: {ve.message}",
+                    is_error=True,
+                )
+            except ImportError:
+                pass  # jsonschema not installed -- skip validation
+
         # Resolve endpoint and tool_id
         method, path, host = self._resolve_action_endpoint(action)
         tool_id = str(
