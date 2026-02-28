@@ -22,9 +22,9 @@ def _state_path(tmp_path: Path) -> Path:
     return tmp_path / "state" / "circuit_breakers.json"
 
 
-def _invoke(runner: CliRunner, args: list[str], tmp_path: Path) -> object:
+def _invoke(runner: CliRunner, args: list[str], tmp_path: Path, **kwargs) -> object:
     """Invoke CLI with --breaker-state pointing to tmp_path."""
-    return runner.invoke(cli, args + ["--breaker-state", str(_state_path(tmp_path))])
+    return runner.invoke(cli, args + ["--breaker-state", str(_state_path(tmp_path))], **kwargs)
 
 
 # ---------------------------------------------------------------------------
@@ -37,7 +37,7 @@ class TestKillCommand:
 
     def test_kill_tool(self, tmp_path: Path):
         runner = CliRunner()
-        result = _invoke(runner, ["kill", "dangerous_tool", "--reason", "testing"], tmp_path)
+        result = _invoke(runner, ["kill", "dangerous_tool", "--reason", "testing", "--yes"], tmp_path)
         assert result.exit_code == 0
         assert "killed" in result.output.lower() or "disabled" in result.output.lower()
 
@@ -48,7 +48,7 @@ class TestKillCommand:
 
     def test_kill_requires_reason(self, tmp_path: Path):
         runner = CliRunner()
-        result = _invoke(runner, ["kill", "some_tool"], tmp_path)
+        result = _invoke(runner, ["kill", "some_tool", "--yes"], tmp_path)
         # Should either fail or use a default reason
         # We'll accept both behaviors
         assert result.exit_code == 0 or "reason" in result.output.lower()
@@ -65,7 +65,7 @@ class TestEnableCommand:
     def test_enable_killed_tool(self, tmp_path: Path):
         runner = CliRunner()
         # Kill first
-        _invoke(runner, ["kill", "tool_a", "--reason", "test"], tmp_path)
+        _invoke(runner, ["kill", "tool_a", "--reason", "test", "--yes"], tmp_path)
         # Enable
         result = _invoke(runner, ["enable", "tool_a"], tmp_path)
         assert result.exit_code == 0
@@ -97,8 +97,8 @@ class TestQuarantineCommand:
 
     def test_quarantine_shows_killed_tools(self, tmp_path: Path):
         runner = CliRunner()
-        _invoke(runner, ["kill", "tool_a", "--reason", "broken"], tmp_path)
-        _invoke(runner, ["kill", "tool_b", "--reason", "flaky"], tmp_path)
+        _invoke(runner, ["kill", "tool_a", "--reason", "broken", "--yes"], tmp_path)
+        _invoke(runner, ["kill", "tool_b", "--reason", "flaky", "--yes"], tmp_path)
 
         result = _invoke(runner, ["quarantine"], tmp_path)
         assert result.exit_code == 0
@@ -122,7 +122,7 @@ class TestBreakerStatusCommand:
 
     def test_status_of_killed_tool(self, tmp_path: Path):
         runner = CliRunner()
-        _invoke(runner, ["kill", "tool_a", "--reason", "testing"], tmp_path)
+        _invoke(runner, ["kill", "tool_a", "--reason", "testing", "--yes"], tmp_path)
 
         result = _invoke(runner, ["breaker-status", "tool_a"], tmp_path)
         assert result.exit_code == 0

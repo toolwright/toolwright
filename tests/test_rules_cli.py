@@ -235,7 +235,7 @@ class TestRulesRemove:
         rules = json.loads(_rules_file(tmp_path).read_text())
         rule_id = rules[0]["rule_id"]
 
-        result = _invoke(runner, ["remove", rule_id], tmp_path)
+        result = _invoke(runner, ["remove", rule_id, "--yes"], tmp_path)
         assert result.exit_code == 0
         assert "removed" in result.output.lower()
 

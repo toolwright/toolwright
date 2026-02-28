@@ -25,7 +25,8 @@ def register_kill_commands(*, cli: click.Group) -> None:
         default=str(_default_breaker_state_path()),
         help="Path to circuit breaker state file.",
     )
-    def kill(tool_id: str, reason: str, breaker_state: str) -> None:
+    @click.option("--yes", "-y", is_flag=True, default=False, help="Skip confirmation prompt.")
+    def kill(tool_id: str, reason: str, breaker_state: str, yes: bool) -> None:
         """Kill a tool by forcing its circuit breaker open.
 
         The tool will be blocked from execution until manually re-enabled
@@ -36,6 +37,9 @@ def register_kill_commands(*, cli: click.Group) -> None:
           toolwright kill dangerous_tool --reason "broken endpoint"
           toolwright kill search --reason "rate limiting detected"
         """
+        if not yes:
+            click.confirm(f"Kill tool '{tool_id}'?", default=False, abort=True)
+
         from toolwright.core.kill.breaker import CircuitBreakerRegistry
 
         reg = CircuitBreakerRegistry(state_path=Path(breaker_state))

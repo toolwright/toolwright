@@ -75,6 +75,8 @@ CORE_COMMANDS = [
     "watch",
     "snapshots",
     "rollback",
+    "share",
+    "install",
 ]
 
 
@@ -1293,6 +1295,61 @@ def demo(
     )
     if exit_code != 0:
         sys.exit(exit_code)
+
+
+# ---------------------------------------------------------------------------
+# Share & Install commands
+# ---------------------------------------------------------------------------
+
+
+@cli.command()
+@click.argument("toolpack_path", type=click.Path(exists=True))
+@click.option(
+    "--output",
+    "-o",
+    type=click.Path(),
+    default=None,
+    help="Output directory for .twp bundle",
+)
+def share(toolpack_path: str, output: str | None) -> None:
+    """Package a toolpack into a signed .twp bundle for sharing."""
+    from toolwright.core.share.bundler import create_bundle
+
+    tp_path = Path(toolpack_path)
+    out_dir = Path(output) if output else None
+    result_path = create_bundle(tp_path, output_dir=out_dir)
+    size = result_path.stat().st_size
+    size_human = (
+        f"{size / 1024:.1f} KB"
+        if size < 1024 * 1024
+        else f"{size / (1024 * 1024):.1f} MB"
+    )
+    click.echo(f"Created {result_path} ({size_human})")
+
+
+@cli.command("install")
+@click.argument("bundle_path", type=click.Path(exists=True))
+@click.option(
+    "--target",
+    "-t",
+    type=click.Path(),
+    default=None,
+    help="Target installation directory",
+)
+def install_cmd(bundle_path: str, target: str | None) -> None:
+    """Verify and install a .twp toolpack bundle."""
+    from toolwright.core.share.installer import install_bundle
+
+    twp_path = Path(bundle_path)
+    install_dir = Path(target) if target else twp_path.parent / twp_path.stem
+    result = install_bundle(twp_path, install_dir=install_dir)
+    if result.verified:
+        click.echo(f"Installed '{result.name}' to {install_dir}")
+        if result.files:
+            click.echo(f"  Files: {len(result.files)}")
+    else:
+        click.echo("Error: Bundle verification failed.", err=True)
+        raise SystemExit(1)
 
 
 # ---------------------------------------------------------------------------

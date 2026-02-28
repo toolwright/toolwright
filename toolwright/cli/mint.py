@@ -71,6 +71,34 @@ def run_mint(
         click.echo("Error: runtime flags require --runtime=container", err=True)
         sys.exit(1)
 
+    # Phase 3.1 (V-004): Validate URL before Playwright to avoid 60s hangs
+    from urllib.parse import urlparse
+
+    parsed = urlparse(start_url)
+    if not parsed.scheme or not parsed.netloc:
+        click.echo(
+            f"Error: Invalid URL '{start_url}'. "
+            "Expected format: https://app.example.com",
+            err=True,
+        )
+        sys.exit(1)
+
+    # Phase 3.2 (V-005): Strip protocol prefixes from allowed hosts
+    cleaned_hosts: list[str] = []
+    for h in allowed_hosts:
+        h = h.strip()
+        if not h:
+            continue
+        if "://" in h:
+            parsed_host = urlparse(h).netloc or h
+            click.echo(
+                f"Warning: Stripped protocol from allowed host — using '{parsed_host}'",
+                err=True,
+            )
+            h = parsed_host
+        cleaned_hosts.append(h)
+    allowed_hosts = cleaned_hosts
+
     try:
         from toolwright.core.capture.playwright_capture import PlaywrightCapture
     except ImportError:

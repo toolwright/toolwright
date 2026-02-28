@@ -123,7 +123,7 @@ class TestRollbackInvalid:
         from toolwright.cli.main import cli
 
         result = runner.invoke(
-            cli, ["rollback", "nonexistent-snap-id", "--root", str(tmp_path)]
+            cli, ["rollback", "nonexistent-snap-id", "--yes", "--root", str(tmp_path)]
         )
         assert result.exit_code == 1
         assert "not found" in result.output.lower() or "error" in result.output.lower()
@@ -148,7 +148,7 @@ class TestRollbackValid:
 
         # Rollback
         result = runner.invoke(
-            cli, ["rollback", snap_id, "--root", str(tmp_path)]
+            cli, ["rollback", snap_id, "--yes", "--root", str(tmp_path)]
         )
         assert result.exit_code == 0
         assert "rolled back" in result.output.lower() or "success" in result.output.lower()

@@ -125,9 +125,13 @@ def register_rules_commands(*, cli: click.Group) -> None:
 
     @rules.command("remove")
     @click.argument("rule_id")
+    @click.option("--yes", "-y", is_flag=True, default=False, help="Skip confirmation prompt.")
     @click.pass_context
-    def rules_remove(ctx: click.Context, rule_id: str) -> None:
+    def rules_remove(ctx: click.Context, rule_id: str, yes: bool) -> None:
         """Remove a behavioral rule by ID."""
+        if not yes:
+            click.confirm(f"Remove rule '{rule_id}'?", default=False, abort=True)
+
         rules_path = ctx.obj["rules_path"]
         engine = RuleEngine(rules_path=rules_path)
         try:
