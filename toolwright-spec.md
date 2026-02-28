@@ -10,6 +10,47 @@
 
 ---
 
+## Spec v1.1 — Post-Implementation Update (2026-02-28)
+
+This spec was written as a planning document before implementation. All planned work
+has been completed. The sections below are preserved as historical record of what was
+planned and how it evolved. For current state, see README.md and CAPABILITIES.md.
+
+### Pillar Completion
+
+| Pillar | Spec Estimate | Actual | Notes |
+|--------|--------------|--------|-------|
+| CONNECT | 92% | 100% | All capture paths, OTEL import, share/install wired |
+| GOVERN | 96% | 100% | SSRF hardened, agent trust boundaries, destructive-op confirmations |
+| HEAL | 72% | 95% | Health checker, reconciliation, auto-heal, snapshots, rollback. Deferred: hash-chained audit (P3) |
+| KILL | 76% | 100% | Circuit breaker state machine, manual kill/enable, quarantine, meta-tools, response size limits |
+| CORRECT | 12% | 100% | All six rule types, session history, conflict detection, violation feedback, CLI CRUD, meta-tools, agent suggestion with DRAFT gate |
+
+### Key Numbers
+
+- **Tests:** 2,209 passing, 0 failures
+- **Capabilities:** 83 shipped (see CAPABILITIES.md)
+- **Production readiness:** 8-phase hardening pass, 60 files changed, +3,282 / -1,916 lines
+- **Dead code removed:** ~2,000 lines (Tide workflow, EU AI Act compliance, OAuth interface, notifications)
+- **Migration:** Complete. Published to PyPI as `toolwright`. No backward-compat aliases remain.
+- **Version:** v1.0.0a2
+
+### Stale Content in This Spec
+
+The following sections contain pre-implementation content that no longer matches the codebase:
+
+- **Section 2 (Architecture):** Class names reference `CaskMCPServer` (now `ToolwrightMCPServer`), line counts are stale, directory tree shows removed modules (`core/compliance/`, `core/runtime/`)
+- **Section 3 (Feature Map):** "What's Missing" columns list items that have all been delivered
+- **Section 4 (Five Pillars):** Code samples are design sketches, not actual API surfaces
+- **Section 6 (Migration):** Fully complete. No `cask`/`caskmcp` CLI aliases remain.
+- **Section 7 (Implementation Plan):** All sprints complete. Estimated 4,450 new lines; actual was +3,282 / -1,916 (less new code, more removals)
+- **Section 8 (Library Evaluation):** `authlib` listed as "Used" but OAuth interface was removed in Phase 7. No `authlib` dependency remains.
+- **Appendix A (Test Coverage):** File names and line counts are CaskMCP-era. Test suite has been reorganized and expanded.
+
+Living documentation is now in **README.md** and **CAPABILITIES.md**.
+
+---
+
 ## Table of Contents
 
 1. [Vision & Positioning](#1-vision--positioning)
