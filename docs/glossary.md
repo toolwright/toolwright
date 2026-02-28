@@ -93,6 +93,11 @@ Redacted artifacts from a verification or governance run, including SHA-256 dige
 **DecisionTrace**
 Audit log entry recording a governance decision (tool allowed, blocked, or drift detected) with timestamp, context, and rationale.
 
+## Proposals
+
+**Proposal**
+An agent-initiated request for a new capability or behavioral rule. Proposals are always created in draft state and require human approval before taking effect. Agents cannot approve their own proposals. See `toolwright propose`, `toolwright rules drafts`.
+
 ## Verification
 
 **Contract**

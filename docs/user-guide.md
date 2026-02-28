@@ -79,8 +79,11 @@ For power users who want to run each stage individually:
 ```bash
 toolwright init                     # set up project
 toolwright mint <url> -a <host>     # capture + compile
+toolwright diff                     # review risk-classified changes
 toolwright gate allow --all         # approve tools
+toolwright verify                   # run verification contracts
 toolwright serve                    # start MCP server
+toolwright drift                    # detect API changes (CI/cron)
 ```
 
 ---

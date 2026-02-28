@@ -12,11 +12,11 @@ February 2026
 
 The v1 release baseline is locked to:
 
-`mint -> diff -> gate -> run -> drift -> verify`
+`mint -> diff -> gate -> serve -> drift -> verify`
 
 Canonical command surface:
 
-- Core: `init`, `mint`, `diff`, `gate`, `serve`, `run`, `drift`, `verify`, `demo`
+- Core: `init`, `mint`, `diff`, `gate`, `serve`, `drift`, `verify`, `demo`
 - More: `capture`, `workflow`, `auth`
 - Advanced (behind `--help-all`): `compile`, `bundle`, `lint`, `doctor`, `config`, `inspect`, `enforce`, `migrate`
 - No aliases -- one best name per command
@@ -1067,7 +1067,6 @@ Optional later:
 * `toolwright diff` -- risk-classified change report
 * `toolwright gate sync|allow|block|check|status|snapshot|reseal` -- approval workflow
 * `toolwright serve` -- MCP server (stdio) under lockfile enforcement
-* `toolwright run` -- execute toolpack with policy enforcement
 * `toolwright drift` -- detect capability surface changes
 * `toolwright verify` -- run verification contracts
 * `toolwright demo` -- offline governance proof loop
@@ -1081,7 +1080,7 @@ Optional later:
 ### 12.3 Advanced commands (behind `--help-all`)
 
 * `toolwright compile`, `toolwright bundle`, `toolwright lint`, `toolwright doctor`, `toolwright config`
-* `toolwright inspect`, `toolwright enforce`, `toolwright migrate`
+* `toolwright inspect`, `toolwright enforce`, `toolwright migrate`, `toolwright run`
 * `toolwright confirm`, `toolwright propose`, `toolwright scope`, `toolwright compliance`, `toolwright state`
 
 ---
