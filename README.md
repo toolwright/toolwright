@@ -47,16 +47,19 @@ pip install toolwright
 toolwright demo
 ```
 
-Compiles a governed toolpack from bundled traffic, enforces fail-closed gates, and writes a full audit log. Exit `0` means every safety check passed.
+Compiles a governed toolpack from bundled traffic, runs a reconciliation cycle, starts the HTTP dashboard, and opens your browser. You see the living system.
 
 ## Commands
 
 **Getting started:**
 
 ```bash
-toolwright demo          # see it work (60 seconds)
+toolwright demo          # see the living system (browser opens)
+toolwright demo --offline  # compile-only (CI mode)
 toolwright ship          # build + approve + serve (your API)
+toolwright ship <url>    # one-command onboarding from URL
 toolwright serve         # run your governed MCP server
+toolwright serve --http  # serve over HTTP with dashboard
 ```
 
 **Operations:**
@@ -68,6 +71,13 @@ toolwright repair apply  # apply fixes
 toolwright kill <tool>   # emergency stop a tool
 toolwright quarantine    # list stopped tools
 toolwright watch status  # reconciliation status
+```
+
+**Sharing & notifications:**
+
+```bash
+toolwright share <toolpack>   # package into signed .twp bundle
+toolwright install <file.twp> # verify + install a shared bundle
 ```
 
 **All commands:** `toolwright --help`
@@ -157,8 +167,12 @@ All paths converge: capture → compile → approve → serve.
 | **Heal** | Drift detection, auto-repair, continuous reconciliation, snapshots & rollback | Stable (incl. reconciliation & auto-heal) |
 | **Kill** | Per-tool circuit breakers with auto-recovery and manual kill switches | Stable |
 | **Correct** | Persistent behavioral rules with agent suggestion and human-gated activation | Stable |
+| **Transport** | HTTP server, web dashboard, SSE live feed, token auth | Stable |
+| **Share** | Signed .twp bundles for toolpack distribution | Stable |
+| **Observe** | OTEL-compatible tracing, Prometheus metrics (no-op fallback) | Stable |
+| **Notify** | Webhook notifications with Slack auto-detection | Stable |
 
-73 capabilities. 2000+ tests.
+87 capabilities. 2150+ tests.
 
 Agents introspect their own governance via MCP meta-tools -- check risk summaries, diagnose failures, manage circuit breakers, and read behavioral rules. Agents can also propose new API capabilities and suggest behavioral rules; both create DRAFT proposals that require human approval before taking effect.
 

@@ -651,3 +651,122 @@ Verify auth configuration for the active toolpack. Shows per-host and global env
 - `toolwright/cli/commands_auth.py` -> `register_auth_check_command()`, `_host_to_env_var()`, `_probe_host()`
 - CLI: `toolwright auth check [--no-probe]`
 - Probes by default with `--no-probe` for offline/CI environments
+
+---
+
+## TRANSPORT -- HTTP & Dashboard (Phase 10)
+
+### CAP-CROSS-017: Request Pipeline Abstraction
+
+Extracted tool-call lifecycle as a reusable pipeline that both stdio and HTTP transports invoke.
+
+- `toolwright/mcp/pipeline.py` -> `RequestPipeline`, `PipelineContext`, `PipelineResult`
+- Stages: action lookup, decision engine, confirmation gate, rule check, breaker check, dry-run, HTTP execution, response processing
+- Wired into: `toolwright/mcp/server.py` -> `handle_call_tool` delegates to pipeline
+
+### CAP-CROSS-018: HTTP Transport (StreamableHTTP)
+
+MCP server over HTTP with Starlette + StreamableHTTPSessionManager. Default port 8745.
+
+- `toolwright/mcp/http_transport.py` -> `create_toolwright_http_app()`
+- Routes: `/health`, `/mcp`, `/api/*`, `/` (static dashboard)
+- CLI: `toolwright serve --http [--host HOST] [--port PORT] [--no-open]`
+
+### CAP-CROSS-019: Token Authentication
+
+Bearer token auth for HTTP transport. Auto-generated in TTY, env var in non-TTY.
+
+- `toolwright/mcp/auth.py` -> `generate_token()`, `validate_token()`, `mask_token()`, `TokenAuthMiddleware`
+- Token format: `tw_` + 32 hex chars
+- ENV: `TOOLWRIGHT_TOKEN`
+- Exempt: `/health`
+
+### CAP-CROSS-020: EventBus (In-Memory Event Stream)
+
+Bounded ring buffer for server events with synchronous publish and async subscribe.
+
+- `toolwright/mcp/events.py` -> `EventBus`, `ServerEvent`
+- Max 1000 events, drop-oldest on overflow
+- Event types: `tool_called`, `decision`, `drift_detected`, `auto_repaired`, `breaker_tripped`, `breaker_recovered`, `quarantined`, `repair_queued`, `repair_failed`, `probe_result`
+
+### CAP-CROSS-021: Web Dashboard (Static SPA)
+
+Single-page dark-themed dashboard showing tools, events, reconciliation status.
+
+- `toolwright/assets/dashboard/index.html` -> Dashboard HTML
+- `toolwright/assets/dashboard/style.css` -> Dark theme styles
+- `toolwright/assets/dashboard/app.js` -> SSE consumer, API fetchers, DOM rendering
+- Auth: token-in-URL → memory → strip via replaceState
+- Budget: <50KB total, no framework, no build step
+
+### CAP-CROSS-022: Dashboard JSON API
+
+REST endpoints for dashboard data, served alongside MCP.
+
+- `toolwright/mcp/http_transport.py` -> API route handlers
+- `GET /api/overview` -> Toolpack metadata, health summary
+- `GET /api/tools` -> Tool list with risk, status, breaker state
+- `GET /api/events` -> Recent events (paginated)
+- `GET /api/events/stream` -> SSE live feed from EventBus
+
+### CAP-CROSS-023: Description Optimizer
+
+Reduce tool descriptions to ~80-120 tokens for context efficiency. `--verbose-tools` restores originals.
+
+- `toolwright/mcp/description.py` -> `optimize_description()`
+- CLI: `toolwright serve --verbose-tools`
+
+### CAP-CROSS-024: Tool Filtering
+
+Filter served tools by glob pattern and max risk ceiling.
+
+- CLI: `toolwright serve --tools "get_*" --max-risk medium`
+
+### CAP-CROSS-025: Smart Gate Defaults
+
+Risk-based auto-approval during ship flow. Low/medium auto-approved, high prompted (default Yes), critical prompted (default No).
+
+- `toolwright/core/approval/smart_gate.py` -> `classify_approval()`, `ApprovalClassification`
+- Provenance: `approved_by: risk_policy:low|medium` vs `approved_by: human:interactive`
+
+### CAP-CROSS-026: MCP Client Config Auto-Install
+
+Detect and configure Claude Desktop and Cursor MCP client configs.
+
+- `toolwright/utils/mcp_clients.py` -> `detect_mcp_clients()`, `install_config()`, `uninstall_config()`
+- Platforms: macOS, Linux, Windows
+- Safety: `.bak` backup before modify, refuse on JSON parse error
+
+### CAP-CROSS-027: Notification Engine & Webhooks
+
+Dispatch events to configured webhook channels with event filtering.
+
+- `toolwright/core/notify/engine.py` -> `NotificationEngine`
+- `toolwright/core/notify/webhook.py` -> `WebhookConfig`, `build_payload()`, `send_webhook()`
+- Slack auto-detection via URL, Block Kit format
+- Never crashes on unreachable webhooks
+
+### CAP-CROSS-028: Toolpack Sharing (.twp Bundles)
+
+Package toolpacks into signed .twp bundles (gzipped tar) for distribution.
+
+- `toolwright/core/share/bundler.py` -> `create_bundle()`
+- `toolwright/core/share/installer.py` -> `install_bundle()`, `InstallResult`
+- Contents: manifest.json, signature.json, toolpack.yaml, artifacts
+- Signature: SHA256 content hash with self-signed verification
+- Excludes: private keys, auth tokens, state files
+
+### CAP-CROSS-029: Observability (Tracing & Metrics)
+
+No-op tracer (OTEL-compatible) and hand-rolled Prometheus metrics registry.
+
+- `toolwright/mcp/observe.py` -> `create_tracer()`, `MetricsRegistry`
+- Tracer: no-op fallback when opentelemetry not installed
+- Metrics: counters, gauges, histograms with Prometheus text exposition
+- No external deps required; optional OTEL/prometheus-client for production
+
+### CAP-CROSS-030: Rich Startup Card
+
+Formatted startup banner showing tool count, risk breakdown, context budget, URLs.
+
+- `toolwright/mcp/startup_card.py` -> `render_startup_card()`
