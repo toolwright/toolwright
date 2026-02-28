@@ -21,6 +21,8 @@ Post-dogfood engineering backlog. Items will be prioritized based on real-world 
   snapshot and escalate to APPROVAL_REQUIRED
 - **MAPE-K documentation** — Document reconciliation as Monitor/Analyze/Plan/Execute/Knowledge
   loop in architecture docs
+- **Surface suspended tools in `watch status`** — `repair_suspended` is tracked internally but
+  not shown in CLI status output. Operators only see the WARNING log during `serve --watch`.
 
 ## Known limitations
 
