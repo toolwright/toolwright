@@ -22,7 +22,6 @@ from toolwright.cli.commands_rules import register_rules_commands
 from toolwright.cli.commands_snapshots import register_snapshot_commands
 from toolwright.cli.commands_use import register_use_command
 from toolwright.cli.commands_watch import register_watch_commands
-from toolwright.cli.commands_workflow import register_workflow_commands
 from toolwright.utils.locks import RootLockError, clear_root_lock, root_command_lock
 from toolwright.utils.state import confirmation_store_path, resolve_root
 
@@ -38,14 +37,12 @@ ADVANCED_COMMANDS = {
     "confirm",
     "propose",
     "scope",
-    "compliance",
     "state",
 }
 
 # Commands shown in the "More" section of default help.
 MORE_COMMANDS = {
     "capture",
-    "workflow",
     "auth",
 }
 
@@ -1359,7 +1356,6 @@ def install_cmd(bundle_path: str, target: str | None) -> None:
 register_mcp_commands(cli=cli, run_with_lock=_run_with_lock)
 register_approval_commands(cli=cli, run_with_lock=_run_with_lock)
 register_use_command(cli=cli)
-register_workflow_commands(cli=cli)
 register_rules_commands(cli=cli)
 register_kill_commands(cli=cli)
 register_watch_commands(cli=cli)
@@ -2179,34 +2175,6 @@ def state_unlock(ctx: click.Context, force: bool) -> None:
         sys.exit(1)
     click.echo(f"Cleared lock for root: {root}")
 
-
-# ---------------------------------------------------------------------------
-# Compliance
-# ---------------------------------------------------------------------------
-
-
-@cli.group(hidden=True)
-def compliance() -> None:
-    """EU AI Act compliance reporting."""
-
-
-@compliance.command("report")
-@click.option(
-    "--tools", "tools_path",
-    type=click.Path(exists=True),
-    help="Path to tools.json manifest",
-)
-@click.option(
-    "--output", "output_path",
-    type=click.Path(),
-    default=None,
-    help="Output path for the report (default: stdout as JSON)",
-)
-def compliance_report(tools_path: str | None, output_path: str | None) -> None:
-    """Generate a structured compliance report."""
-    from toolwright.cli.compliance import run_compliance_report
-
-    run_compliance_report(tools_path=tools_path, output_path=output_path)
 
 
 if __name__ == "__main__":

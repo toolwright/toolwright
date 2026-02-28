@@ -45,33 +45,6 @@ class TestEventBusIntegration:
         assert events[0].data["i"] == 5  # oldest surviving
 
 
-# ---------------------------------------------------------------------------
-# Notifications + EventBus integration
-# ---------------------------------------------------------------------------
-
-
-class TestNotifyIntegration:
-    """Notification engine dispatches based on event types."""
-
-    @pytest.mark.asyncio
-    async def test_webhook_filters_events(self) -> None:
-        """Webhooks with event filters only fire for matching events."""
-        from toolwright.core.notify.engine import NotificationEngine
-
-        engine = NotificationEngine(webhooks=[
-            {"url": "https://hooks.slack.com/test", "events": ["drift_detected"]},
-            {"url": "https://example.com/webhook", "events": []},
-        ])
-
-        # drift_detected should match both (slack has it, generic has no filter)
-        matching = engine.matching_webhooks("drift_detected")
-        assert len(matching) == 2
-
-        # tool_called should match only generic (no filter = all)
-        matching = engine.matching_webhooks("tool_called")
-        assert len(matching) == 1
-        assert matching[0].url == "https://example.com/webhook"
-
 
 # ---------------------------------------------------------------------------
 # Share round-trip integration
@@ -191,13 +164,6 @@ class TestEdgeCases:
         registry = MetricsRegistry()
         assert registry.render_prometheus() == ""
 
-    def test_notification_engine_no_webhooks(self) -> None:
-        """Engine with no webhooks dispatches nothing."""
-        from toolwright.core.notify.engine import NotificationEngine
-
-        engine = NotificationEngine(webhooks=None)
-        assert engine.matching_webhooks("any_event") == []
-
     def test_bundle_empty_toolpack_dir(self, tmp_path: Path) -> None:
         """Bundling a minimal toolpack with just toolpack.yaml."""
         from toolwright.core.share.bundler import create_bundle
@@ -213,15 +179,6 @@ class TestEdgeCases:
             names = tf.getnames()
             assert "manifest.json" in names
             assert "signature.json" in names
-
-    @pytest.mark.asyncio
-    async def test_unreachable_webhook_graceful(self) -> None:
-        """Unreachable webhook returns False, doesn't crash."""
-        from toolwright.core.notify.webhook import WebhookConfig, send_webhook
-
-        config = WebhookConfig(url="https://unreachable.invalid/hook")
-        result = await send_webhook(config, "test_event", {"key": "value"}, timeout=0.1)
-        assert result is False
 
     def test_startup_card_zero_tools(self) -> None:
         """Startup card with zero tools renders without error."""

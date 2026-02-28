@@ -52,15 +52,6 @@ Automatically detect and extract auth patterns (Bearer, OAuth, API keys) from ca
 - CLI: `toolwright auth`, `toolwright auth check`
 - Auth display: shown in `mint` output after compile, with env var export suggestions
 
-### CAP-CONNECT-011: OAuth2 Credential Provider
-
-Per-host OAuth2 client-credentials token manager with automatic refresh, proactive expiry margin, and in-memory caching.
-
-- `toolwright/core/auth/oauth.py` -> `OAuthCredentialProvider`, `OAuthConfig`, `OAuthError`
-- Methods: `configure(host, config)`, `get_token(host)`, `refresh_token(host)`, `clear_tokens()`, `configured_hosts()`
-- Optional dependency: `pip install "toolwright[oauth]"`
-- Token lifecycle: fetch → cache → proactive refresh (configurable `expiry_margin_seconds`)
-
 ### CAP-CONNECT-012: Draft Toolpack Creation
 
 Create draft toolpacks from discovered `CaptureSession` data (e.g., from OpenAPI discovery). Draft toolpacks are staged in `.toolwright/drafts/<id>/` for human review before promotion. Drafts are NOT loaded by `toolwright serve`.
@@ -193,14 +184,7 @@ Materialize approval baselines and re-sign approvals for maintenance/migration.
 - `toolwright/cli/approve.py` -> `run_approve_snapshot()`, `run_approve_resign()`
 - CLI: `toolwright gate snapshot`, `toolwright gate reseal`
 
-### CAP-GOVERN-010: EU AI Act Compliance Reporting
-
-Generate compliance reports for regulated high-risk AI systems.
-
-- `toolwright/core/compliance/report.py` -> Report generation
-- CLI: `toolwright compliance report`
-
-### CAP-GOVERN-011: Confirmation Gate (Out-of-Band)
+### CAP-GOVERN-010: Confirmation Gate (Out-of-Band)
 
 Require explicit human confirmation for sensitive tool calls via single-use token system.
 
@@ -536,13 +520,6 @@ Governance-aware MCP server exposing Toolwright metadata as tools for agent self
 - CLI: `toolwright inspect --tools <path>`
 - Params: `circuit_breaker_path`, `rules_path`, `state_dir` (optional, enable KILL/CORRECT/RECONCILE meta-tools)
 
-### CAP-CROSS-007: Workflow Runner (Tide Integration)
-
-Multi-step verification workflows with shell, HTTP, browser, and MCP steps.
-
-- `toolwright/cli/commands_workflow.py` -> Workflow commands
-- CLI: `toolwright workflow init|run|replay|diff|report|pack|export`
-
 ### CAP-CROSS-008: Docker/Container Runtime Emission
 
 Generate container definitions for toolwright servers.
@@ -763,16 +740,7 @@ Package toolpacks into signed .twp bundles (gzipped tar) for distribution.
 
 ---
 
-## OBSERVE -- Notifications & Telemetry
-
-### CAP-CROSS-027: Notification Engine & Webhooks
-
-Dispatch events to configured webhook channels with event filtering.
-
-- `toolwright/core/notify/engine.py` -> `NotificationEngine`
-- `toolwright/core/notify/webhook.py` -> `WebhookConfig`, `build_payload()`, `send_webhook()`
-- Slack auto-detection via URL, Block Kit format
-- Never crashes on unreachable webhooks
+## OBSERVE -- Telemetry
 
 ### CAP-CROSS-029: Observability (Tracing & Metrics)
 
