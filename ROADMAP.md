@@ -24,6 +24,17 @@ Post-dogfood engineering backlog. Items will be prioritized based on real-world 
 - **Surface suspended tools in `watch status`** — `repair_suspended` is tracked internally but
   not shown in CLI status output. Operators only see the WARNING log during `serve --watch`.
 
+## P1 (will likely hit during dogfood)
+
+- **Output schema strictness levels** — Compiled schemas from OpenAPI specs may mark fields
+  as `required` that the API returns optionally in practice. Need strict/warn/lenient modes,
+  or auto-relaxation based on live probe data. (DummyJSON test revealed this Feb 14.)
+
+## P2 (add if dogfood/users prove necessary)
+
+- **Per-request dynamic auth** — Plugin/hook system for APIs requiring per-request signing
+  (Coinbase JWT, AWS SigV4, HMAC-SHA256). Current static header injection cannot handle these.
+
 ## Known limitations
 
 - **GraphQL APIs** — Single POST endpoint with operation in body collapses to one tool.

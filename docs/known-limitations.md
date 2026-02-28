@@ -17,6 +17,7 @@
 
 - Guided interactive reauth is required for MFA/passkeys/device-trust flows.
 - `storageState` reuse may fail on some apps; persistent context fallback exists for difficult cases.
+- **Per-request dynamic auth** — APIs requiring per-request cryptographic signing (Coinbase Advanced Trade EC key → JWT, AWS SigV4, HMAC-SHA256) cannot be governed. Toolwright injects static auth headers (Bearer tokens, API keys). When the Authorization header is a function of (timestamp + method + path + body + secret), static injection fails. A plugin/hook system for custom signing functions is a future option.
 
 ## Telemetry noise
 
