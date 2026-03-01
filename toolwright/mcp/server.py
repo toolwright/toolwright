@@ -698,6 +698,9 @@ class ToolwrightMCPServer:
             if method.upper() in ("POST", "PUT", "PATCH"):
                 body_params = {k: v for k, v in args.items() if f"{{{k}}}" not in path}
                 if body_params:
+                    wrapper = action.get("request_body_wrapper")
+                    if wrapper:
+                        body_params = {wrapper: body_params}
                     headers["Content-Type"] = "application/json"
                     kwargs["json"] = body_params
             elif method.upper() in ("GET", "HEAD", "OPTIONS"):
