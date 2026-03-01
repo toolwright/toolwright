@@ -87,3 +87,9 @@ def test_get_safe_path_unchanged() -> None:
     """GET on a path with no risk keywords should stay safe."""
     tier = _classify(HTTPMethod.GET, "/api/products.json")
     assert tier == "safe", f"Expected safe, got {tier}"
+
+
+def test_get_auth_path_capped_at_medium() -> None:
+    """GET /api/auth/login should be capped at medium even though auth-related."""
+    tier = _classify(HTTPMethod.GET, "/api/auth/login")
+    assert tier == "medium", f"Expected medium, got {tier}"
