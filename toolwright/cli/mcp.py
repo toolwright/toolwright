@@ -2,12 +2,113 @@
 
 from __future__ import annotations
 
+import json
+import os
+import re
 import sys
 from pathlib import Path
+from typing import Any
 
 import click
 
 from toolwright.utils.deps import require_mcp_dependency
+
+TOOL_COUNT_WARN_THRESHOLD = 30
+TOOL_COUNT_BLOCK_THRESHOLD = 200
+
+
+def check_tool_count_guardrails(
+    tool_count: int,
+    *,
+    groups_index: Any | None,
+    no_tool_limit: bool,
+) -> tuple[list[str], bool]:
+    """Check tool count against safety thresholds.
+
+    Returns (warning_messages, should_block).
+    - 0-30 tools: no warnings
+    - 31-200 tools: warning, server starts
+    - 201+ tools: error + block (unless no_tool_limit overrides)
+    """
+    warnings: list[str] = []
+    block = False
+
+    if tool_count <= TOOL_COUNT_WARN_THRESHOLD:
+        return warnings, block
+
+    # Build group suggestion text
+    group_hint = ""
+    if groups_index is not None:
+        from toolwright.models.groups import ToolGroupIndex
+
+        if isinstance(groups_index, ToolGroupIndex) and groups_index.groups:
+            top = sorted(
+                groups_index.groups, key=lambda g: len(g.tools), reverse=True
+            )[:8]
+            parts = [f"{g.name} ({len(g.tools)})" for g in top]
+            group_hint = (
+                "\n  Consider narrowing with --scope:\n    "
+                + "    ".join(f"{p:<20}" for p in parts)
+                + f"\n  Example: toolwright serve --scope {top[0].name}"
+            )
+        else:
+            group_hint = "\n  Run 'toolwright compile' to generate tool groups, then use --scope to narrow."
+    else:
+        group_hint = "\n  Run 'toolwright compile' to generate tool groups, then use --scope to narrow."
+
+    if tool_count > TOOL_COUNT_BLOCK_THRESHOLD:
+        if no_tool_limit:
+            warnings.append(
+                f"Serving {tool_count} tools (--no-tool-limit override active). "
+                f"Agent performance degrades above ~{TOOL_COUNT_WARN_THRESHOLD} tools."
+                + group_hint
+            )
+        else:
+            warnings.append(
+                f"Refusing to serve {tool_count} tools. "
+                f"Agents cannot reliably select from this many tools."
+                + group_hint
+            )
+            block = True
+    else:
+        warnings.append(
+            f"Serving {tool_count} tools. "
+            f"Agent performance degrades above ~{TOOL_COUNT_WARN_THRESHOLD} tools."
+            + group_hint
+        )
+
+    return warnings, block
+
+
+def warn_missing_auth(
+    tools_path: str | Path,
+    auth_header: str | None,
+) -> list[str]:
+    """Check for missing auth env vars and return warning messages.
+
+    Returns a list of warning strings for hosts without auth configuration.
+    """
+    if auth_header:
+        return []
+
+    path = Path(tools_path)
+    if not path.exists():
+        return []
+
+    with open(path) as f:
+        manifest = json.load(f)
+
+    hosts = manifest.get("allowed_hosts", [])
+    warnings: list[str] = []
+    for host in hosts:
+        normalized = re.sub(r"[^A-Za-z0-9]", "_", host).upper()
+        env_key = f"TOOLWRIGHT_AUTH_{normalized}"
+        if not os.environ.get(env_key):
+            warnings.append(
+                f"No auth configured for {host}. "
+                f"Set {env_key} or pass --auth."
+            )
+    return warnings
 
 
 def run_mcp_serve(
@@ -37,6 +138,10 @@ def run_mcp_serve(
     transport: str = "stdio",
     host: str = "127.0.0.1",
     port: int = 8745,
+    extra_headers: dict[str, str] | None = None,
+    schema_validation: str = "warn",
+    scope: str | None = None,
+    no_tool_limit: bool = False,
 ) -> None:
     """Run the MCP server command."""
     resolved_toolpack = None
@@ -243,6 +348,23 @@ def run_mcp_serve(
             if watch_config_path:
                 click.echo(f"  Watch config: {watch_config_path}", err=True)
 
+    # Merge extra headers: toolpack stored headers as base, CLI flags override
+    merged_extra_headers: dict[str, str] | None = None
+    if resolved_toolpack and resolved_toolpack.extra_headers:
+        merged_extra_headers = dict(resolved_toolpack.extra_headers)
+    if extra_headers:
+        if merged_extra_headers is None:
+            merged_extra_headers = {}
+        merged_extra_headers.update(extra_headers)
+
+    # Warn about missing auth env vars
+    auth_warnings = warn_missing_auth(
+        tools_path=resolved_tools_path,
+        auth_header=auth_header,
+    )
+    for warning in auth_warnings:
+        click.echo(f"  WARNING: {warning}", err=True)
+
     # Import here to avoid loading MCP dependencies unless needed
     from toolwright.mcp.server import run_mcp_server
 
@@ -271,6 +393,10 @@ def run_mcp_serve(
             transport=transport,
             host=host,
             port=port,
+            extra_headers=merged_extra_headers,
+            schema_validation=schema_validation,
+            scope=scope,
+            no_tool_limit=no_tool_limit,
         )
     except ValueError as exc:
         click.echo(f"Error: {exc}", err=True)

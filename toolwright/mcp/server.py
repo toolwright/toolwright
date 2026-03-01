@@ -117,7 +117,10 @@ class ToolwrightMCPServer:
         allow_redirects: bool = False,
         rules_path: str | Path | None = None,
         circuit_breaker_path: str | Path | None = None,
+        extra_headers: dict[str, str] | None = None,
+        schema_validation: str = "warn",
     ) -> None:
+        self.schema_validation = schema_validation
         self.tools_path = Path(tools_path)
         self.toolsets_path = Path(toolsets_path) if toolsets_path else None
         self.toolset_name = toolset_name
@@ -125,6 +128,7 @@ class ToolwrightMCPServer:
         self.lockfile_path = Path(lockfile_path) if lockfile_path else None
         self.base_url = base_url
         self.auth_header = auth_header
+        self.extra_headers = extra_headers
         self.dry_run = dry_run
         self.allow_private_networks = [
             ipaddress.ip_network(cidr)
@@ -360,18 +364,19 @@ class ToolwrightMCPServer:
                     description=self._build_description(action),
                     inputSchema=action.get("input_schema", {"type": "object", "properties": {}}),
                 )
-                output_schema = action.get("output_schema")
-                if isinstance(output_schema, dict):
-                    # MCP structuredContent is object-only in practice (and in the reference
-                    # `mcp` types). Avoid advertising an outputSchema for non-object payloads
-                    # (arrays/scalars), since clients will require structuredContent when an
-                    # outputSchema is present.
-                    schema_type = output_schema.get("type")
-                    is_object_schema = schema_type == "object" or (
-                        schema_type is None and "properties" in output_schema
-                    )
-                    if is_object_schema:
-                        tool.outputSchema = output_schema
+                if self.schema_validation == "strict":
+                    output_schema = action.get("output_schema")
+                    if isinstance(output_schema, dict):
+                        # MCP structuredContent is object-only in practice (and in the reference
+                        # `mcp` types). Avoid advertising an outputSchema for non-object payloads
+                        # (arrays/scalars), since clients will require structuredContent when an
+                        # outputSchema is present.
+                        schema_type = output_schema.get("type")
+                        is_object_schema = schema_type == "object" or (
+                            schema_type is None and "properties" in output_schema
+                        )
+                        if is_object_schema:
+                            tool.outputSchema = output_schema
                 tools.append(tool)
             return tools
 
@@ -406,7 +411,9 @@ class ToolwrightMCPServer:
             return result
 
         # Structured output: return raw dict for MCP structuredContent
-        if result.is_structured:
+        # Only when outputSchema is advertised (strict mode); otherwise
+        # fall through to text content so the client doesn't choke.
+        if result.is_structured and self.schema_validation == "strict":
             return result.payload
 
         # Raw (non-envelope dict): return as-is for MCP
@@ -513,6 +520,8 @@ class ToolwrightMCPServer:
         auth = self._resolve_auth_for_host(action_host)
         if auth:
             headers["Authorization"] = auth
+        if self.extra_headers:
+            headers.update(self.extra_headers)
 
         client = await self._get_http_client()
         current_url = probe_url
@@ -682,6 +691,8 @@ class ToolwrightMCPServer:
             auth = self._resolve_auth_for_host(action_host)
             if auth:
                 headers["Authorization"] = auth
+            if self.extra_headers:
+                headers.update(self.extra_headers)
 
             kwargs: dict[str, Any] = {"headers": headers, "follow_redirects": False}
             if method.upper() in ("POST", "PUT", "PATCH"):
@@ -855,6 +866,10 @@ def run_mcp_server(
     transport: str = "stdio",
     host: str = "127.0.0.1",
     port: int = 8745,
+    extra_headers: dict[str, str] | None = None,
+    schema_validation: str = "warn",
+    scope: str | None = None,
+    no_tool_limit: bool = False,
 ) -> None:
     """Run the Toolwright MCP server."""
     server = ToolwrightMCPServer(
@@ -872,6 +887,8 @@ def run_mcp_server(
         allow_redirects=allow_redirects,
         rules_path=rules_path,
         circuit_breaker_path=circuit_breaker_path,
+        extra_headers=extra_headers,
+        schema_validation=schema_validation,
     )
 
     # Context efficiency: apply tool filters and description mode
@@ -883,6 +900,53 @@ def run_mcp_server(
             server.actions, tools_glob=tool_filter, max_risk=max_risk
         )
         server.pipeline.actions = server.actions
+
+    # Scope filtering (requires groups.json from compile output)
+    groups_index = None
+    groups_json_path = Path(tools_path).parent / "groups.json"
+    if groups_json_path.exists():
+        from toolwright.core.compile.grouper import load_groups_index
+
+        groups_index = load_groups_index(str(groups_json_path))
+
+    if scope:
+        if groups_index is None:
+            import click as _click
+
+            _click.echo(
+                "Warning: No tool groups found. Run 'toolwright compile' to generate groups.\n"
+                f"Serving all {len(server.actions)} tools.",
+                err=True,
+            )
+        else:
+            from toolwright.core.compile.grouper import filter_by_scope
+
+            import click as _click
+
+            try:
+                # filter_by_scope expects list[dict], server.actions is dict[str, dict]
+                filtered_list = filter_by_scope(
+                    list(server.actions.values()), scope, groups_index
+                )
+                server.actions = {a["name"]: a for a in filtered_list}
+                server.pipeline.actions = server.actions
+            except ValueError as exc:
+                _click.echo(f"Error: {exc}", err=True)
+                sys.exit(1)
+
+    # Tool count guardrails
+    import click as _click
+
+    from toolwright.cli.mcp import check_tool_count_guardrails
+
+    tool_count = len(server.actions)
+    guardrail_warnings, should_block = check_tool_count_guardrails(
+        tool_count, groups_index=groups_index, no_tool_limit=no_tool_limit,
+    )
+    for warning in guardrail_warnings:
+        _click.echo(f"  {warning}", err=True)
+    if should_block:
+        sys.exit(1)
 
     reconcile_loop = None
     if watch:

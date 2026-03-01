@@ -58,6 +58,12 @@ def register_mcp_commands(
         help="Authorization header value for upstream requests (also reads TOOLWRIGHT_AUTH_HEADER env var)",
     )
     @click.option(
+        "--extra-header", "-H",
+        "extra_header_raw",
+        multiple=True,
+        help="Extra header to inject into upstream requests (repeatable, format: 'Name: value')",
+    )
+    @click.option(
         "--audit-log",
         type=click.Path(),
         help="Path for audit log file",
@@ -130,6 +136,26 @@ def register_mcp_commands(
         help="Maximum risk tier to expose (filters out higher-risk tools)",
     )
     @click.option(
+        "--scope", "-s",
+        "serve_scope",
+        type=str,
+        default=None,
+        help="Comma-separated tool groups to serve (e.g., 'products,orders'). Use 'toolwright groups list' to see available groups.",
+    )
+    @click.option(
+        "--no-tool-limit",
+        is_flag=True,
+        default=False,
+        help="Override the 200-tool safety limit. Not recommended.",
+    )
+    @click.option(
+        "--schema-validation",
+        type=click.Choice(["strict", "warn", "off"]),
+        default="warn",
+        show_default=True,
+        help="Output schema validation mode: strict (client validates), warn (lenient, default), off (skip)",
+    )
+    @click.option(
         "--http",
         "use_http",
         is_flag=True,
@@ -159,6 +185,7 @@ def register_mcp_commands(
         lockfile: str | None,
         base_url: str | None,
         auth_header: str | None,
+        extra_header_raw: tuple[str, ...],
         audit_log: str | None,
         dry_run: bool,
         confirm_store: str | None,
@@ -173,6 +200,9 @@ def register_mcp_commands(
         verbose_tools: bool,
         tool_filter: str | None,
         max_risk: str | None,
+        serve_scope: str | None,
+        no_tool_limit: bool,
+        schema_validation: str,
         use_http: bool,
         host: str,
         port: int,
@@ -216,6 +246,11 @@ def register_mcp_commands(
         if auto_heal is not None and not watch:
             click.echo("Error: --auto-heal requires --watch", err=True)
             ctx.exit(2)
+
+        # Parse CLI extra headers
+        from toolwright.utils.headers import parse_extra_headers
+
+        cli_extra_headers = parse_extra_headers(extra_header_raw) if extra_header_raw else None
 
         resolved_confirm_store = confirm_store or str(
             confirmation_store_path(ctx.obj.get("root", resolve_root()))
@@ -268,6 +303,10 @@ def register_mcp_commands(
                 transport="http" if use_http else "stdio",
                 host=host,
                 port=port,
+                extra_headers=cli_extra_headers,
+                schema_validation=schema_validation,
+                scope=serve_scope,
+                no_tool_limit=no_tool_limit,
             ),
             lock_id=lock_id,
         )
