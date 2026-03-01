@@ -62,6 +62,7 @@ class PolicyEngine:
             headers: Request headers
             risk_tier: Risk tier of the endpoint
             scope: Scope name
+            dry_run: If True, check budget without consuming (for two-phase budget pattern)
 
         Returns:
             EvaluationResult with decision and details
@@ -230,6 +231,9 @@ class PolicyEngine:
 
         Called after a final ALLOW decision to debit the budget tracker.
         This is separate from evaluate() to support dry_run evaluation.
+
+        Consumes from ALL matching budget rules (not just the first),
+        supporting layered budgets (e.g. per_minute + per_hour).
         """
         rules = self.policy.get_rules_by_priority()
         for rule in rules:
