@@ -15,6 +15,7 @@ from toolwright.branding import (
 )
 from toolwright.cli.commands_approval import register_approval_commands
 from toolwright.cli.commands_auth import register_auth_check_command
+from toolwright.cli.commands_groups import register_groups_commands
 from toolwright.cli.commands_kill import register_kill_commands
 from toolwright.cli.commands_mcp import register_mcp_commands
 from toolwright.cli.commands_repair import register_repair_plan_apply
@@ -707,6 +708,18 @@ def _detect_openapi_format(source: str, default: str) -> str:
     default=None,
     help="Redaction profile to apply during capture (default: built-in patterns)",
 )
+@click.option(
+    "--extra-header", "-H",
+    "extra_header_raw",
+    multiple=True,
+    help="Extra header to inject at serve time (repeatable, format: 'Name: value')",
+)
+@click.option(
+    "--no-probe",
+    is_flag=True,
+    default=False,
+    help="Skip pre-flight API probing (auth, GraphQL, OpenAPI detection)",
+)
 @click.pass_context
 def mint(
     ctx: click.Context,
@@ -727,6 +740,8 @@ def mint(
     auth_profile: str | None,
     webmcp: bool,
     redaction_profile: str | None,
+    extra_header_raw: tuple[str, ...],
+    no_probe: bool,
 ) -> None:
     """Capture traffic and compile a governed toolpack.
 
@@ -737,8 +752,10 @@ def mint(
       toolwright mint https://app.example.com --webmcp -a api.example.com
     """
     from toolwright.cli.mint import run_mint
+    from toolwright.utils.headers import parse_extra_headers
 
     resolved_output = output or str(ctx.obj.get("root", resolve_root()))
+    extra_headers = parse_extra_headers(extra_header_raw) if extra_header_raw else None
 
     _run_with_lock(
         ctx,
@@ -762,6 +779,8 @@ def mint(
             webmcp=webmcp,
             redaction_profile=redaction_profile,
             verbose=ctx.obj.get("verbose", False),
+            extra_headers=extra_headers,
+            no_probe=no_probe,
         ),
     )
 
@@ -1360,6 +1379,7 @@ register_rules_commands(cli=cli)
 register_kill_commands(cli=cli)
 register_watch_commands(cli=cli)
 register_snapshot_commands(cli=cli)
+register_groups_commands(cli=cli)
 
 
 # ---------------------------------------------------------------------------

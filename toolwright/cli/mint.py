@@ -58,6 +58,7 @@ def run_mint(
     redaction_profile: str | None = None,
     verbose: bool,
     extra_headers: dict[str, str] | None = None,
+    no_probe: bool = False,
 ) -> None:
     """Mint a first-class toolpack from browser traffic capture."""
     if script_path and not Path(script_path).exists():
@@ -119,6 +120,10 @@ def run_mint(
         if webmcp:
             click.echo("  WebMCP discovery: enabled")
 
+    # Smart pre-flight probe: auth detection, GraphQL, OpenAPI (advisory only)
+    if not no_probe:
+        _smart_probe(allowed_hosts, start_url)
+
     # Resolve auth profile to storage_state path if provided
     storage_state_path: str | None = None
     if auth_profile:
@@ -134,10 +139,6 @@ def run_mint(
         if verbose:
             click.echo(f"  Auth profile: {auth_profile}")
         auth_manager.update_last_used(auth_profile)
-
-    # Smart pre-flight probe: auth detection, GraphQL, OpenAPI (advisory only)
-    if headless and not auth_profile and not script_path:
-        _smart_probe(allowed_hosts, start_url)
 
     capture = PlaywrightCapture(
         allowed_hosts=allowed_hosts,
@@ -378,6 +379,23 @@ def run_mint(
     click.echo(f"  Toolpack: {toolpack_file}")
     click.echo(f"  Pending approvals: {sync_result.pending_count}")
 
+    # Show group summary if groups were generated
+    if copied_groups.exists():
+        from toolwright.core.compile.grouper import load_groups_index
+        groups_idx = load_groups_index(copied_groups)
+        if groups_idx and groups_idx.groups:
+            total = sum(len(g.tools) for g in groups_idx.groups) + len(groups_idx.ungrouped)
+            click.echo(f"\n  {total} tools in {len(groups_idx.groups)} groups")
+            top = sorted(groups_idx.groups, key=lambda g: len(g.tools), reverse=True)[:8]
+            parts_list = [f"{g.name} ({len(g.tools)})" for g in top]
+            for j in range(0, len(parts_list), 4):
+                row = "    ".join(f"{p:<20}" for p in parts_list[j : j + 4])
+                click.echo(f"    {row}")
+            if len(groups_idx.groups) > 8:
+                click.echo(f"    ... ({len(groups_idx.groups) - 8} more)")
+            click.echo(f"\n  Serve subset: toolwright serve --scope {top[0].name}")
+            click.echo(f"  All groups:  toolwright groups list")
+
     # Show auth setup info (only when auth was actually detected)
     if auth_requirements_list and any(ar.scheme != "none" for ar in auth_requirements_list):
         click.echo(click.style("\nAuth detected:", fg="cyan"))
@@ -517,6 +535,11 @@ class ProbeResult:
     openapi_found: bool = False
     openapi_url: str | None = None
 
+    # Per-host probes
+    host_probes: dict[str, dict[str, object]] = dataclasses.field(
+        default_factory=dict
+    )
+
 
 async def _probe_base_url(
     start_url: str,
@@ -561,20 +584,20 @@ async def _probe_graphql(
 ) -> dict[str, object]:
     """Probe for GraphQL endpoints via minimal introspection.
 
-    Gated: only probes if start_url path contains 'graphql'.
+    Always probes {scheme}://{host}/graphql for each allowed host.
+    Also probes start_url directly if its path contains 'graphql'.
     Returns a dict of ProbeResult field updates.
     """
     from urllib.parse import urlparse
 
     parsed = urlparse(start_url)
-    if "graphql" not in parsed.path.lower():
-        return {}
 
     # Build list of URLs to try (deduplicated)
     urls: list[str] = []
-    # Probe start_url itself if it contains graphql
-    urls.append(start_url)
-    # Also try {scheme}://{host}/graphql for each allowed host
+    # Probe start_url itself only if it contains graphql in path
+    if "graphql" in parsed.path.lower():
+        urls.append(start_url)
+    # Always try {scheme}://{host}/graphql for each allowed host
     for host in allowed_hosts:
         proto = "http" if host.startswith(("localhost", "127.")) else "https"
         candidate = f"{proto}://{host}/graphql"
@@ -603,6 +626,72 @@ async def _probe_graphql(
     except (httpx.HTTPError, OSError):
         pass
     return {}
+
+
+async def _probe_hosts(
+    start_url: str,
+    allowed_hosts: list[str],
+    *,
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> dict[str, dict[str, object]]:
+    """Probe each allowed host that differs from start_url's netloc.
+
+    Returns a dict keyed by hostname with status, auth, content_type, and error info.
+    """
+    from urllib.parse import urlparse
+
+    start_netloc = urlparse(start_url).netloc
+    results: dict[str, dict[str, object]] = {}
+
+    kwargs: dict[str, object] = {}
+    if transport is not None:
+        kwargs["transport"] = transport
+
+    for host in allowed_hosts[:3]:
+        if host == start_netloc:
+            continue
+
+        proto = "http" if host.startswith(("localhost", "127.")) else "https"
+        url = f"{proto}://{host}/"
+        entry: dict[str, object] = {
+            "status": None,
+            "auth_required": False,
+            "auth_scheme": None,
+            "content_type": None,
+            "error": None,
+        }
+        try:
+            async with httpx.AsyncClient(timeout=5.0, **kwargs) as client:
+                resp = await client.get(
+                    url, headers={"User-Agent": "toolwright-probe/1.0"}
+                )
+            entry["status"] = resp.status_code
+
+            # Content-Type classification
+            ct = resp.headers.get("content-type", "")
+            if "application/json" in ct:
+                entry["content_type"] = "json"
+            elif "text/html" in ct:
+                entry["content_type"] = "html"
+            else:
+                entry["content_type"] = "other"
+
+            # Auth detection
+            if resp.status_code in (401, 403):
+                entry["auth_required"] = True
+                www_auth = resp.headers.get("www-authenticate")
+                if www_auth:
+                    entry["auth_scheme"] = www_auth.split()[0]
+        except httpx.ReadTimeout:
+            entry["error"] = "timeout"
+        except httpx.ConnectError:
+            entry["error"] = "unreachable"
+        except (httpx.HTTPError, OSError):
+            entry["error"] = "network_error"
+
+        results[host] = entry
+
+    return results
 
 
 async def _probe_openapi(
@@ -649,10 +738,11 @@ async def _smart_probe_async(
     if transport is not None:
         kwargs["transport"] = transport
 
-    base_r, gql_r, openapi_r = await asyncio.gather(
+    base_r, gql_r, openapi_r, hosts_r = await asyncio.gather(
         _probe_base_url(start_url, **kwargs),
         _probe_graphql(start_url, allowed_hosts[:2], **kwargs),
         _probe_openapi(allowed_hosts[:2], **kwargs),
+        _probe_hosts(start_url, allowed_hosts[:3], **kwargs),
         return_exceptions=True,
     )
 
@@ -661,6 +751,8 @@ async def _smart_probe_async(
         if isinstance(partial, dict):
             for k, v in partial.items():
                 setattr(result, k, v)
+    if isinstance(hosts_r, dict):
+        result.host_probes = hosts_r
     return result
 
 
@@ -669,66 +761,115 @@ def _render_probe_results(
     start_url: str,
     allowed_hosts: list[str],
 ) -> None:
-    """Render advisory messages from probe results. Never blocks."""
-    # Auth warning
-    if result.auth_required:
-        from urllib.parse import urlparse
+    """Render structured advisory messages from probe results. Never blocks."""
+    from urllib.parse import urlparse
+    from toolwright.cli.commands_auth import _host_to_env_var
 
-        parsed = urlparse(start_url)
-        host = parsed.netloc or allowed_hosts[0] if allowed_hosts else "unknown"
-        click.echo(
-            click.style(
-                f"\n  Warning: {host} returned {result.base_status} "
-                "-- capture may produce empty results.",
+    CHECK = "\u2713"
+    WARN = "\u26A0"
+    CROSS = "\u2717"
+    EMPTY = "\u25CB"
+
+    parsed = urlparse(start_url)
+    primary_host = parsed.netloc or (allowed_hosts[0] if allowed_hosts else "unknown")
+    hosts_str = " -a ".join(allowed_hosts) if allowed_hosts else primary_host
+    lines: list[str] = []
+
+    lines.append(f"\nProbing {primary_host}...")
+
+    # Base URL status
+    if result.base_status is not None:
+        if result.auth_required:
+            scheme_info = f": {result.auth_scheme}" if result.auth_scheme else ""
+            lines.append(click.style(
+                f"  {WARN} Auth required{scheme_info} ({result.base_status})",
                 fg="yellow",
-            )
-        )
-        if result.auth_scheme:
-            click.echo(f"  Detected auth scheme: {result.auth_scheme}")
-        click.echo(
-            f"  Consider: toolwright auth login --profile myapp --url {start_url}"
-        )
-        click.echo(
-            f"  Then: toolwright mint {start_url} --auth-profile myapp "
-            f"-a {' -a '.join(allowed_hosts)}\n"
-        )
+            ))
+            env_var = _host_to_env_var(primary_host)
+            token_hint = f"{result.auth_scheme} <your-token>" if result.auth_scheme else "<your-token>"
+            lines.append(f'    export {env_var}="{token_hint}"')
+        else:
+            lines.append(click.style(
+                f"  {CHECK} Reachable ({result.base_status})",
+                fg="green",
+            ))
+
+    # Per-host probe results
+    for host, info in result.host_probes.items():
+        error = info.get("error")
+        if error == "timeout":
+            lines.append(click.style(
+                f"  {CROSS} {host} \u2014 connection timed out (5s)", fg="red",
+            ))
+            continue
+        if error == "unreachable":
+            lines.append(click.style(
+                f"  {CROSS} {host} \u2014 unreachable", fg="red",
+            ))
+            continue
+        if error:
+            lines.append(click.style(
+                f"  {CROSS} {host} \u2014 {error}", fg="red",
+            ))
+            continue
+
+        status = info.get("status")
+        ct = info.get("content_type")
+
+        if info.get("auth_required"):
+            scheme = info.get("auth_scheme")
+            scheme_info = f": {scheme}" if scheme else ""
+            lines.append(click.style(
+                f"  {WARN} {host} \u2014 Auth required{scheme_info} ({status})",
+                fg="yellow",
+            ))
+            env_var = _host_to_env_var(host)
+            token_hint = f"{scheme} <your-token>" if scheme else "<your-token>"
+            lines.append(f'    export {env_var}="{token_hint}"')
+        elif ct == "html":
+            lines.append(click.style(
+                f"  {WARN} {host} returned HTML (likely web portal, not API root)",
+                fg="yellow",
+            ))
+        elif status is not None:
+            lines.append(click.style(
+                f"  {CHECK} {host} reachable ({status}, {ct or 'unknown'})",
+                fg="green",
+            ))
+
+    # OpenAPI detection
+    if result.openapi_found:
+        lines.append(click.style(
+            f"  {CHECK} OpenAPI spec found: {result.openapi_url}",
+            fg="green",
+        ))
+    else:
+        lines.append(click.style(
+            f"  {EMPTY} No OpenAPI spec detected", fg="bright_black",
+        ))
 
     # GraphQL detection
     if result.graphql_detected:
-        click.echo(
-            click.style(
-                f"  Detected GraphQL endpoint at {result.graphql_url}",
-                fg="cyan",
-            )
-        )
-        click.echo(
-            "  Note: minting from GraphQL-only APIs produces one coarse "
-            "tool per endpoint."
-        )
-        if result.openapi_found:
-            click.echo(
-                f"  Found OpenAPI spec at {result.openapi_url} "
-                "-- importing it will give finer-grained tools."
-            )
-        else:
-            click.echo(
-                "  For finer-grained tools, consider importing an "
-                "OpenAPI spec if one is available."
-            )
+        lines.append(click.style(
+            f"  {CHECK} GraphQL endpoint: {result.graphql_url}",
+            fg="cyan",
+        ))
+        lines.append("  Note: GraphQL minting produces one coarse tool per endpoint.")
+    else:
+        lines.append(click.style(
+            f"  {EMPTY} No GraphQL endpoint detected", fg="bright_black",
+        ))
 
-    # OpenAPI without GraphQL
-    elif result.openapi_found:
-        click.echo(
-            click.style(
-                f"  Found OpenAPI spec at {result.openapi_url}",
-                fg="green",
-            )
+    # Suggestions
+    if result.openapi_found:
+        lines.append("")
+        lines.append("Suggestion: import the OpenAPI spec for richer tool definitions:")
+        lines.append(
+            f"  toolwright capture import {result.openapi_url} -a {hosts_str}"
         )
-        click.echo(
-            f"  Consider: toolwright capture import "
-            f"--openapi {result.openapi_url} "
-            f"-a {' -a '.join(allowed_hosts)}"
-        )
+
+    lines.append("")
+    click.echo("\n".join(lines))
 
 
 def _smart_probe(

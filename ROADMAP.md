@@ -26,12 +26,6 @@ Post-dogfood engineering backlog. Items prioritized based on live dogfood findin
 
 ## P0 (blocking users — from dogfood)
 
-- **Smart mint feedback (probe logic)** — When `mint` is pointed at a URL, probe first and
-  respond intelligently instead of silently doing the wrong thing. Send unauthenticated GET to
-  base URL, inspect 401/403 for auth pattern hints (Bearer, API key, custom header), try POST
-  to `<base>/graphql` with introspection query to detect GraphQL, check common spec paths
-  (`/openapi.json`, `/swagger.json`). ~50-100 lines of probe logic. Estimated effort: 2-3 days.
-
 - **API recipes (post-dogfood)** — Community-contributable YAML files containing pointers (not
   bundled specs) for popular APIs. Each recipe has: base URL, auth header name/pattern, extra
   headers needed, setup instructions URL, link to community OpenAPI spec, rate limit hints, and
@@ -95,6 +89,21 @@ Post-dogfood engineering backlog. Items prioritized based on live dogfood findin
 - **Query params in OpenAPI import (F-019)** — OpenAPI query parameters now flow through the full
   pipeline: parser → synthetic URL → normalizer → endpoint params → tool input properties.
   Verified: 101/1079 GitHub endpoints gained query params (201 new input properties total).
+
+- **Smart mint feedback (probe logic)** — Pre-flight probe runs before every `mint` command
+  (opt-out via `--no-probe`). Probes each allowed host for: auth requirements (401/403 +
+  WWW-Authenticate parsing), Content-Type (JSON vs HTML portal detection), OpenAPI spec at
+  well-known paths, GraphQL introspection endpoint. Structured output with exact `export`
+  commands for auth setup. GraphQL probe now runs unconditionally on all allowed hosts (not
+  gated to "graphql" in URL). Added `_probe_hosts()` with timeout/unreachable error reporting.
+  33 tests covering all probe and render paths.
+
+## P2 (quality-of-life — from dogfood)
+
+- **`groups list` default view: top N by tool count** — With 169 groups for GitHub, the full list
+  is too long to scan. Default `groups list` should show top 10 groups by tool count with a summary
+  footer ("… and 159 more groups"). `groups list --all` for the full listing. Possibly also useful
+  for fuzzy "did you mean" output — show the closest matches plus top groups for orientation.
 
 ## P3 (build only when real user demand proves it)
 
