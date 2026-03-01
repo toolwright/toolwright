@@ -612,6 +612,8 @@ class EndpointAggregator:
 
         return {"type": "string"}
 
+    _RISK_ORDER = {"safe": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
+
     def _determine_risk_tier(
         self,
         method: str,
@@ -620,7 +622,21 @@ class EndpointAggregator:
         has_pii: bool,
         is_first_party: bool,
     ) -> str:
-        """Determine risk tier for an endpoint."""
+        """Determine risk tier, capping read-only methods at medium."""
+        tier = self._classify_risk(method, path, is_auth_related, has_pii, is_first_party)
+        if method.upper() in ("GET", "HEAD", "OPTIONS") and self._RISK_ORDER.get(tier, 0) > self._RISK_ORDER["medium"]:
+            tier = "medium"
+        return tier
+
+    def _classify_risk(
+        self,
+        method: str,
+        path: str,
+        is_auth_related: bool,
+        has_pii: bool,
+        is_first_party: bool,
+    ) -> str:
+        """Classify raw risk tier based on method, path, and context."""
         if is_auth_related:
             return "critical"
 
