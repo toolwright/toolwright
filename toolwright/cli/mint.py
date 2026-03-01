@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import dataclasses
 import hashlib
 import json
 import shutil
@@ -13,6 +14,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import click
+import httpx
 
 from toolwright import __version__
 from toolwright.cli.approve import sync_lockfile
@@ -55,6 +57,7 @@ def run_mint(
     webmcp: bool = False,
     redaction_profile: str | None = None,
     verbose: bool,
+    extra_headers: dict[str, str] | None = None,
 ) -> None:
     """Mint a first-class toolpack from browser traffic capture."""
     if script_path and not Path(script_path).exists():
@@ -132,9 +135,9 @@ def run_mint(
             click.echo(f"  Auth profile: {auth_profile}")
         auth_manager.update_last_used(auth_profile)
 
-    # Quick auth pre-check for headless mode (best-effort)
+    # Smart pre-flight probe: auth detection, GraphQL, OpenAPI (advisory only)
     if headless and not auth_profile and not script_path:
-        _auth_precheck(allowed_hosts, start_url)
+        _smart_probe(allowed_hosts, start_url)
 
     capture = PlaywrightCapture(
         allowed_hosts=allowed_hosts,
@@ -261,6 +264,7 @@ def run_mint(
     copied_toolsets = artifact_dir / "toolsets.yaml"
     copied_policy = artifact_dir / "policy.yaml"
     copied_baseline = artifact_dir / "baseline.json"
+    copied_groups = artifact_dir / "groups.json"
     copied_contracts = artifact_dir / "contracts.yaml"
     copied_contract_yaml = artifact_dir / "contract.yaml"
     copied_contract_json = artifact_dir / "contract.json"
@@ -321,10 +325,16 @@ def run_mint(
                 if copied_contract_json.exists()
                 else None
             ),
+            groups=(
+                str(copied_groups.relative_to(toolpack_dir))
+                if copied_groups.exists()
+                else None
+            ),
             lockfiles=lockfiles,
         ),
         runtime=runtime,
         auth_requirements=auth_requirements_list if auth_requirements_list else None,
+        extra_headers=extra_headers,
     )
 
     toolpack_file = toolpack_dir / "toolpack.yaml"
@@ -379,6 +389,11 @@ def run_mint(
         for ar in auth_requirements_list:
             if ar.scheme != "none":
                 click.echo(f'  export {ar.env_var_name}="Bearer <your-token>"')
+
+    if extra_headers:
+        click.echo(click.style("\nExtra headers stored in toolpack:", fg="cyan"))
+        for hdr_name, hdr_value in extra_headers.items():
+            click.echo(f"  {hdr_name}: {hdr_value}")
 
     click.echo("\nNext commands:")
     click.echo("  toolwright gate allow --all --toolset readonly")
@@ -484,40 +499,256 @@ def discover_webmcp_exchanges(
         return []
 
 
-def _auth_precheck(allowed_hosts: list[str], start_url: str) -> None:
-    """Best-effort pre-flight auth check before capture starts."""
-    import urllib.error
-    import urllib.request
+@dataclasses.dataclass
+class ProbeResult:
+    """Aggregated results from pre-mint smart probes."""
 
-    for host in allowed_hosts[:2]:
-        try:
-            proto = "http" if host.startswith(("localhost", "127.")) else "https"
-            req = urllib.request.Request(
-                f"{proto}://{host}/",
-                method="HEAD",
-                headers={"User-Agent": "toolwright-precheck/1.0"},
-            )
-            with urllib.request.urlopen(req, timeout=5) as resp:
-                status = resp.status
-        except urllib.error.HTTPError as e:
-            status = e.code
-        except Exception:
-            continue
+    # Base URL probe
+    base_status: int | None = None
+    auth_required: bool = False
+    auth_scheme: str | None = None
+    www_authenticate_raw: str | None = None
 
-        if status in (401, 403):
-            click.echo(
-                click.style(
-                    f"\n  Warning: {host} returned {status} -- "
-                    "capture may produce empty results.",
-                    fg="yellow",
-                )
+    # GraphQL probe
+    graphql_detected: bool = False
+    graphql_url: str | None = None
+
+    # OpenAPI probe
+    openapi_found: bool = False
+    openapi_url: str | None = None
+
+
+async def _probe_base_url(
+    start_url: str,
+    *,
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> dict[str, object]:
+    """Probe the start URL for auth requirements.
+
+    Returns a dict of ProbeResult field updates.
+    """
+    kwargs: dict[str, object] = {}
+    if transport is not None:
+        kwargs["transport"] = transport
+    try:
+        async with httpx.AsyncClient(timeout=5.0, **kwargs) as client:
+            resp = await client.get(
+                start_url, headers={"User-Agent": "toolwright-probe/1.0"}
             )
-            click.echo(f"  Consider: toolwright auth login --profile myapp --url {start_url}")
-            click.echo(
-                f"  Then: toolwright mint {start_url} --auth-profile myapp "
-                f"-a {' -a '.join(allowed_hosts)}\n"
+    except (httpx.HTTPError, OSError):
+        return {}
+
+    result: dict[str, object] = {"base_status": resp.status_code}
+    if resp.status_code in (401, 403):
+        result["auth_required"] = True
+        www_auth = resp.headers.get("www-authenticate")
+        if www_auth:
+            result["www_authenticate_raw"] = www_auth
+            result["auth_scheme"] = www_auth.split()[0]
+    else:
+        result["auth_required"] = False
+    return result
+
+
+_GRAPHQL_INTROSPECTION = '{"query":"{ __schema { queryType { name } } }"}'
+
+
+async def _probe_graphql(
+    start_url: str,
+    allowed_hosts: list[str],
+    *,
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> dict[str, object]:
+    """Probe for GraphQL endpoints via minimal introspection.
+
+    Gated: only probes if start_url path contains 'graphql'.
+    Returns a dict of ProbeResult field updates.
+    """
+    from urllib.parse import urlparse
+
+    parsed = urlparse(start_url)
+    if "graphql" not in parsed.path.lower():
+        return {}
+
+    # Build list of URLs to try (deduplicated)
+    urls: list[str] = []
+    # Probe start_url itself if it contains graphql
+    urls.append(start_url)
+    # Also try {scheme}://{host}/graphql for each allowed host
+    for host in allowed_hosts:
+        proto = "http" if host.startswith(("localhost", "127.")) else "https"
+        candidate = f"{proto}://{host}/graphql"
+        if candidate not in urls:
+            urls.append(candidate)
+
+    kwargs: dict[str, object] = {}
+    if transport is not None:
+        kwargs["transport"] = transport
+    try:
+        async with httpx.AsyncClient(timeout=5.0, **kwargs) as client:
+            for url in urls:
+                try:
+                    resp = await client.post(
+                        url,
+                        content=_GRAPHQL_INTROSPECTION,
+                        headers={
+                            "Content-Type": "application/json",
+                            "User-Agent": "toolwright-probe/1.0",
+                        },
+                    )
+                except (httpx.HTTPError, OSError):
+                    continue
+                if resp.status_code == 200 and "__schema" in resp.text:
+                    return {"graphql_detected": True, "graphql_url": url}
+    except (httpx.HTTPError, OSError):
+        pass
+    return {}
+
+
+async def _probe_openapi(
+    allowed_hosts: list[str],
+    *,
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> dict[str, object]:
+    """Probe allowed hosts for OpenAPI specs at well-known paths.
+
+    Lightweight: checks for 200 status only, does not parse the spec.
+    Returns a dict of ProbeResult field updates.
+    """
+    from toolwright.core.discover.openapi import OpenAPIDiscovery
+
+    kwargs: dict[str, object] = {}
+    if transport is not None:
+        kwargs["transport"] = transport
+    try:
+        async with httpx.AsyncClient(timeout=5.0, **kwargs) as client:
+            for host in allowed_hosts[:2]:
+                proto = "http" if host.startswith(("localhost", "127.")) else "https"
+                base = f"{proto}://{host}"
+                for path in OpenAPIDiscovery.WELL_KNOWN_PATHS:
+                    url = f"{base}{path}"
+                    try:
+                        resp = await client.get(url)
+                    except (httpx.HTTPError, OSError):
+                        continue
+                    if resp.status_code == 200:
+                        return {"openapi_found": True, "openapi_url": url}
+    except (httpx.HTTPError, OSError):
+        pass
+    return {}
+
+
+async def _smart_probe_async(
+    start_url: str,
+    allowed_hosts: list[str],
+    *,
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> ProbeResult:
+    """Run all probes concurrently, merge results."""
+    kwargs: dict[str, object] = {}
+    if transport is not None:
+        kwargs["transport"] = transport
+
+    base_r, gql_r, openapi_r = await asyncio.gather(
+        _probe_base_url(start_url, **kwargs),
+        _probe_graphql(start_url, allowed_hosts[:2], **kwargs),
+        _probe_openapi(allowed_hosts[:2], **kwargs),
+        return_exceptions=True,
+    )
+
+    result = ProbeResult()
+    for partial in (base_r, gql_r, openapi_r):
+        if isinstance(partial, dict):
+            for k, v in partial.items():
+                setattr(result, k, v)
+    return result
+
+
+def _render_probe_results(
+    result: ProbeResult,
+    start_url: str,
+    allowed_hosts: list[str],
+) -> None:
+    """Render advisory messages from probe results. Never blocks."""
+    # Auth warning
+    if result.auth_required:
+        from urllib.parse import urlparse
+
+        parsed = urlparse(start_url)
+        host = parsed.netloc or allowed_hosts[0] if allowed_hosts else "unknown"
+        click.echo(
+            click.style(
+                f"\n  Warning: {host} returned {result.base_status} "
+                "-- capture may produce empty results.",
+                fg="yellow",
             )
-            break
+        )
+        if result.auth_scheme:
+            click.echo(f"  Detected auth scheme: {result.auth_scheme}")
+        click.echo(
+            f"  Consider: toolwright auth login --profile myapp --url {start_url}"
+        )
+        click.echo(
+            f"  Then: toolwright mint {start_url} --auth-profile myapp "
+            f"-a {' -a '.join(allowed_hosts)}\n"
+        )
+
+    # GraphQL detection
+    if result.graphql_detected:
+        click.echo(
+            click.style(
+                f"  Detected GraphQL endpoint at {result.graphql_url}",
+                fg="cyan",
+            )
+        )
+        click.echo(
+            "  Note: minting from GraphQL-only APIs produces one coarse "
+            "tool per endpoint."
+        )
+        if result.openapi_found:
+            click.echo(
+                f"  Found OpenAPI spec at {result.openapi_url} "
+                "-- importing it will give finer-grained tools."
+            )
+        else:
+            click.echo(
+                "  For finer-grained tools, consider importing an "
+                "OpenAPI spec if one is available."
+            )
+
+    # OpenAPI without GraphQL
+    elif result.openapi_found:
+        click.echo(
+            click.style(
+                f"  Found OpenAPI spec at {result.openapi_url}",
+                fg="green",
+            )
+        )
+        click.echo(
+            f"  Consider: toolwright capture import "
+            f"--openapi {result.openapi_url} "
+            f"-a {' -a '.join(allowed_hosts)}"
+        )
+
+
+def _smart_probe(
+    allowed_hosts: list[str],
+    start_url: str,
+    *,
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> None:
+    """Async smart probe with sync wrapper. Advisory only.
+
+    Safe to call with asyncio.run() here -- the call site (mint.py)
+    is before any event loop starts (Playwright capture starts later).
+    """
+    kwargs: dict[str, object] = {}
+    if transport is not None:
+        kwargs["transport"] = transport
+    result = asyncio.run(
+        _smart_probe_async(start_url, allowed_hosts, **kwargs)
+    )
+    _render_probe_results(result, start_url, allowed_hosts)
 
 
 def _build_runtime(

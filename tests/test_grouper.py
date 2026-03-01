@@ -546,3 +546,101 @@ class TestLoadGroupsIndex:
     def test_load_nonexistent_file(self) -> None:
         result = load_groups_index(Path("/tmp/nonexistent_groups_12345.json"))
         assert result is None
+
+
+# ===========================================================================
+# 10. ToolpackPaths groups field
+# ===========================================================================
+
+
+class TestToolpackPathsGroups:
+    """ToolpackPaths accepts and stores groups field."""
+
+    def test_toolpack_paths_has_groups_field(self) -> None:
+        """ToolpackPaths accepts and stores groups field."""
+        from toolwright.core.toolpack import ToolpackPaths
+
+        paths = ToolpackPaths(
+            tools="artifact/tools.json",
+            toolsets="artifact/toolsets.yaml",
+            policy="artifact/policy.yaml",
+            baseline="artifact/baseline.json",
+            groups="artifact/groups.json",
+        )
+        assert paths.groups == "artifact/groups.json"
+
+    def test_toolpack_paths_groups_defaults_none(self) -> None:
+        """ToolpackPaths.groups defaults to None."""
+        from toolwright.core.toolpack import ToolpackPaths
+
+        paths = ToolpackPaths(
+            tools="artifact/tools.json",
+            toolsets="artifact/toolsets.yaml",
+            policy="artifact/policy.yaml",
+            baseline="artifact/baseline.json",
+        )
+        assert paths.groups is None
+
+
+# ===========================================================================
+# 11. Compile pipeline produces groups.json
+# ===========================================================================
+
+
+class TestCompileGroupsIntegration:
+    """compile_capture_session writes groups.json alongside tools.json."""
+
+    def test_groups_json_written_during_compile(self, tmp_path: Path) -> None:
+        """compile_capture_session writes groups.json alongside tools.json."""
+        from toolwright.cli.compile import compile_capture_session
+        from toolwright.models.capture import CaptureSession, HttpExchange, HTTPMethod
+
+        session = CaptureSession(
+            id="test-session",
+            name="Test",
+            allowed_hosts=["api.example.com"],
+            exchanges=[
+                HttpExchange(
+                    url="https://api.example.com/products",
+                    method=HTTPMethod.GET,
+                    host="api.example.com",
+                    path="/products",
+                    request_headers={},
+                    response_status=200,
+                    response_headers={"content-type": "application/json"},
+                    response_body_json={"id": 1},
+                ),
+                HttpExchange(
+                    url="https://api.example.com/orders",
+                    method=HTTPMethod.GET,
+                    host="api.example.com",
+                    path="/orders",
+                    request_headers={},
+                    response_status=200,
+                    response_headers={"content-type": "application/json"},
+                    response_body_json={"id": 1},
+                ),
+            ],
+        )
+
+        result = compile_capture_session(
+            session=session,
+            scope_name="first_party_only",
+            scope_file=None,
+            output_format="all",
+            output_dir=tmp_path,
+            deterministic=True,
+        )
+
+        assert result.groups_path is not None
+        assert result.groups_path.exists()
+
+        import json as json_mod
+
+        with open(result.groups_path) as f:
+            data = json_mod.load(f)
+        assert "groups" in data
+        assert data["generated_from"] == "auto"
+        group_names = {g["name"] for g in data["groups"]}
+        # At minimum, both endpoints should produce groups
+        assert len(data["groups"]) > 0

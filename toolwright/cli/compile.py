@@ -55,6 +55,7 @@ class CompileResult:
     toolsets_path: Path | None = None
     policy_path: Path | None = None
     baseline_path: Path | None = None
+    groups_path: Path | None = None
 
 
 def compile_capture_session(
@@ -122,6 +123,7 @@ def compile_capture_session(
     toolsets_path: Path | None = None
     policy_path: Path | None = None
     baseline_path: Path | None = None
+    groups_path: Path | None = None
     manifest: dict[str, Any] | None = None
     tool_gen: ToolManifestGenerator | None = None
 
@@ -220,6 +222,15 @@ def compile_capture_session(
             f.write(tool_gen.to_json(manifest))
         artifacts_created.append(("Tool Manifest", tools_path))
 
+        # Generate tool groups from compiled actions
+        from toolwright.core.compile.grouper import generate_tool_groups
+
+        groups_index = generate_tool_groups(manifest.get("actions", []))
+        groups_path = output_path / "groups.json"
+        with open(groups_path, "w") as f:
+            json.dump(groups_index.to_dict(), f, indent=2)
+        artifacts_created.append(("Tool Groups", groups_path))
+
         toolset_gen = ToolsetGenerator()
         toolsets = toolset_gen.generate(manifest=manifest, generated_at=generated_at)
 
@@ -290,6 +301,7 @@ def compile_capture_session(
         toolsets_path=toolsets_path,
         policy_path=policy_path,
         baseline_path=baseline_path,
+        groups_path=groups_path,
     )
 
 
@@ -532,6 +544,7 @@ def _package_toolpack(
     copied_toolsets = artifact_dir / "toolsets.yaml"
     copied_policy = artifact_dir / "policy.yaml"
     copied_baseline = artifact_dir / "baseline.json"
+    copied_groups = artifact_dir / "groups.json"
     copied_contracts = artifact_dir / "contracts.yaml"
     copied_contract_yaml = artifact_dir / "contract.yaml"
     copied_contract_json = artifact_dir / "contract.json"
@@ -584,6 +597,11 @@ def _package_toolpack(
             contract_json=(
                 str(copied_contract_json.relative_to(toolpack_dir))
                 if copied_contract_json.exists()
+                else None
+            ),
+            groups=(
+                str(copied_groups.relative_to(toolpack_dir))
+                if copied_groups.exists()
                 else None
             ),
             lockfiles=lockfiles,
