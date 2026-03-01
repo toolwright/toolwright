@@ -177,10 +177,7 @@ class TestWrapperRoundTrip:
         # Simulate execution-time wrapping logic
         args = {"title": "Test Product"}
         wrapper = action.get("request_body_wrapper")
-        if wrapper:
-            body = {wrapper: args}
-        else:
-            body = args
+        body = {wrapper: args} if wrapper else args
 
         assert body == {"product": {"title": "Test Product"}}
 
@@ -200,9 +197,6 @@ class TestWrapperRoundTrip:
 
         args = {"title": "Test Product", "vendor": "ACME"}
         wrapper = action.get("request_body_wrapper")
-        if wrapper:
-            body = {wrapper: args}
-        else:
-            body = args
+        body = {wrapper: args} if wrapper else args
 
         assert body == {"title": "Test Product", "vendor": "ACME"}

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from toolwright.core.enforce import ConfirmationStore, DecisionEngine, PolicyEngine
-from toolwright.models.decision import DecisionContext, DecisionRequest, DecisionResult, DecisionType
+from toolwright.models.decision import DecisionContext, DecisionRequest, DecisionType
 from toolwright.models.policy import (
     MatchCondition,
     Policy,
@@ -62,7 +62,7 @@ def _action(method: str = "POST") -> dict[str, object]:
 def _context(
     action: dict[str, object],
     policy: Policy,
-    confirmation_store: ConfirmationStore | None = None,
+    _confirmation_store: ConfirmationStore | None = None,  # noqa: ARG001
 ) -> DecisionContext:
     policy_engine = PolicyEngine(policy)
     return DecisionContext(

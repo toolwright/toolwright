@@ -9,7 +9,11 @@ from urllib.parse import parse_qsl, urlparse
 
 from toolwright.core.normalize.path_normalizer import PathNormalizer, VarianceNormalizer
 from toolwright.core.normalize.tagger import AutoTagger
-from toolwright.core.risk_keywords import CRITICAL_PATH_KEYWORDS, HIGH_RISK_PATH_KEYWORDS, RISK_ORDER
+from toolwright.core.risk_keywords import (
+    CRITICAL_PATH_KEYWORDS,
+    HIGH_RISK_PATH_KEYWORDS,
+    RISK_ORDER,
+)
 from toolwright.models.capture import CaptureSession, HttpExchange
 from toolwright.models.endpoint import AuthType, Endpoint, Parameter, ParameterLocation
 
@@ -622,9 +626,8 @@ class EndpointAggregator:
     ) -> str:
         """Determine risk tier, capping read-only methods at medium."""
         tier = self._classify_risk(method, path, is_auth_related, has_pii, is_first_party)
-        if method.upper() in ("GET", "HEAD", "OPTIONS"):
-            if RISK_ORDER.get(tier, 0) > RISK_ORDER["medium"]:
-                tier = "medium"
+        if method.upper() in ("GET", "HEAD", "OPTIONS") and RISK_ORDER.get(tier, 0) > RISK_ORDER["medium"]:
+            tier = "medium"
         return tier
 
     def _classify_risk(
