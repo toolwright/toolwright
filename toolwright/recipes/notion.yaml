@@ -1,0 +1,17 @@
+name: notion
+description: Notion API
+hosts:
+  - pattern: "api.notion.com"
+    auth_header_name: Authorization
+    auth_scheme: bearer
+extra_headers:
+  Notion-Version: "2022-06-28"
+setup_instructions_url: https://developers.notion.com/docs/getting-started
+openapi_spec_url: null
+rate_limit_hints: "3 req/sec average"
+usage_notes: "Requires Notion-Version header on all requests. Uses internal integrations for auth."
+rule_templates:
+  - crud-safety
+probe_hints:
+  expect_auth: true
+  expect_openapi: false

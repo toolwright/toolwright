@@ -16,6 +16,7 @@ from toolwright.branding import (
 from toolwright.cli.commands_approval import register_approval_commands
 from toolwright.cli.commands_auth import register_auth_check_command
 from toolwright.cli.commands_groups import register_groups_commands
+from toolwright.cli.commands_recipes import register_recipes_commands
 from toolwright.cli.commands_kill import register_kill_commands
 from toolwright.cli.commands_mcp import register_mcp_commands
 from toolwright.cli.commands_repair import register_repair_plan_apply
@@ -75,6 +76,7 @@ CORE_COMMANDS = [
     "rollback",
     "share",
     "install",
+    "recipes",
 ]
 
 
@@ -968,6 +970,9 @@ def run(
     "capture_legacy",
     help="Deprecated alias for --capture-id/--capture-path",
 )
+@click.option("--shape-baselines", type=click.Path(exists=True), help="Shape baselines file for response drift")
+@click.option("--tool", help="Tool name for shape-based drift detection")
+@click.option("--response-file", type=click.Path(exists=True), help="JSON response body file for shape drift")
 @click.option(
     "--output",
     "-o",
@@ -997,6 +1002,9 @@ def drift(
     capture_id: str | None,
     capture_path: str | None,
     capture_legacy: str | None,
+    shape_baselines: str | None,
+    tool: str | None,
+    response_file: str | None,
     output: str | None,
     output_format: str,
     deterministic: bool,
@@ -1007,6 +1015,8 @@ def drift(
     Examples:
       toolwright drift --from cap_old --to cap_new
       toolwright drift --baseline baseline.json --capture-id cap_new
+      toolwright drift --shape-baselines shape_baselines.json
+      toolwright drift --shape-baselines shape_baselines.json --tool get_products --response-file response.json
     """
     from toolwright.cli.drift import run_drift
 
@@ -1035,6 +1045,9 @@ def drift(
         verbose=ctx.obj.get("verbose", False),
         deterministic=deterministic,
         root_path=str(ctx.obj.get("root", resolve_root())),
+        shape_baselines=shape_baselines,
+        tool=tool,
+        response_file=response_file,
     )
 
 
@@ -1380,6 +1393,12 @@ register_kill_commands(cli=cli)
 register_watch_commands(cli=cli)
 register_snapshot_commands(cli=cli)
 register_groups_commands(cli=cli)
+register_recipes_commands(cli=cli)
+
+# Register drift status subcommand
+from toolwright.cli.drift import drift_status as _drift_status_cmd  # noqa: E402
+
+cli.add_command(_drift_status_cmd, "drift-status")
 
 
 # ---------------------------------------------------------------------------

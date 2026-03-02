@@ -1,0 +1,17 @@
+name: stripe
+description: Stripe API
+hosts:
+  - pattern: "api.stripe.com"
+    auth_header_name: Authorization
+    auth_scheme: bearer
+extra_headers: {}
+setup_instructions_url: https://docs.stripe.com/api
+openapi_spec_url: null
+rate_limit_hints: "100 req/sec in live mode"
+usage_notes: "Uses Bearer token with secret key. Test mode keys start with sk_test_."
+rule_templates:
+  - crud-safety
+  - rate-control
+probe_hints:
+  expect_auth: true
+  expect_openapi: false

@@ -1,0 +1,16 @@
+name: github
+description: GitHub REST API
+hosts:
+  - pattern: "api.github.com"
+    auth_header_name: Authorization
+    auth_scheme: bearer
+extra_headers: {}
+setup_instructions_url: https://docs.github.com/en/rest
+openapi_spec_url: https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.yaml
+rate_limit_hints: "5000 req/hr for authenticated requests"
+usage_notes: "Uses Bearer token authentication. Paginated responses use Link headers."
+rule_templates:
+  - crud-safety
+probe_hints:
+  expect_auth: true
+  expect_openapi: true
