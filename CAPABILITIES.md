@@ -75,9 +75,14 @@ Start a governed MCP server on stdio transport serving compiled tools. Supports 
 
 - `toolwright/mcp/server.py` -> `ToolwrightMCPServer`, `_resolve_auth_for_host()`
 - `toolwright/cli/commands_mcp.py` -> `run_mcp_serve()`, auto-resolution via `resolve_toolpack_path()`
-- CLI: `toolwright serve [--toolpack <path>] [--auth "Bearer <token>"]`
+- CLI: `toolwright serve [--toolpack <path>] [--auth "Bearer <token>"] [--toolset <name>] [--max-risk <tier>] [--extra-header "Name: value"] [--schema-validation strict|warn|off]`
 - Auth priority: `--auth` flag > `TOOLWRIGHT_AUTH_<NORMALIZED_HOST>` env var > `TOOLWRIGHT_AUTH_HEADER` env var > None
 - Per-host env var naming: replace dots/hyphens with underscores, uppercase (e.g., `api.github.com` -> `TOOLWRIGHT_AUTH_API_GITHUB_COM`)
+- `--toolset`: filter to named tool set (e.g., `readonly`)
+- `--max-risk`: cap exposed tools by risk tier (`low`, `medium`, `high`, `critical`)
+- `--extra-header` / `-H`: inject custom headers into every upstream request (e.g., `Notion-Version: 2025-09-03`). Can be specified multiple times. Does not override Authorization.
+- `--schema-validation`: control outputSchema advertisement. `strict` advertises schemas, `warn` (default) and `off` suppress them.
+- Auth warning: prints `WARNING` at startup when expected per-host auth env vars are not set
 
 ### CAP-CONNECT-008: Toolset Scoping
 
@@ -450,6 +455,15 @@ Three-state lifecycle for behavioral rules enabling agent suggestion and human a
 - CLI: `toolwright rules drafts`, `toolwright rules activate <id>`, `toolwright rules disable <id>`
 - Tests: `tests/test_rule_status_lifecycle.py`, `tests/test_rules_lifecycle_cli.py`
 
+### CAP-CORRECT-010: Rule Templates
+
+Bundled reusable rule templates (crud-safety, rate-control, retry-safety) that create DRAFT behavioral rules. Templates use glob-based targeting (`target_name_patterns`) for overlay-forward compatibility.
+
+- `toolwright/rules/templates/*.yaml` -> Template definitions
+- `toolwright/rules/loader.py` -> `list_templates()`, `load_template()`, `apply_template()`
+- `toolwright/cli/commands_rules.py` -> `rules template list|show|apply`
+- CLI: `toolwright rules template list`, `toolwright rules template apply crud-safety`
+
 ### CAP-CORRECT-007: Rules CLI Management
 
 CLI commands for creating, listing, removing, inspecting, exporting, and importing behavioral rules.
@@ -629,6 +643,39 @@ Verify auth configuration for the active toolpack. Shows per-host and global env
 - CLI: `toolwright auth check [--no-probe]`
 - Probes by default with `--no-probe` for offline/CI environments
 
+### CAP-UX-005: Smart Pre-Flight Probe (Mint)
+
+Before every `mint` command (opt-out via `--no-probe`), probe each allowed host for auth requirements (401/403 + WWW-Authenticate parsing), Content-Type (JSON vs HTML portal), OpenAPI specs at well-known paths, and GraphQL introspection. Outputs structured results with exact `export` commands for auth setup.
+
+- `toolwright/cli/mint.py` -> `_probe_hosts()`, `_probe_base_url()`, `_probe_openapi()`, `_probe_graphql()`
+- `toolwright/cli/mint.py` -> `_render_probe_results()` (✓/⚠/✗/○ icons)
+- `toolwright/core/drift/probe_executor.py` -> `ProbeExecutor`
+- `toolwright/core/drift/probe_template.py` -> `extract_probe_template()`
+- `toolwright/models/probe_template.py` -> `ProbeTemplate`
+
+### CAP-UX-006: Auth Startup Warning
+
+At `toolwright serve` startup, warn when expected per-host auth env vars (`TOOLWRIGHT_AUTH_<HOST>`) are not set. Prints actionable `export` command with correct env var name and `"Bearer <token>"` format.
+
+- `toolwright/cli/mcp.py` -> `warn_missing_auth()`
+- Env var pattern: `TOOLWRIGHT_AUTH_` + uppercased host with non-alnum replaced by `_`
+
+### CAP-UX-007: Empty Toolpack Guard
+
+Block `toolwright serve` when the toolpack contains 0 tools. Prints actionable error directing the user to run `toolwright mint`.
+
+- `toolwright/cli/mcp.py` -> `run_mcp_serve()` (0-actions check before auth warnings)
+
+### CAP-UX-008: API Recipes
+
+Bundled API recipes (github, shopify, notion, stripe, slack) that pre-fill mint settings — hosts, auth headers, extra headers, rule template references, and probe hints. Recipes reduce setup friction, not governance decisions.
+
+- `toolwright/recipes/*.yaml` -> Recipe definitions
+- `toolwright/recipes/loader.py` -> `list_recipes()`, `load_recipe()`
+- `toolwright/cli/commands_recipes.py` -> `recipes list|show`
+- `toolwright/cli/main.py` -> `mint --recipe <name>`
+- CLI: `toolwright recipes list`, `toolwright recipes show shopify`, `toolwright mint --recipe shopify`
+
 ---
 
 ## SERVE -- HTTP Transport & Dashboard
@@ -647,7 +694,7 @@ MCP server over HTTP with Starlette + StreamableHTTPSessionManager. Default port
 
 - `toolwright/mcp/http_transport.py` -> `create_toolwright_http_app()`
 - Routes: `/health`, `/mcp`, `/api/*`, `/` (static dashboard)
-- CLI: `toolwright serve --http [--host HOST] [--port PORT] [--no-open]`
+- CLI: `toolwright serve --http [--host HOST] [--port PORT]`
 
 ### CAP-CROSS-019: Token Authentication
 
@@ -701,9 +748,47 @@ Filter served tools by glob pattern and max risk ceiling.
 
 ### CAP-CROSS-030: Rich Startup Card
 
-Formatted startup banner showing tool count, risk breakdown, context budget, URLs.
+Formatted startup banner showing tool count, risk breakdown, context budget, URLs. Shows scope info and total compiled count when `--scope` is active.
 
-- `toolwright/mcp/startup_card.py` -> `render_startup_card()`
+- `toolwright/mcp/startup_card.py` -> `render_startup_card(scope_info=, total_compiled=)`
+
+### CAP-CROSS-031: Auto-Generated Tool Groups
+
+Automatically group tools by URL resource path during compilation. Groups are generated from the first semantic URL segment (after stripping noise like `api`, `admin`, version prefixes, path params). Large groups (>80 tools) are recursively split by secondary segments up to depth 3.
+
+- `toolwright/models/groups.py` -> `ToolGroup`, `ToolGroupIndex`
+- `toolwright/core/compile/grouper.py` -> `generate_tool_groups()`, `extract_semantic_segments()`
+- Output: `groups.json` alongside `tools.json`
+- Integrated into: `toolwright compile` and `toolwright mint`
+
+### CAP-CROSS-032: Serve-Time Scope Filtering
+
+Filter served tools to specific groups via `--scope`. Accepts comma-separated group names with prefix matching (`repos` matches `repos`, `repos/issues`, `repos/pulls`). Unknown names trigger fuzzy suggestions (Levenshtein distance <= 2).
+
+- `toolwright/core/compile/grouper.py` -> `filter_by_scope()`, `suggest_group_name()`
+- CLI: `toolwright serve --scope products,orders`
+
+### CAP-CROSS-033: Tool Count Guardrails
+
+Warn when serving 31-200 tools; block above 200 unless `--no-tool-limit` overrides. Warnings include group suggestions when groups.json is available.
+
+- `toolwright/cli/mcp.py` -> `check_tool_count_guardrails()`
+- Constants: `TOOL_COUNT_WARN_THRESHOLD = 30`, `TOOL_COUNT_BLOCK_THRESHOLD = 200`
+- CLI: `toolwright serve --no-tool-limit`
+
+### CAP-CROSS-034: Groups CLI Commands
+
+List and inspect auto-generated tool groups from a toolpack.
+
+- `toolwright/cli/commands_groups.py` -> `register_groups_commands()`
+- CLI: `toolwright groups list [--toolpack ...]`, `toolwright groups show <name> [--toolpack ...]`
+
+### CAP-CROSS-035: Gate Status by Group
+
+Show per-group approval summary in the gate status command.
+
+- `toolwright/cli/commands_approval.py` -> `gate_status(by_group=True)`
+- CLI: `toolwright gate status --by-group [--toolpack ...]`
 
 ---
 
@@ -750,3 +835,56 @@ No-op tracer (OTEL-compatible) and hand-rolled Prometheus metrics registry.
 - Tracer: no-op fallback when opentelemetry not installed
 - Metrics: counters, gauges, histograms with Prometheus text exposition
 - No external deps required; optional OTEL/prometheus-client for production
+
+### CAP-CROSS-036: Response Baseline Inference for Traffic-Captured Tools
+
+Automatically infer structural JSON schemas from captured HTTP responses. Store as canonical shape model with presence statistics. Zero configuration required.
+
+- `toolwright/models/shape.py` -> `ShapeModel`, `FieldShape`
+- `toolwright/core/drift/shape_inference.py` -> `infer_shape()`, `merge_observation()`, `InferenceMetadata`
+- Shape model uses flat JSON pointer paths (e.g., `.products[].id`)
+- Per-field presence tracking: `seen_count` / `sample_count` -> `presence_ratio`
+- Array presence is per-sample (100-item array = 1 observation, not 100)
+- Empty/truncated array metadata prevents false dilution of presence stats
+
+### CAP-CROSS-037: Probe Templates for Drift Detection
+
+Store sanitized request templates per tool at compile time. Reproduce query params, headers, and API version for accurate probing. Strip ephemeral tokens, pagination cursors, and auth credentials.
+
+- `toolwright/models/probe_template.py` -> `ProbeTemplate`
+- `toolwright/core/drift/probe_template.py` -> `extract_probe_template()`, param/header sanitization
+- STRIP_PARAMS: pagination cursors, auth tokens, cache busters, request IDs
+- KEEP_PARAMS: field selection, filters, sort, pagination size, API version
+- STRIP_HEADERS: Authorization, Cookie, x-api-key, auth-pattern X-* headers
+- Value heuristics: JWTs and long base64 tokens stripped regardless of header name
+
+### CAP-CROSS-038: Structural Drift Detection for Traffic-Captured GET Endpoints
+
+Probe endpoints using stored request template. Diff response shape against baseline with severity classification: SAFE (new fields), APPROVAL_REQUIRED (nullability changes), MANUAL (required field removed).
+
+- `toolwright/core/drift/shape_diff.py` -> `diff_shapes()`, `overall_severity()`
+- `toolwright/core/drift/shape_diff.py` -> `DriftChange`, `DriftChangeType`, `DriftSeverity`
+- 10 change types: FIELD_ADDED, TYPE_WIDENED_SAFE, NULLABILITY_CHANGED, ARRAY_ITEM_TYPE_CHANGED, OPTIONAL_KEY_REMOVED, REQUIRED_PATH_MISSING, TYPE_NARROWED, TYPE_CHANGED_BREAKING, ROOT_TYPE_CHANGED, OPTIONAL_PATH_ADDED
+- Empty/truncated array awareness: descendants are "unknown," not "missing"
+- Decide-first-merge-later: baseline is never mutated during classification
+
+### CAP-CROSS-039: Effectively-Required Field Detection
+
+Track per-field presence statistics across observations. Fields present in >= 95% of samples are "effectively required." Missing effectively-required fields classify as MANUAL (breaking).
+
+- `toolwright/models/shape.py` -> `FieldShape.is_effectively_required()`
+- `toolwright/core/drift/constants.py` -> `EFFECTIVELY_REQUIRED_THRESHOLD` (0.95), `MIN_SAMPLES_FOR_PRESENCE` (3)
+- Low sample counts (< MIN_SAMPLES) always classify as APPROVAL_REQUIRED, never MANUAL
+- Prevents false alarms from single-sample baselines
+
+### CAP-CROSS-040: Decide-First-Merge-Later Drift Resolution
+
+Drift is classified before any baseline mutation. SAFE changes auto-merge; others require approval. Baseline integrity preserved until explicit action.
+
+- `toolwright/core/drift/shape_diff.py` -> `diff_shapes()` does NOT mutate models
+- `toolwright/core/drift/shape_inference.py` -> `merge_observation()` is the single merge function
+- All merges (compile-time, SAFE drift, approved drift) go through `merge_observation()`
+- `toolwright/models/baseline.py` -> `BaselineIndex`, `ToolBaseline` with atomic save + threading lock
+- `toolwright/core/toolpack.py` -> `ToolpackPaths.baselines`, `ResolvedToolpackPaths.baselines_path`
+
+

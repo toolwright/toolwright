@@ -1,6 +1,6 @@
 # Toolwright User Guide
 
-This guide walks you through governing your AI agent's tools with Toolwright. See the [Glossary](glossary.md) for definitions of key terms.
+Toolwright is the immune system for AI agent tools -- it monitors your tools in production, heals them when APIs change, circuit-breaks them when they fail, and enforces behavioral rules that agents learn from. This guide walks you through the full lifecycle. See the [Glossary](glossary.md) for definitions of key terms.
 
 ## Install
 
@@ -30,6 +30,10 @@ For source/development workflows:
 ```bash
 pip install -e ".[dev]"
 ```
+
+**New to Toolwright?** Start with a quickstart:
+- [GitHub API in 5 minutes](quickstarts/github.md)
+- [Any REST API](quickstarts/any-rest-api.md)
 
 ---
 
@@ -381,6 +385,40 @@ toolwright rules export --output rules-backup.json
 toolwright rules import --input rules-backup.json
 ```
 
+### Rule Templates
+
+Toolwright ships with bundled rule templates for common governance patterns:
+
+- **crud-safety** — Require reading a resource before deleting or updating it
+- **rate-control** — Limit write operations (10/min) and total calls (200/session)
+- **retry-safety** — Prevent unproductive retry loops (3 calls/30s per tool)
+
+#### Browsing templates
+
+```bash
+toolwright rules template list
+toolwright rules template show crud-safety
+```
+
+#### Applying templates
+
+```bash
+toolwright rules template apply crud-safety
+```
+
+Templates create DRAFT rules by default. Review and activate:
+
+```bash
+toolwright rules drafts
+toolwright rules activate <rule-id>
+```
+
+Or apply and activate in one step:
+
+```bash
+toolwright rules template apply crud-safety --activate
+```
+
 ### Serving with rules
 
 ```bash
@@ -388,6 +426,22 @@ toolwright serve --toolpack toolpack.yaml --rules-path .toolwright/rules.json
 ```
 
 When an agent violates a rule, Toolwright returns structured feedback explaining what went wrong and how to fix it.
+
+---
+
+## API Recipes
+
+Recipes pre-fill mint settings for known APIs:
+
+```bash
+toolwright recipes list
+toolwright recipes show shopify
+toolwright mint --recipe shopify https://yourstore.myshopify.com
+```
+
+Bundled recipes: github, shopify, notion, stripe, slack.
+
+Each recipe sets: hosts, auth headers, extra headers, and rule template references. Post-mint, referenced templates are queued as DRAFT rules.
 
 ---
 
@@ -522,6 +576,46 @@ intervals:
 toolwright serve
 ```
 
+### Serve-time scoping
+
+Control what tools are exposed and how they behave:
+
+```bash
+# Serve only tools in specific groups (auto-generated from URL paths)
+toolwright serve --scope products,orders
+
+# Prefix matching: 'repos' includes repos, repos/issues, repos/pulls
+toolwright serve --scope repos
+
+# Only expose tools in a named toolset (defined during compilation)
+toolwright serve --toolset readonly
+
+# Cap the maximum risk tier of exposed tools
+toolwright serve --max-risk low       # low | medium | high | critical
+
+# Inject custom headers into every upstream request
+toolwright serve -H "Notion-Version: 2025-09-03"
+toolwright serve --extra-header "X-Custom: value"
+
+# Control output schema strictness
+toolwright serve --schema-validation warn   # strict | warn | off
+```
+
+**`--scope`** filters by auto-generated tool groups. Groups are created during compile from URL path structure (e.g., `/products` endpoints become the `products` group). Use prefix matching to include sub-groups: `--scope repos` serves `repos`, `repos/issues`, and `repos/pulls`. Multiple groups: `--scope products,orders`. See available groups with `toolwright groups list`.
+
+**Tool count guardrails** warn when serving 31-200 tools, and block above 200 (override with `--no-tool-limit`). Use `--scope` to narrow large APIs to agent-friendly subsets.
+
+**`--toolset`** filters tools by named sets (e.g., `readonly`, `admin`). Only tools in the specified set are listed.
+
+**`--max-risk`** caps the risk tier. `--max-risk low` hides all medium/high/critical tools.
+
+**`--extra-header` / `-H`** injects headers into every upstream request. Useful for APIs requiring version headers (Notion, Shopify) or custom identifiers. Can be specified multiple times. Does not override the `Authorization` header set via auth env vars.
+
+**`--schema-validation`** controls whether the server advertises `outputSchema` to MCP clients:
+- `strict` — advertise output schemas. Clients validate responses against them.
+- `warn` (default) — don't advertise output schemas. Avoids client-side validation errors from imprecise community specs.
+- `off` — don't advertise output schemas. Same behavior as `warn`.
+
 The server enforces multiple safety layers on every tool call:
 
 - **Lockfile approval** — only explicitly approved tools execute
@@ -594,22 +688,18 @@ Falls back to `toolwright status` output when Textual is not installed.
 | `toolwright repair` | Diagnose issues and propose classified fixes |
 | `toolwright rename` | Rename a toolpack's display name |
 | `toolwright propose` | Manage agent draft proposals for new capabilities |
+| `toolwright groups list` | List auto-generated tool groups with counts |
+| `toolwright groups show <name>` | Show tools in a specific group |
+| `toolwright recipes list` | List bundled API recipes |
+| `toolwright recipes show <name>` | Show recipe details |
+| `toolwright rules template list` | List bundled rule templates |
+| `toolwright rules template apply <name>` | Create DRAFT rules from a template |
 | `toolwright inspect` | Start read-only Meta MCP for agent introspection |
 | `toolwright config` | Generate MCP client config (Claude Desktop, Codex) |
 | `toolwright dashboard` | Full-screen Textual dashboard (`toolwright[tui]`) |
 | `toolwright demo` | Prove governance works (offline, 30 seconds) |
 
-> Use `toolwright --help-all` to see all 25+ commands including `compliance`, `bundle`, `enforce`, `confirm`, and more.
-
-### Verification Workflows
-
-```bash
-toolwright workflow init              # Initialize a workflow
-toolwright workflow run workflow.yaml # Run a workflow
-toolwright workflow diff run_a/ run_b/  # Compare two runs
-toolwright workflow report run_dir/   # Generate a report
-toolwright workflow doctor            # Check dependencies
-```
+> Use `toolwright --help-all` to see all 35+ commands including `compliance`, `bundle`, `enforce`, `confirm`, and more.
 
 ### Help
 
