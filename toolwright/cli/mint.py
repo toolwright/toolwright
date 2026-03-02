@@ -59,6 +59,7 @@ def run_mint(
     verbose: bool,
     extra_headers: dict[str, str] | None = None,
     no_probe: bool = False,
+    recipe: str | None = None,
 ) -> None:
     """Mint a first-class toolpack from browser traffic capture."""
     if script_path and not Path(script_path).exists():
@@ -248,6 +249,20 @@ def run_mint(
         auth_type=auth_req.auth_type if auth_req.requires_auth else "none",
     )
 
+    # Enrich auth requirements with recipe-specific header names
+    if recipe:
+        from fnmatch import fnmatch
+
+        from toolwright.recipes.loader import load_recipe as _load_recipe_auth
+
+        _recipe_data = _load_recipe_auth(recipe)
+        for recipe_host in _recipe_data.get("hosts", []):
+            custom_header = recipe_host.get("auth_header_name")
+            if custom_header:
+                for ar in auth_requirements_list:
+                    if fnmatch(ar.host, recipe_host["pattern"]):
+                        ar.header_name = custom_header
+
     from toolwright.utils.resolve import generate_toolpack_slug
 
     toolpack_id = generate_toolpack_slug(
@@ -341,6 +356,25 @@ def run_mint(
     toolpack_file = toolpack_dir / "toolpack.yaml"
     write_toolpack(toolpack, toolpack_file)
 
+    # Post-mint: apply recipe rule templates as DRAFT
+    if recipe:
+        from toolwright.recipes.loader import load_recipe as _load_recipe_rules
+
+        recipe_data = _load_recipe_rules(recipe)
+        if recipe_data.get("rule_templates"):
+            from toolwright.rules.loader import apply_template
+
+            rules_path = Path(output_root) / ".toolwright" / "rules.json"
+            for tmpl_name in recipe_data["rule_templates"]:
+                try:
+                    created = apply_template(tmpl_name, rules_path=rules_path)
+                    click.echo(
+                        f"  Applied rule template '{tmpl_name}': {len(created)} DRAFT rules",
+                        err=True,
+                    )
+                except ValueError:
+                    pass  # Unknown template -- skip silently
+
     if runtime_mode == "container" and runtime is not None:
         if runtime.container is None:
             click.echo("Error: runtime container configuration missing", err=True)
@@ -394,7 +428,7 @@ def run_mint(
             if len(groups_idx.groups) > 8:
                 click.echo(f"    ... ({len(groups_idx.groups) - 8} more)")
             click.echo(f"\n  Serve subset: toolwright serve --scope {top[0].name}")
-            click.echo(f"  All groups:  toolwright groups list")
+            click.echo("  All groups:  toolwright groups list")
 
     # Show auth setup info (only when auth was actually detected)
     if auth_requirements_list and any(ar.scheme != "none" for ar in auth_requirements_list):
@@ -763,6 +797,7 @@ def _render_probe_results(
 ) -> None:
     """Render structured advisory messages from probe results. Never blocks."""
     from urllib.parse import urlparse
+
     from toolwright.cli.commands_auth import _host_to_env_var
 
     CHECK = "\u2713"

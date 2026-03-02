@@ -44,6 +44,7 @@ from toolwright.core.network_safety import (
     validate_network_target,
     validate_url_scheme,
 )
+from toolwright.core.toolpack import ToolpackAuthRequirement
 from toolwright.mcp._compat import (
     InitializationOptions,
     NotificationOptions,
@@ -119,8 +120,10 @@ class ToolwrightMCPServer:
         circuit_breaker_path: str | Path | None = None,
         extra_headers: dict[str, str] | None = None,
         schema_validation: str = "warn",
+        auth_requirements: list[ToolpackAuthRequirement] | None = None,
     ) -> None:
         self.schema_validation = schema_validation
+        self._auth_requirements = auth_requirements or []
         self.tools_path = Path(tools_path)
         self.toolsets_path = Path(toolsets_path) if toolsets_path else None
         self.toolset_name = toolset_name
@@ -472,6 +475,17 @@ class ToolwrightMCPServer:
         env_key = f"TOOLWRIGHT_AUTH_{normalized}"
         return os.environ.get(env_key)
 
+    def _resolve_auth_header_name(self, host: str) -> str:
+        """Resolve which header name to use for auth on this host.
+
+        Checks ToolpackAuthRequirement entries for a custom header_name.
+        Falls back to 'Authorization'.
+        """
+        for req in self._auth_requirements:
+            if req.host == host and req.header_name:
+                return req.header_name
+        return "Authorization"
+
     def _resolve_action_endpoint(self, action: dict[str, Any]) -> tuple[str, str, str]:
         endpoint = action.get("endpoint")
         endpoint_data = endpoint if isinstance(endpoint, dict) else {}
@@ -519,7 +533,7 @@ class ToolwrightMCPServer:
         headers: dict[str, str] = {"User-Agent": "Toolwright/1.0"}
         auth = self._resolve_auth_for_host(action_host)
         if auth:
-            headers["Authorization"] = auth
+            headers[self._resolve_auth_header_name(action_host)] = auth
         if self.extra_headers:
             headers.update(self.extra_headers)
 
@@ -690,7 +704,7 @@ class ToolwrightMCPServer:
             headers: dict[str, str] = {"User-Agent": "Toolwright/1.0"}
             auth = self._resolve_auth_for_host(action_host)
             if auth:
-                headers["Authorization"] = auth
+                headers[self._resolve_auth_header_name(action_host)] = auth
             if self.extra_headers:
                 headers.update(self.extra_headers)
 
@@ -873,6 +887,9 @@ def run_mcp_server(
     schema_validation: str = "warn",
     scope: str | None = None,
     no_tool_limit: bool = False,
+    shape_baselines_path: str | None = None,
+    shape_probe_interval: int = 300,
+    auth_requirements: list[ToolpackAuthRequirement] | None = None,
 ) -> None:
     """Run the Toolwright MCP server."""
     server = ToolwrightMCPServer(
@@ -892,6 +909,7 @@ def run_mcp_server(
         circuit_breaker_path=circuit_breaker_path,
         extra_headers=extra_headers,
         schema_validation=schema_validation,
+        auth_requirements=auth_requirements,
     )
 
     # Context efficiency: apply tool filters and description mode
@@ -922,9 +940,9 @@ def run_mcp_server(
                 err=True,
             )
         else:
-            from toolwright.core.compile.grouper import filter_by_scope
-
             import click as _click
+
+            from toolwright.core.compile.grouper import filter_by_scope
 
             try:
                 # filter_by_scope expects list[dict], server.actions is dict[str, dict]
@@ -951,7 +969,14 @@ def run_mcp_server(
     if should_block:
         sys.exit(1)
 
+    from toolwright.cli.mcp import check_jsonschema_available
+
+    jsonschema_warning = check_jsonschema_available()
+    if jsonschema_warning:
+        _click.echo(f"  WARNING: {jsonschema_warning}", err=True)
+
     reconcile_loop = None
+    shape_probe_loop = None
     if watch:
         from toolwright.core.reconcile.loop import ReconcileLoop
         from toolwright.models.reconcile import WatchConfig
@@ -977,20 +1002,85 @@ def run_mcp_server(
             breaker_registry=server.circuit_breaker,
         )
 
+        # Shape probe loop: autonomous drift detection via probe templates
+        if shape_baselines_path:
+            from toolwright.core.drift.shape_probe_loop import ShapeProbeLoop
+            from toolwright.models.baseline import BaselineIndex
+
+            sb_path = Path(shape_baselines_path)
+            if sb_path.exists():
+                baseline_index = BaselineIndex.load(sb_path)
+                if baseline_index.baselines:
+                    # Extract host from first action (all actions share the same API host)
+                    first_action = actions[0] if actions else {}
+                    probe_host = str(first_action.get("host", ""))
+
+                    events_path = Path(project_root) / ".toolwright" / "state" / "drift_events.jsonl"
+
+                    shape_probe_loop = ShapeProbeLoop(
+                        baseline_index=baseline_index,
+                        baselines_path=sb_path,
+                        events_path=events_path,
+                        host=probe_host,
+                        auth_header=auth_header,
+                        extra_headers=extra_headers,
+                        base_url=base_url,
+                        probe_interval=shape_probe_interval,
+                    )
+                    _click.echo(
+                        f"  Shape probes: {len(baseline_index.baselines)} tools, "
+                        f"interval={shape_probe_interval}s",
+                        err=True,
+                    )
+                else:
+                    _click.echo("  WARNING: shape_baselines.json has no baselines", err=True)
+            else:
+                _click.echo(f"  WARNING: shape baselines not found: {sb_path}", err=True)
+
     if transport == "http":
         # HTTP transport runs its own event loop via uvicorn
         server.run_http(host=host, port=port)
     else:
+        from toolwright.cli.mcp import stdio_transport_warning
+
+        _click.echo(f"  {stdio_transport_warning()}", err=True)
         async def main() -> None:
+            shape_probe_task: asyncio.Task | None = None
             try:
                 if reconcile_loop is not None:
                     await reconcile_loop.start()
                     logger.info("Reconciliation loop started (watch mode)")
+                if shape_probe_loop is not None:
+                    shape_probe_task = asyncio.create_task(
+                        _run_shape_probe_loop(shape_probe_loop, shape_probe_interval)
+                    )
+                    logger.info("Shape probe loop started")
                 await server.run_stdio()
             finally:
+                if shape_probe_task is not None:
+                    shape_probe_task.cancel()
+                    with __import__("contextlib").suppress(asyncio.CancelledError):
+                        await shape_probe_task
+                    logger.info("Shape probe loop stopped")
                 if reconcile_loop is not None:
                     await reconcile_loop.stop()
                     logger.info("Reconciliation loop stopped")
                 await server.close()
 
         asyncio.run(main())
+
+
+async def _run_shape_probe_loop(
+    loop: object,
+    interval: int,
+) -> None:
+    """Run shape probe cycles at the given interval until cancelled."""
+    from toolwright.core.drift.shape_probe_loop import ShapeProbeLoop
+
+    assert isinstance(loop, ShapeProbeLoop)
+    while True:
+        try:
+            await loop.probe_cycle()
+        except Exception:
+            logger.exception("Shape probe cycle error")
+        await asyncio.sleep(interval)

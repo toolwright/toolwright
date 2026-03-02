@@ -16,9 +16,9 @@ from toolwright.branding import (
 from toolwright.cli.commands_approval import register_approval_commands
 from toolwright.cli.commands_auth import register_auth_check_command
 from toolwright.cli.commands_groups import register_groups_commands
-from toolwright.cli.commands_recipes import register_recipes_commands
 from toolwright.cli.commands_kill import register_kill_commands
 from toolwright.cli.commands_mcp import register_mcp_commands
+from toolwright.cli.commands_recipes import register_recipes_commands
 from toolwright.cli.commands_repair import register_repair_plan_apply
 from toolwright.cli.commands_rules import register_rules_commands
 from toolwright.cli.commands_snapshots import register_snapshot_commands
@@ -627,8 +627,8 @@ def _detect_openapi_format(source: str, default: str) -> str:
     "--allowed-hosts",
     "-a",
     multiple=True,
-    required=True,
-    help="Hosts to include (required, repeatable)",
+    required=False,
+    help="Hosts to include (required unless --recipe provides them, repeatable)",
 )
 @click.option("--name", "-n", help="Optional toolpack/session name")
 @click.option(
@@ -722,6 +722,11 @@ def _detect_openapi_format(source: str, default: str) -> str:
     default=False,
     help="Skip pre-flight API probing (auth, GraphQL, OpenAPI detection)",
 )
+@click.option(
+    "--recipe", "-r",
+    default=None,
+    help="Use a bundled API recipe (e.g., shopify, github). Sets hosts, headers, auth.",
+)
 @click.pass_context
 def mint(
     ctx: click.Context,
@@ -744,6 +749,7 @@ def mint(
     redaction_profile: str | None,
     extra_header_raw: tuple[str, ...],
     no_probe: bool,
+    recipe: str | None,
 ) -> None:
     """Capture traffic and compile a governed toolpack.
 
@@ -752,12 +758,37 @@ def mint(
       toolwright mint https://example.com -a api.example.com --print-mcp-config
       toolwright mint https://app.example.com -a api.example.com --auth-profile myapp
       toolwright mint https://app.example.com --webmcp -a api.example.com
+      toolwright mint https://example.myshopify.com --recipe shopify
     """
     from toolwright.cli.mint import run_mint
     from toolwright.utils.headers import parse_extra_headers
 
+    # Validate: either --allowed-hosts or --recipe must be provided
+    if not allowed_hosts and not recipe:
+        click.echo("Error: --allowed-hosts or --recipe is required", err=True)
+        raise SystemExit(1)
+
     resolved_output = output or str(ctx.obj.get("root", resolve_root()))
     extra_headers = parse_extra_headers(extra_header_raw) if extra_header_raw else None
+
+    # Apply recipe if specified
+    if recipe:
+        from toolwright.recipes.loader import load_recipe
+        recipe_data = load_recipe(recipe)
+
+        # Merge recipe hosts into allowed_hosts (only if none provided)
+        if not allowed_hosts:
+            allowed_hosts = tuple(h["pattern"] for h in recipe_data.get("hosts", []))
+
+        # Merge extra headers (recipe values as defaults, CLI overrides win)
+        recipe_headers = recipe_data.get("extra_headers", {})
+        if recipe_headers:
+            if extra_headers is None:
+                extra_headers = {}
+            for k, v in recipe_headers.items():
+                extra_headers.setdefault(k, v)
+
+        click.echo(f"Using recipe: {recipe_data['name']}", err=True)
 
     _run_with_lock(
         ctx,
@@ -783,6 +814,7 @@ def mint(
             verbose=ctx.obj.get("verbose", False),
             extra_headers=extra_headers,
             no_probe=no_probe,
+            recipe=recipe,
         ),
     )
 
