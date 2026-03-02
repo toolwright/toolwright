@@ -190,6 +190,8 @@ class RuleEngine:
         _params: dict[str, Any],
         session: SessionHistory,
     ) -> RuleViolation | None:
+        from fnmatch import fnmatch
+
         config: PrerequisiteConfig = rule.config  # type: ignore[assignment]
         required_args = config.required_args or {}
 
@@ -214,6 +216,25 @@ class RuleEngine:
                         feedback=f"Prerequisite not met: {req_tool} not called",
                         suggestion=f"Call {req_tool} first.",
                     )
+
+        # Check glob pattern prerequisites (any pattern match satisfies)
+        if config.required_tool_patterns:
+            called_ids = session.call_sequence()
+            if not any(
+                fnmatch(cid, pattern)
+                for pattern in config.required_tool_patterns
+                for cid in called_ids
+            ):
+                patterns_str = ", ".join(config.required_tool_patterns)
+                return RuleViolation(
+                    rule_id=rule.rule_id,
+                    rule_kind=rule.kind,
+                    tool_id=tool_id,
+                    description=rule.description,
+                    feedback=f"Prerequisite not met: no tool matching '{patterns_str}' called",
+                    suggestion=f"Call a tool matching one of [{patterns_str}] first.",
+                )
+
         return None
 
     def _evaluate_prohibition(

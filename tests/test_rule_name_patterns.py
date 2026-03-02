@@ -6,6 +6,7 @@ from toolwright.core.correct.engine import RuleEngine
 from toolwright.core.correct.session import SessionHistory
 from toolwright.models.rule import (
     BehavioralRule,
+    PrerequisiteConfig,
     ProhibitionConfig,
     RuleKind,
 )
@@ -122,3 +123,58 @@ def test_empty_patterns_match_all(tmp_path):
     session = SessionHistory()
     result = engine.evaluate("any_tool", "GET", "api.example.com", {}, session)
     assert not result.allowed
+
+
+def test_required_tool_patterns_matches_session_history(tmp_path):
+    """Prerequisite with required_tool_patterns should check session via glob."""
+    rules_path = tmp_path / "rules.json"
+    rules_path.write_text("[]")
+    engine = RuleEngine(rules_path=rules_path)
+
+    rule = BehavioralRule(
+        rule_id="prereq-1",
+        kind=RuleKind.PREREQUISITE,
+        description="Must read before delete",
+        target_name_patterns=["delete_*"],
+        match="any",
+        config=PrerequisiteConfig(
+            required_tool_ids=[],
+            required_tool_patterns=["get_*", "list_*"],
+        ),
+    )
+    engine.add_rule(rule)
+
+    session = SessionHistory()
+
+    # No prior calls -> violation
+    result = engine.evaluate("delete_product", "DELETE", "api.example.com", {}, session)
+    assert not result.allowed
+    assert "prerequisite" in result.violations[0].feedback.lower()
+
+    # Call get_product -> satisfies pattern
+    session.record("get_product", "GET", "api.example.com", {}, "200")
+
+    result = engine.evaluate("delete_product", "DELETE", "api.example.com", {}, session)
+    assert result.allowed
+
+
+def test_required_tool_patterns_empty_does_not_block(tmp_path):
+    """Empty required_tool_patterns should not add any prerequisite checks."""
+    rules_path = tmp_path / "rules.json"
+    rules_path.write_text("[]")
+    engine = RuleEngine(rules_path=rules_path)
+
+    rule = BehavioralRule(
+        rule_id="prereq-2",
+        kind=RuleKind.PREREQUISITE,
+        description="No patterns",
+        config=PrerequisiteConfig(
+            required_tool_ids=[],
+            required_tool_patterns=[],
+        ),
+    )
+    engine.add_rule(rule)
+
+    session = SessionHistory()
+    result = engine.evaluate("any_tool", "GET", "api.example.com", {}, session)
+    assert result.allowed

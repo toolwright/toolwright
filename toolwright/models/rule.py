@@ -42,6 +42,7 @@ class PrerequisiteConfig(BaseModel):
 
     required_tool_ids: list[str]
     required_args: dict[str, Any] = Field(default_factory=dict)
+    required_tool_patterns: list[str] = Field(default_factory=list)
 
 
 class ProhibitionConfig(BaseModel):
