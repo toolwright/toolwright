@@ -19,15 +19,16 @@ def test_cli_surfaces_core_commands() -> None:
     runner = CliRunner()
     top_help = runner.invoke(cli, ["--help"])
     assert top_help.exit_code == 0
-    assert "init" in top_help.stdout
+    # Quick Start commands
+    assert "create" in top_help.stdout
     assert "mint" in top_help.stdout
-    assert "diff" in top_help.stdout
     assert "gate" in top_help.stdout
     assert "serve" in top_help.stdout
-    assert "run" in top_help.stdout
+    assert "config" in top_help.stdout
+    # Operations commands
+    assert "diff" in top_help.stdout
     assert "drift" in top_help.stdout
     assert "verify" in top_help.stdout
-    assert "demo" in top_help.stdout
 
 
 def test_default_help_hides_advanced_commands_but_help_all_shows_them() -> None:
@@ -36,19 +37,24 @@ def test_default_help_hides_advanced_commands_but_help_all_shows_them() -> None:
     default_help = runner.invoke(cli, ["--help"])
     assert default_help.exit_code == 0
     default_lines = default_help.stdout.splitlines()
-    # Core commands should be visible
-    assert any(line.strip().startswith("init") for line in default_lines)
+    # Quick Start commands should be visible
+    assert any(line.strip().startswith("create") for line in default_lines)
     assert any(line.strip().startswith("mint") for line in default_lines)
     assert any(line.strip().startswith("gate") for line in default_lines)
     assert any(line.strip().startswith("serve") for line in default_lines)
-    assert any(line.strip().startswith("run") for line in default_lines)
-    assert any(line.strip().startswith("demo") for line in default_lines)
+    assert any(line.strip().startswith("config") for line in default_lines)
+    # Operations commands should be visible
+    assert any(line.strip().startswith("drift") for line in default_lines)
+    assert any(line.strip().startswith("verify") for line in default_lines)
     # Advanced commands should be hidden
     assert not any(line.strip().startswith("compile") for line in default_lines)
     assert not any(line.strip().startswith("bundle") for line in default_lines)
     assert not any(line.strip().startswith("lint") for line in default_lines)
     assert not any(line.strip().startswith("doctor") for line in default_lines)
     assert not any(line.strip().startswith("enforce") for line in default_lines)
+    assert not any(line.strip().startswith("init") for line in default_lines)
+    assert not any(line.strip().startswith("demo") for line in default_lines)
+    assert not any(line.strip().startswith("run") for line in default_lines)
 
     help_all = runner.invoke(cli, ["--help-all"])
     assert help_all.exit_code == 0
@@ -63,6 +69,8 @@ def test_default_help_hides_advanced_commands_but_help_all_shows_them() -> None:
     assert "compile" in help_all.stdout
     assert "doctor" in help_all.stdout
     assert "bundle" in help_all.stdout
+    assert "init" in help_all.stdout
+    assert "demo" in help_all.stdout
 
 
 def test_diff_invokes_plan_engine(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

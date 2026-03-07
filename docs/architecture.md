@@ -5,8 +5,8 @@ Governance for agents, enforced by deterministic build artifacts
 February 2026
 
 > Status: **[SHIPPED]** = working in current release | **[ALPHA]** = code exists, limited | **[PLANNED]** = design only
-> Canonical feature status lives in the README Feature Status table.
-> Contributor rule: If code and docs disagree, README Feature Status wins, then code, then this file.
+> Canonical feature status lives in CAPABILITIES.md.
+> Contributor rule: If code and docs disagree, CAPABILITIES.md wins, then code, then this file.
 
 ## v1 Execution Lock (2026-02-10)
 
@@ -16,10 +16,10 @@ The v1 release baseline is locked to:
 
 Canonical command surface:
 
-- Core: `init`, `mint`, `diff`, `gate`, `serve`, `drift`, `verify`, `demo`
-- More: `capture`, `workflow`, `auth`
-- Advanced (behind `--help-all`): `compile`, `bundle`, `lint`, `doctor`, `config`, `inspect`, `enforce`, `migrate`
-- No aliases -- one best name per command
+- Core: `status`, `ship`, `init`, `mint`, `gate`, `serve`, `config`, `verify`, `drift`, `repair`, `diff`
+- Operations: `groups`, `auth`, `rules`, `kill`, `enable`, `quarantine`, `health`, `dashboard`, `demo`
+- Advanced (behind `--help-all`): `capture`, `compile`, `bundle`, `lint`, `doctor`, `inspect`, `enforce`, `migrate`, `watch`
+- `tw` is a shorthand alias for `toolwright`
 
 Hard v1 contracts in force:
 
@@ -299,7 +299,7 @@ Storage requirements:
 * local filesystem default
 * pluggable backend interface later (S3 optional, not required for vNext) 
 
-#### 5.1.1 Redaction Profiles [PLANNED]
+#### 5.1.1 Redaction Profiles [SHIPPED]
 
 Toolwright must support explicit **Redaction Profiles** that apply consistently across:
 
@@ -366,7 +366,7 @@ Fields:
 * `required_confirmation` (if any)
 * `suggested_alternatives[]`
 
-#### 5.2.2 EvidenceBundle (audit trail, retention-aware) [PLANNED]
+#### 5.2.2 EvidenceBundle (audit trail, retention-aware) [SHIPPED]
 
 Purpose:
 
@@ -499,7 +499,7 @@ A scope is a structured object:
 * capture refs that justify scope surface
 * verification contract refs that validate outcomes
 
-### 6.3 Scope inference pipeline (how it actually works) [PLANNED]
+### 6.3 Scope inference pipeline (how it actually works) [SHIPPED]
 
 Inference is staged and produces confidence, not magic.
 
@@ -696,7 +696,7 @@ It is not:
 
 This aligns with the earlier UI evidence policies and rules, but framed around reliability and CI gating. 
 
-### 8.3 VerificationContract format [PLANNED]
+### 8.3 VerificationContract format [SHIPPED]
 
 A contract includes:
 
@@ -834,7 +834,7 @@ This is the updated list, removing any implication of agent privilege negotiatio
 
 No “approve” tool should be exposed to agents. This API is for local operator tooling.
 
-### 9.3 Verify and drift [PLANNED]
+### 9.3 Verify and drift [SHIPPED]
 
 * `toolwright_verify_run(toolpack_id, contract_ref, options?) -> VerificationReport`
 * `toolwright_verify_get(report_id) -> VerificationReport`
@@ -1020,7 +1020,7 @@ Rules:
 
 ---
 
-## 11. Auth providers (keep, but treat as operational reality) [PLANNED]
+## 11. Auth providers (keep, but treat as operational reality) [SHIPPED]
 
 Keep the auth provider interface and implementations. 
 This is important because tool supply chain without auth reliability is fake.
@@ -1058,30 +1058,95 @@ Optional later:
 
 ---
 
+## 11a. Tool groups [SHIPPED]
+
+Tool groups solve the "too many tools" problem for agents. LLMs degrade when selecting from
+more than ~30 tools. Groups partition the tool surface into coherent subsets that can be served
+selectively via `--scope`.
+
+### Grouping pipeline
+
+During `compile`, tools are auto-grouped by URL path structure:
+
+1. Extract the first semantically meaningful path segment (skip common prefixes like `/api/v1/`)
+2. Cluster tools by that segment: `/repos/{owner}/{repo}/issues` → group `repos`
+3. Store groups in `groups.json` alongside `tools.json`
+
+### Runtime scoping
+
+`toolwright serve --scope repos,issues` loads only tools from those groups.
+The `check_tool_count_guardrails()` function warns at 31+ tools and blocks at 201+.
+
+### CLI
+
+* `toolwright groups list` — show all groups with tool counts
+* `toolwright groups show <name>` — inspect tools in a group
+
+Entry points: `toolwright/cli/commands_groups.py`, `toolwright/core/compile/grouper.py`
+
+---
+
+## 11b. Smart pre-flight probe [SHIPPED]
+
+Before every `mint` command (opt-out via `--no-probe`), Toolwright probes each allowed host
+to detect configuration requirements before the user spends time browsing.
+
+### Probe checks
+
+For each host in `--allowed-hosts`:
+
+1. **Auth detection** — HEAD/GET request; parse 401/403 + `WWW-Authenticate` header
+2. **Content-Type** — detect JSON API vs HTML portal (common misconfiguration)
+3. **OpenAPI spec** — check well-known paths (`/openapi.json`, `/swagger.json`, `/api-docs`, etc.)
+4. **GraphQL introspection** — POST introspection query to detect GraphQL endpoints
+
+### Structured output
+
+Probe results use icons (✓/⚠/✗/○) with actionable messages:
+
+* `⚠ api.example.com — Auth required: Bearer (401)`
+* `  export TOOLWRIGHT_AUTH_API_EXAMPLE_COM="Bearer <your-token>"`
+* `✓ OpenAPI spec found: https://api.example.com/openapi.json`
+
+Entry points: `toolwright/core/drift/probe_executor.py`, `toolwright/core/drift/probe_template.py`,
+`toolwright/cli/mint.py:_probe_hosts()`
+
+---
+
 ## 12. CLI (updated and aligned) [SHIPPED]
 
 ### 12.1 Core commands
 
+* `toolwright status` -- project health overview
+* `toolwright ship` -- guided interactive lifecycle
 * `toolwright init` -- initialize project
-* `toolwright mint <url>` -- capture + compile in one shot
+* `toolwright mint <url> -a <api-host>` -- capture + compile in one shot (with smart probe)
 * `toolwright diff` -- risk-classified change report
 * `toolwright gate sync|allow|block|check|status|snapshot|reseal` -- approval workflow
-* `toolwright serve` -- MCP server (stdio) under lockfile enforcement
-* `toolwright drift` -- detect capability surface changes
+* `toolwright serve` -- MCP server (stdio/HTTP) under lockfile enforcement
+* `toolwright config` -- generate MCP client config (Claude Desktop, Cursor)
+* `toolwright drift` -- detect API schema changes
 * `toolwright verify` -- run verification contracts
+* `toolwright repair plan|apply` -- Terraform-style drift repair
+
+### 12.2 Operations commands
+
+* `toolwright groups list|show` -- browse and inspect tool groups
+* `toolwright auth check` -- verify auth env vars
+* `toolwright rules add|list|show` -- behavioral constraints
+* `toolwright kill <tool>` -- circuit breaker kill switch
+* `toolwright enable <tool>` -- re-enable killed tools
+* `toolwright health` -- tool health status
+* `toolwright dashboard` -- TUI dashboard
 * `toolwright demo` -- offline governance proof loop
-
-### 12.2 More commands
-
 * `toolwright capture import|record` -- traffic capture from HAR, OTEL, OpenAPI, or browser
-* `toolwright workflow init|run|replay|diff|report|pack|export|doctor` -- verification workflows
-* `toolwright auth login|status|clear|list` -- auth profile management
 
 ### 12.3 Advanced commands (behind `--help-all`)
 
-* `toolwright compile`, `toolwright bundle`, `toolwright lint`, `toolwright doctor`, `toolwright config`
+* `toolwright compile`, `toolwright bundle`, `toolwright lint`, `toolwright doctor`
 * `toolwright inspect`, `toolwright enforce`, `toolwright migrate`, `toolwright run`
-* `toolwright confirm`, `toolwright propose`, `toolwright scope`, `toolwright compliance`, `toolwright state`
+* `toolwright confirm`, `toolwright propose`, `toolwright scope`, `toolwright state`
+* `toolwright watch status|log` -- reconciliation loop monitoring
 
 ---
 

@@ -24,6 +24,17 @@ Post-dogfood engineering backlog. Items prioritized based on live dogfood findin
 - **Surface suspended tools in `watch status`** — `repair_suspended` is tracked internally but
   not shown in CLI status output. Operators only see the WARNING log during `serve --watch`.
 
+## Strategic expansion (designed, feasibility-verified, not yet scheduled)
+
+- **Governance Overlay** — Wrap any existing MCP server with Toolwright's
+  behavioral rules, circuit breakers, and approval workflow. Transforms
+  Toolwright from API compiler to behavioral safety layer for all MCP tools.
+  Feasibility verified against current codebase: no breaking changes required,
+  pipeline executor seam already exists, ~2 weeks estimated implementation.
+  Sequenced after rule templates, per-host auth, and recipes ship.
+  Spec: `docs/specs/governance-overlay-spec.md`
+  Feasibility: `docs/specs/overlay-feasibility.md`
+
 ## P0 (blocking users — from dogfood)
 
 - **API recipes (post-dogfood)** — Community-contributable YAML files containing pointers (not
@@ -99,6 +110,17 @@ Post-dogfood engineering backlog. Items prioritized based on live dogfood findin
   33 tests covering all probe and render paths.
 
 ## P2 (quality-of-life — from dogfood)
+
+- **Auth setup friction: `auth set` + `.env` in toolpack** — Two parts of the same story: reduce
+  auth setup friction for `toolwright serve`. (1) Add `.env` file support in the toolpack directory
+  — `toolwright serve` reads `.toolpacks/my-api/.env` automatically, `.gitignore` pattern covers it.
+  Eliminates per-shell `export` commands. (2) `toolwright auth set <host>` interactive prompt that
+  writes the token to the toolpack `.env` file. Combined workflow:
+  `toolwright auth set api.stripe.com` → prompts for token → writes to toolpack `.env` → `serve`
+  picks it up. Users who prefer raw env vars still use them. Currently mitigated: `mint` probe
+  output shows exact `export` commands at discovery time, and the naming convention
+  (`TOOLWRIGHT_AUTH_` + uppercased host with underscores) is predictable. Gap: no guidance when
+  configuring auth for `serve` on an existing toolpack without re-running `mint`.
 
 - **`groups list` default view: top N by tool count** — With 169 groups for GitHub, the full list
   is too long to scan. Default `groups list` should show top 10 groups by tool count with a summary

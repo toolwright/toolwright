@@ -1,20 +1,28 @@
 # Toolwright
 
-Give your AI agent safe API access in 5 minutes.
+Give your AI agent safe API access in 60 seconds.
 
-Toolwright compiles any REST API into governed MCP tools — with schema validation, auth isolation, and drift detection built in.
+Toolwright compiles any REST API into governed MCP tools — with schema validation, auth isolation, and drift detection and repair built in.
+
+The immune system for agent tools.
 
 ```bash
 pip install "toolwright[all]"
-python -m playwright install chromium
 
+toolwright create github
 export TOOLWRIGHT_AUTH_API_GITHUB_COM="Bearer ghp_yourToken"
-toolwright mint https://github.com -a api.github.com
-toolwright gate allow --all
-toolwright serve
+# Paste the MCP config into Claude Desktop, restart — done.
 ```
 
 Your agent now has governed access to GitHub's API. Your token never enters the LLM context.
+
+For custom APIs, use `mint` to capture from a browser:
+
+```bash
+toolwright mint https://app.example.com -a api.example.com
+toolwright gate allow --all
+toolwright serve
+```
 
 ## What you get
 
@@ -23,12 +31,13 @@ Your agent now has governed access to GitHub's API. Your token never enters the 
 - **Drift detection** — catches API schema changes before your agent breaks
 - **Schema validation** — every tool call validated against inferred schemas
 - **Risk classification** — every tool tiered (low/medium/high/critical), nothing runs without explicit approval
+- **Continuous health monitoring** — watches for API changes and self-heals before your agent breaks
 - **Works with any MCP client** — Claude Desktop, Cursor, or any MCP-compatible platform
 
 ## Quickstarts
 
-- **[GitHub API in 5 minutes](docs/quickstarts/github.md)** — step-by-step from install to working
-- **[Any REST API](docs/quickstarts/any-rest-api.md)** — connect any API with bearer token auth
+- **[GitHub API in 60 seconds](docs/quickstarts/github.md)** — `toolwright create github`
+- **[Any REST API](docs/quickstarts/any-rest-api.md)** — browser capture for custom APIs
 
 ## How it works
 
@@ -86,10 +95,9 @@ toolwright serve --scope repos            # serve just that group
 ## Commands
 
 ```bash
-# Getting started
-toolwright mint <url> -a <api-host>     # capture + compile in one shot
-toolwright mint --recipe github <url>   # pre-fill hosts, headers, rules from recipe
-toolwright ship                          # guided interactive lifecycle
+# Quick start
+toolwright create github                 # create tools from a known API
+toolwright mint <url> -a <api-host>      # capture from browser + compile
 toolwright gate allow --all              # approve tools
 toolwright serve                         # start MCP server
 

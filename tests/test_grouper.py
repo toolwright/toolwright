@@ -9,15 +9,14 @@ from typing import Any
 
 import pytest
 
-from toolwright.models.groups import ToolGroup, ToolGroupIndex
 from toolwright.core.compile.grouper import (
     extract_semantic_segments,
-    generate_tool_groups,
     filter_by_scope,
-    suggest_group_name,
+    generate_tool_groups,
     load_groups_index,
+    suggest_group_name,
 )
-
+from toolwright.models.groups import ToolGroup, ToolGroupIndex
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -230,6 +229,20 @@ class TestExtractSemanticSegments:
             "repos",
             "issues",
         ]
+
+    def test_strips_param_with_json_extension(self) -> None:
+        """Path param followed by .json extension must be stripped (Shopify-style)."""
+        assert extract_semantic_segments("/admin/api/2020-01/customers/{customer_id}.json") == [
+            "customers",
+        ]
+
+    def test_strips_param_with_extension_nested(self) -> None:
+        """Nested path param with extension: /admin/api/2020-01/{token}/{id}.json"""
+        assert extract_semantic_segments("/admin/api/2020-01/{token}/{customer_saved_search_id}.json") == []
+
+    def test_strips_param_with_yaml_extension(self) -> None:
+        """Path param with .yaml extension should also be stripped."""
+        assert extract_semantic_segments("/api/v1/{resource_id}.yaml") == []
 
 
 # ===========================================================================
@@ -641,6 +654,5 @@ class TestCompileGroupsIntegration:
             data = json_mod.load(f)
         assert "groups" in data
         assert data["generated_from"] == "auto"
-        group_names = {g["name"] for g in data["groups"]}
         # At minimum, both endpoints should produce groups
         assert len(data["groups"]) > 0

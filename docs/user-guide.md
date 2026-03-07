@@ -32,8 +32,39 @@ pip install -e ".[dev]"
 ```
 
 **New to Toolwright?** Start with a quickstart:
-- [GitHub API in 5 minutes](quickstarts/github.md)
-- [Any REST API](quickstarts/any-rest-api.md)
+- [GitHub API in 60 seconds](quickstarts/github.md) — `toolwright create github`
+- [Any REST API](quickstarts/any-rest-api.md) — browser capture for custom APIs
+
+---
+
+## Common Tasks
+
+| I want to... | Do this |
+|---|---|
+| Create tools from a known API | `toolwright create github` |
+| Capture tools from a browser | `toolwright mint <url> -a <host>` |
+| See what tools I have | `toolwright groups list` |
+| Approve all tools | `toolwright gate allow --all` |
+| Start the MCP server | `toolwright serve` |
+| Get config for Claude Desktop | `toolwright config` |
+| Check governance health | `toolwright status` |
+| Add behavioral rules | `toolwright rules template apply crud-safety` |
+| Detect upstream API drift | `toolwright drift` |
+| Compare toolpack versions | `toolwright diff` |
+
+---
+
+## Five Pillars
+
+Toolwright governance is organized around five pillars:
+
+| Pillar | What it does | Key commands |
+|--------|-------------|-------------|
+| **CONNECT** | Turn API traffic into governed tools | `create`, `mint`, `capture` |
+| **GOVERN** | Control what tools can do at runtime | `gate`, `rules`, `serve` |
+| **CORRECT** | Detect and fix drift | `drift`, `diff`, `repair` |
+| **KILL** | Emergency stop for misbehaving tools | `kill`, `quarantine`, `enable` |
+| **HEAL** | Auto-recover from failures | `serve --watch --auto-heal safe` |
 
 ---
 
@@ -41,32 +72,35 @@ pip install -e ".[dev]"
 
 The fastest way to go from zero to a governed MCP server:
 
-### 1. See it work (30 seconds)
+### Quick path (60 seconds) — from a known API
 
 ```bash
-toolwright demo
+toolwright create github
+export TOOLWRIGHT_AUTH_API_GITHUB_COM="Bearer ghp_yourToken"
+toolwright serve
 ```
 
-Builds a governed toolpack from bundled traffic, proves fail-closed enforcement, and writes an auditable decision log. Exit `0` means every gate held.
+`create` fetches the OpenAPI spec, compiles tools, auto-approves low/medium risk, applies behavioral rules, and prints the MCP config to paste into Claude Desktop.
 
-### 2. Build your tools
+### Custom path (5 minutes) — from any web app
+
+```bash
+toolwright mint https://app.example.com -a api.example.com
+toolwright gate allow --all
+toolwright serve
+```
+
+`mint` opens a browser, captures your API interactions, and compiles a governed toolpack. See the [Any REST API quickstart](quickstarts/any-rest-api.md) for the full walkthrough.
+
+### Interactive path — guided lifecycle
 
 ```bash
 toolwright ship
 ```
 
-Walks you through the full lifecycle interactively:
+Walks you through the full lifecycle interactively: capture, review, approve, snapshot, verify, and serve. If any stage fails, `toolwright ship` tells you exactly what went wrong and what to do next.
 
-1. **Capture** — Detects existing toolpacks or prompts you to create one
-2. **Review** — Shows a risk-tiered tool preview (critical/high/medium/low)
-3. **Approve** — Gate review with approval counts by risk tier
-4. **Snapshot** — Creates a baseline for drift detection
-5. **Verify** — Runs verification contracts
-6. **Serve** — Outputs the MCP server command
-
-If any stage fails, `toolwright ship` tells you exactly what went wrong and what to do next.
-
-### 3. Connect to your AI client
+### Connect to your AI client
 
 ```bash
 toolwright config
@@ -75,20 +109,6 @@ toolwright config
 Generates a ready-to-paste config snippet for Claude Desktop, Cursor, or Codex.
 
 > **Auto-resolution:** When your project has a single toolpack, `--toolpack` is optional on all commands. See [Toolpack Resolution](#toolpack-resolution) below.
-
-### Fine-grained control
-
-For power users who want to run each stage individually:
-
-```bash
-toolwright init                     # set up project
-toolwright mint <url> -a <host>     # capture + compile
-toolwright diff                     # review risk-classified changes
-toolwright gate allow --all         # approve tools
-toolwright verify                   # run verification contracts
-toolwright serve                    # start MCP server
-toolwright drift                    # detect API changes (CI/cron)
-```
 
 ---
 
@@ -235,6 +255,8 @@ Actions: `allow`, `deny`, `confirm` (requires out-of-band token grant via `toolw
 
 ## Operations
 
+The quickstarts showed you how to build governed tools — capture traffic, compile schemas, approve, and serve. Everything below is about **operating them in production**: monitoring for API changes, recovering from failures, and constraining agent behavior over time.
+
 ### Drift detection
 
 Detect API surface changes between your baseline and current state:
@@ -273,10 +295,20 @@ See governance health and recommended next action:
 toolwright status
 ```
 
-### Change reports
+### diff vs drift
+
+These are complementary but distinct:
+
+| | `toolwright diff` | `toolwright drift` |
+|---|---|---|
+| **What it checks** | What changed in your tools (toolpack versions) | What changed upstream (live API behavior) |
+| **Data source** | Local toolpack snapshots | Live HTTP probes against baselines |
+| **When to use** | After re-minting or editing a toolpack | On a schedule (CI/cron) to catch API changes |
+| **Output** | Risk-classified change report | Drift events with severity |
 
 ```bash
-toolwright diff --format github-md
+toolwright diff                 # compare toolpack versions
+toolwright drift                # check live API for changes
 ```
 
 ### Rename
@@ -319,6 +351,23 @@ toolwright serve --auth "Bearer your-token"
 ```
 
 **Priority order:** `--auth` flag > `TOOLWRIGHT_AUTH_<HOST>` env var > `TOOLWRIGHT_AUTH_HEADER` env var.
+
+---
+
+## Governance Layers
+
+Toolwright has two complementary governance systems: **Policy** and **Rules**. The startup card shows which layers are active.
+
+| Layer | Controls | Evaluation | Example |
+|-------|---------|-----------|---------|
+| **Policy** (`policy.yaml`) | *What* a tool can do | Before execution, by the decision engine | Deny all `delete_*` tools |
+| **Rules** (`rules.json`) | *How* a tool must be used | At runtime, by behavioral rule engine | Require `get_user` before `update_user` |
+
+**When to use which:**
+- Use **policy** for coarse access control (allow/deny/confirm by tool name, risk tier, or method)
+- Use **rules** for fine-grained behavioral constraints (prerequisites, rate limits, parameter validation)
+
+Both layers are enforced in the 8-stage request pipeline. Policy is evaluated at stage 3 (DecisionEngine), rules at stage 6 (behavioral rules).
 
 ---
 
@@ -639,22 +688,25 @@ toolwright config --format codex
 
 ## Dashboard
 
-### Web Dashboard
+### Agent Operations Console
 
-When serving over HTTP, Toolwright includes a built-in web dashboard at the server root:
+When serving over HTTP, Toolwright includes a real-time operations console at the server root:
 
 ```bash
 toolwright serve --http
-# Dashboard: http://localhost:8745/?t=tw_...
+# Console: http://localhost:8745/?t=tw_...
 ```
 
-The dashboard provides:
+The console provides:
 
-- **Hero cards** — tool count, health %, uptime
-- **Tools table** — name, method, path, risk tier
+- **Status bar** — open work items, blocking items, event count, uptime
+- **Work items** — actionable cards for tool approvals, confirmations, circuit breaker trips, rule drafts, repair patches, and capability requests
 - **Live event feed** — SSE-powered real-time events (tool calls, decisions, drift, breaker trips)
+- **Bulk actions** — approve/block multiple pending tools at once
+- **Filter bar** — filter work items by kind (approval, confirmation, breaker, rule, repair, capability)
+- **Blocking timer** — countdown for confirmation requests with TTL
 
-Auth: the token is passed via URL query parameter on first load, then stripped from the browser URL bar.
+Actions taken in the console (approve, block, confirm, deny, kill, enable) take immediate effect on the running MCP server. Auth: the token is passed via URL query parameter on first load, then stripped from the browser URL bar.
 
 ### TUI Dashboard
 

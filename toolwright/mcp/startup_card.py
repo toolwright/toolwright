@@ -17,6 +17,9 @@ def render_startup_card(
     dashboard_url: str | None = None,
     mcp_url: str | None = None,
     auto_heal: str | None = None,
+    scope_info: str | None = None,
+    total_compiled: int | None = None,
+    governance: dict[str, str | None] | None = None,
 ) -> str:
     """Render a startup card as a plain-text box.
 
@@ -29,13 +32,23 @@ def render_startup_card(
         dashboard_url: Dashboard URL (HTTP mode only)
         mcp_url: MCP endpoint URL (HTTP mode only)
         auto_heal: Auto-heal level (e.g. "safe", "off")
+        scope_info: Comma-separated scope names (e.g. "products, orders")
+        total_compiled: Total number of compiled tools before scope filtering
+        governance: Dict of layer_name -> description (None = not configured)
     """
     total_tools = sum(tools.values())
     tool_parts = " \u00b7 ".join(f"{v} {k}" for k, v in tools.items() if v)
 
+    if scope_info and total_compiled:
+        tool_line = f"  Tools:    {total_tools} (scope: {scope_info}) of {total_compiled} compiled"
+    elif scope_info:
+        tool_line = f"  Tools:    {total_tools} (scope: {scope_info})"
+    else:
+        tool_line = f"  Tools:    {total_tools} ({tool_parts})"
+
     lines = [
         f"  Toolwright \u2014 {name}",
-        f"  Tools:    {total_tools} ({tool_parts})",
+        tool_line,
     ]
 
     # Risk bar
@@ -60,6 +73,26 @@ def render_startup_card(
         lines.append(f"  Dashboard: {dashboard_url}")
     if mcp_url:
         lines.append(f"  MCP:       {mcp_url}")
+
+    # Governance layers
+    if governance is not None:
+        CHECK = "\u2713"
+        EMPTY = "\u25CB"
+        lines.append("  Governance:")
+        layer_labels = {
+            "lockfile": "Lockfile enforcement (fail-closed)",
+            "rules": "Behavioral rules",
+            "policy": "Policy engine",
+            "breakers": "Circuit breakers",
+            "watch": "Watch mode",
+        }
+        for key in ("lockfile", "rules", "policy", "breakers", "watch"):
+            value = governance.get(key)
+            label = layer_labels.get(key, key)
+            if value:
+                lines.append(f"    {CHECK} {label}: {value}")
+            else:
+                lines.append(f"    {EMPTY} {label}: not configured")
 
     # Build box
     max_len = max(len(line) for line in lines)

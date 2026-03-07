@@ -156,6 +156,19 @@ def register_mcp_commands(
         help="Output schema validation mode: strict (client validates), warn (lenient, default), off (skip)",
     )
     @click.option(
+        "--shape-baselines",
+        type=click.Path(),
+        default=None,
+        help="Path to shape_baselines.json for autonomous drift probing (requires --watch)",
+    )
+    @click.option(
+        "--shape-probe-interval",
+        type=int,
+        default=300,
+        show_default=True,
+        help="Interval in seconds between shape drift probes (requires --shape-baselines)",
+    )
+    @click.option(
         "--http",
         "use_http",
         is_flag=True,
@@ -203,6 +216,8 @@ def register_mcp_commands(
         serve_scope: str | None,
         no_tool_limit: bool,
         schema_validation: str,
+        shape_baselines: str | None,
+        shape_probe_interval: int,
         use_http: bool,
         host: str,
         port: int,
@@ -245,6 +260,10 @@ def register_mcp_commands(
         """
         if auto_heal is not None and not watch:
             click.echo("Error: --auto-heal requires --watch", err=True)
+            ctx.exit(2)
+
+        if shape_baselines is not None and not watch:
+            click.echo("Error: --shape-baselines requires --watch", err=True)
             ctx.exit(2)
 
         # Parse CLI extra headers
@@ -305,6 +324,8 @@ def register_mcp_commands(
                 port=port,
                 extra_headers=cli_extra_headers,
                 schema_validation=schema_validation,
+                shape_baselines_path=shape_baselines,
+                shape_probe_interval=shape_probe_interval,
                 scope=serve_scope,
                 no_tool_limit=no_tool_limit,
             ),

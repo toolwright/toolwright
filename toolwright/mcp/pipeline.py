@@ -112,6 +112,7 @@ class RequestPipeline:
         session_history: Any | None = None,
         circuit_breaker: Any | None = None,
         execute_request_fn: ExecuteRequestFn | None = None,
+        console_event_store: Any | None = None,
     ) -> None:
         self.actions = actions
         self.decision_engine = decision_engine
@@ -123,6 +124,7 @@ class RequestPipeline:
         self.session_history = session_history
         self.circuit_breaker = circuit_breaker
         self._execute_request_fn = execute_request_fn
+        self._console_event_store = console_event_store
 
     async def execute(
         self,
@@ -156,7 +158,7 @@ class RequestPipeline:
                     is_error=True,
                 )
             except ImportError:
-                pass  # jsonschema not installed -- skip validation
+                logger.warning("jsonschema not installed — skipping input validation for %s", name)
 
         # Resolve endpoint and tool_id
         method, path, host = self._resolve_action_endpoint(action)
@@ -235,6 +237,27 @@ class RequestPipeline:
             reason_code=decision.reason_code.value,
             reason=decision.reason_message,
         )
+
+        # Create CONFIRMATION work item in console EventStore
+        if self._console_event_store is not None and decision.confirmation_token_id:
+            from toolwright.core.work_items import create_confirmation_item
+
+            item = create_confirmation_item(
+                token_id=decision.confirmation_token_id,
+                tool_id=tool_id,
+                arguments=ctx.call_args,
+                risk_tier=str(
+                    ctx.arguments.get("risk_tier", "medium")
+                ),
+            )
+            self._console_event_store.publish_work_item(item)
+            self._emit_console_event(
+                "decision_confirm_required", "warn",
+                f"Confirmation required: {tool_id}",
+                tool_id=tool_id,
+                work_item_id=item.id,
+            )
+
         return PipelineResult.success({
             "status": "confirmation_required",
             "decision": decision.decision.value,
@@ -369,6 +392,10 @@ class RequestPipeline:
                 reason_code=decision.reason_code.value,
                 reason="Execution allowed",
             )
+            self._emit_console_event(
+                "tool_call_success", "success",
+                f"{name} succeeded", tool_id=tool_id,
+            )
 
             # Record in session history (CORRECT pillar)
             if self.session_history is not None:
@@ -398,6 +425,10 @@ class RequestPipeline:
                 reason_code=blocked.reason_code.value,
                 reason=blocked.message,
             )
+            self._emit_console_event(
+                "tool_call_failed", "error",
+                f"{name} blocked: {blocked.message}", tool_id=tool_id,
+            )
             return PipelineResult.error({
                 "status": "blocked",
                 "action": name,
@@ -417,6 +448,10 @@ class RequestPipeline:
                 decision=DecisionType.DENY.value,
                 reason_code=ReasonCode.ERROR_INTERNAL.value,
                 reason=str(e),
+            )
+            self._emit_console_event(
+                "tool_call_failed", "error",
+                f"{name} error: {e}", tool_id=tool_id,
             )
             return PipelineResult.error({
                 "status": "error",
@@ -510,3 +545,30 @@ class RequestPipeline:
         audit_fields = getattr(decision, "audit_fields", None) or {}
         digest = audit_fields.get("request_digest")
         return str(digest) if digest else None
+
+    def _emit_console_event(
+        self,
+        event_type: str,
+        severity: str,
+        summary: str,
+        tool_id: str | None = None,
+        work_item_id: str | None = None,
+    ) -> None:
+        """Emit an event to the console EventStore if available."""
+        if self._console_event_store is None:
+            return
+        import time
+
+        from toolwright.mcp.event_store import ConsoleEvent
+
+        self._console_event_store.publish_event(
+            ConsoleEvent(
+                id="",
+                timestamp=time.time(),
+                event_type=event_type,
+                severity=severity,
+                summary=summary,
+                tool_id=tool_id,
+                work_item_id=work_item_id,
+            )
+        )

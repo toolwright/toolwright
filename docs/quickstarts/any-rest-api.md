@@ -4,6 +4,8 @@ Give Claude access to any REST API through governed MCP tools.
 
 This guide works with any API that uses bearer token or API key authentication. You'll point Toolwright at the API's web interface, browse it to capture traffic, and get a governed MCP server.
 
+> **Guided experience:** `toolwright ship` walks you through each step interactively. This quickstart does it step-by-step so you understand what's happening.
+
 > **Check for a recipe first:** Run `toolwright recipes list` to see if a bundled recipe exists for your API. If so, use `toolwright mint --recipe <name>` to pre-fill hosts, headers, and rules.
 
 ## Prerequisites
@@ -55,7 +57,8 @@ When done, close the browser window or press `Ctrl+C`.
 
 ```
 Minting toolpack from https://your-app.example.com...
-  Capturing traffic (120s)...
+  Capturing traffic from api.example.com... Browse normally, then close the browser when done.
+  Captured 23 API calls from 1 host(s).
 
 Probing your-app.example.com...
   ⚠ api.example.com — Auth required: Bearer (401)
@@ -68,7 +71,13 @@ Probing your-app.example.com...
 
 Mint complete: api-example-com
   Toolpack: .toolwright/toolpacks/api-example-com/toolpack.yaml
-  Pending approvals: 23
+
+  Gate: 23 pending
+  Rules: crud-safety (3 rules applied)
+
+  Example tool: get_products
+    GET /products
+    Parameters: page (integer), limit (integer)
 
   23 tools in 5 groups
     products (8)        orders (6)          users (5)           ...
@@ -90,14 +99,27 @@ The env var name follows a pattern: `TOOLWRIGHT_AUTH_` + your API host with dots
 | `api.notion.com` | `TOOLWRIGHT_AUTH_API_NOTION_COM` |
 | `api-v2.example.co.uk` | `TOOLWRIGHT_AUTH_API_V2_EXAMPLE_CO_UK` |
 
-## Step 5: Approve and serve
+## Step 5: Review and approve
+
+Check what tools were created:
+
+```bash
+toolwright gate status
+```
+
+Then approve:
 
 ```bash
 toolwright gate allow --all
-toolwright serve
 ```
 
-The first command approves all tools at once — fine for getting started. In production, review tools individually with `toolwright gate status` and approve selectively. The second command starts the MCP server.
+`gate status` shows tools by risk tier. `gate allow --all` approves everything — fine for getting started. In production, review and approve selectively.
+
+## Step 6: Serve
+
+```bash
+toolwright serve
+```
 
 > **Too many tools?** Serve a subset with `--scope`:
 > ```bash
@@ -105,7 +127,7 @@ The first command approves all tools at once — fine for getting started. In pr
 > toolwright serve --scope products,orders    # serve specific groups
 > ```
 
-## Step 6: Connect to Claude Desktop
+## Step 7: Connect to Claude Desktop
 
 ```bash
 toolwright config
@@ -118,7 +140,7 @@ Paste the output into your Claude Desktop config:
 
 Make sure the toolpack path is absolute. Restart Claude Desktop.
 
-## Step 7: Try it
+## Step 8: Try it
 
 Open Claude Desktop and ask something about your API:
 
@@ -182,5 +204,6 @@ Or override the limit: `toolwright serve --no-tool-limit`
 
 - [GitHub API quickstart](github.md) — specific walkthrough for GitHub
 - Detect API drift: `toolwright drift`
+- Continuous monitoring: `toolwright serve --watch --auto-heal safe`
 - Add behavioral rules: `toolwright rules add --help`
 - Full user guide: [docs/user-guide.md](../user-guide.md)

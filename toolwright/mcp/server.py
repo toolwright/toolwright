@@ -848,10 +848,49 @@ class ToolwrightMCPServer:
 
     def run_http(self, *, host: str = "127.0.0.1", port: int = 8745) -> None:
         """Start the HTTP transport (StreamableHTTP via Starlette/uvicorn)."""
+        from toolwright.mcp.event_store import EventStore
         from toolwright.mcp.http_transport import ToolwrightHTTPApp
 
-        app = ToolwrightHTTPApp(self, host=host, port=port)
+        # Create console EventStore in the state directory
+        state_dir = Path(self.approval_root_path) / ".toolwright" / "state" / "console"
+        console_event_store = EventStore(state_dir=state_dir)
+
+        # Create TOOL_APPROVAL work items for pending tools
+        self._create_startup_work_items(console_event_store)
+
+        app = ToolwrightHTTPApp(
+            self,
+            host=host,
+            port=port,
+            console_event_store=console_event_store,
+            confirmation_store=self.confirmation_store,
+            lockfile_manager=self.lockfile_manager,
+            circuit_breaker=self.circuit_breaker,
+            rule_engine=self.rule_engine,
+        )
         app.run()
+
+    def _create_startup_work_items(self, event_store: Any) -> None:
+        """Create TOOL_APPROVAL work items for pending tools at serve startup."""
+        if self.lockfile_manager is None:
+            return
+
+        from toolwright.core.work_items import create_tool_approval_item
+
+        lockfile = self.lockfile_manager.lockfile
+        if lockfile is None:
+            return
+
+        for tool_id, tool in lockfile.tools.items():
+            if tool.status == ApprovalStatus.PENDING:
+                item = create_tool_approval_item(
+                    tool_id=tool.tool_id or tool_id,
+                    method=tool.method,
+                    path=tool.path,
+                    risk_tier=tool.risk_tier,
+                    description=f"{tool.name} ({tool.host})",
+                )
+                event_store.publish_work_item(item)
 
     async def close(self) -> None:
         if self._http_client:

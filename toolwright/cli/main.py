@@ -15,6 +15,7 @@ from toolwright.branding import (
 )
 from toolwright.cli.commands_approval import register_approval_commands
 from toolwright.cli.commands_auth import register_auth_check_command
+from toolwright.cli.commands_create import register_create_commands
 from toolwright.cli.commands_groups import register_groups_commands
 from toolwright.cli.commands_kill import register_kill_commands
 from toolwright.cli.commands_mcp import register_mcp_commands
@@ -40,43 +41,46 @@ ADVANCED_COMMANDS = {
     "propose",
     "scope",
     "state",
-}
-
-# Commands shown in the "More" section of default help.
-MORE_COMMANDS = {
-    "capture",
-    "auth",
-}
-
-# Core commands shown prominently in default help, in workflow order.
-CORE_COMMANDS = [
-    "status",
+    "run",
     "ship",
     "init",
-    "mint",
-    "gate",
-    "serve",
-    "config",
-    "verify",
-    "drift",
-    "repair",
-    "diff",
-    "dashboard",
-    "rules",
-    "kill",
-    "enable",
-    "quarantine",
-    "health",
-    "run",
-    "use",
     "demo",
     "rename",
-    "watch",
+    "use",
     "snapshots",
     "rollback",
     "share",
     "install",
+    "capture",
+    "wrap",
+}
+
+# Operations commands shown after core in default help.
+OPERATIONS_COMMANDS = [
+    "drift",
+    "diff",
+    "repair",
+    "verify",
+    "health",
+    "auth",
+    "kill",
+    "enable",
+    "quarantine",
+    "watch",
     "recipes",
+    "dashboard",
+]
+
+# Core commands shown prominently in default help, in workflow order.
+CORE_COMMANDS = [
+    "create",
+    "mint",
+    "serve",
+    "gate",
+    "status",
+    "rules",
+    "groups",
+    "config",
 ]
 
 
@@ -104,7 +108,7 @@ class ToolwrightGroup(click.Group):
             raise
 
     def format_commands(self, ctx: click.Context, formatter: click.HelpFormatter) -> None:
-        """Write command sections: Core, More."""
+        """Write command sections: Quick Start, Operations, Advanced hint."""
         commands = []
         for subcommand in self.list_commands(ctx):
             cmd = self.commands.get(subcommand)
@@ -116,20 +120,17 @@ class ToolwrightGroup(click.Group):
         if not commands:
             return
 
-        core = [(n, h) for n, h in commands if n in CORE_COMMANDS]
-        more = [(n, h) for n, h in commands if n in MORE_COMMANDS]
+        cmd_map = dict(commands)
 
-        # Sort core commands in workflow order.
-        core_order = list(CORE_COMMANDS)
-        core.sort(key=lambda x: core_order.index(x[0]) if x[0] in core_order else 99)
-        more.sort()
+        core = [(n, cmd_map[n]) for n in CORE_COMMANDS if n in cmd_map]
+        ops = [(n, cmd_map[n]) for n in OPERATIONS_COMMANDS if n in cmd_map]
 
         if core:
-            with formatter.section("Core Commands"):
+            with formatter.section("Quick Start"):
                 formatter.write_dl(core)
-        if more:
-            with formatter.section("Advanced"):
-                formatter.write_dl(more)
+        if ops:
+            with formatter.section("Operations"):
+                formatter.write_dl(ops)
 
         formatter.write("\n")
         formatter.write("  Use 'toolwright <command> --help' for details on any command.\n")
@@ -640,9 +641,9 @@ def _detect_openapi_format(source: str, default: str) -> str:
 )
 @click.option(
     "--headless/--no-headless",
-    default=True,
+    default=False,
     show_default=True,
-    help="Run browser headless during capture",
+    help="Run browser headless during capture (default: interactive)",
 )
 @click.option(
     "--script",
@@ -652,7 +653,7 @@ def _detect_openapi_format(source: str, default: str) -> str:
 @click.option(
     "--duration",
     type=int,
-    default=30,
+    default=120,
     show_default=True,
     help="Capture duration in seconds when no script is provided",
 )
@@ -727,6 +728,17 @@ def _detect_openapi_format(source: str, default: str) -> str:
     default=None,
     help="Use a bundled API recipe (e.g., shopify, github). Sets hosts, headers, auth.",
 )
+@click.option(
+    "--auto-approve/--no-auto-approve",
+    default=False,
+    help="Auto-approve low/medium risk tools via smart gate (default: off for mint).",
+)
+@click.option(
+    "--rules/--no-rules",
+    "apply_rules",
+    default=True,
+    help="Apply default behavioral rules (crud-safety) after minting.",
+)
 @click.pass_context
 def mint(
     ctx: click.Context,
@@ -750,6 +762,8 @@ def mint(
     extra_header_raw: tuple[str, ...],
     no_probe: bool,
     recipe: str | None,
+    auto_approve: bool,
+    apply_rules: bool,
 ) -> None:
     """Capture traffic and compile a governed toolpack.
 
@@ -815,6 +829,8 @@ def mint(
             extra_headers=extra_headers,
             no_probe=no_probe,
             recipe=recipe,
+            auto_approve=auto_approve,
+            apply_rules=apply_rules,
         ),
     )
 
@@ -852,7 +868,7 @@ def diff(
     output: str | None,
     output_format: str,
 ) -> None:
-    """Generate a risk-classified change report."""
+    """Compare toolpack versions (what changed in your tools)."""
     from toolwright.utils.resolve import resolve_toolpack_path
 
     resolved = str(resolve_toolpack_path(explicit=toolpack, root=ctx.obj.get("root")))
@@ -1041,7 +1057,7 @@ def drift(
     output_format: str,
     deterministic: bool,
 ) -> None:
-    """Detect drift between captures or against a baseline.
+    """Check live API for behavioral changes (what changed upstream).
 
     \b
     Examples:
@@ -1426,6 +1442,12 @@ register_watch_commands(cli=cli)
 register_snapshot_commands(cli=cli)
 register_groups_commands(cli=cli)
 register_recipes_commands(cli=cli)
+register_create_commands(cli=cli, run_with_lock=_run_with_lock)
+
+# Register wrap (overlay) command
+from toolwright.cli.commands_wrap import wrap_command as _wrap_cmd  # noqa: E402
+
+cli.add_command(_wrap_cmd, "wrap")
 
 # Register drift status subcommand
 from toolwright.cli.drift import drift_status as _drift_status_cmd  # noqa: E402

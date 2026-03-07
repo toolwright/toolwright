@@ -205,12 +205,18 @@ def register_approval_commands(
         type=click.Choice(["pending", "approved", "rejected"]),
         help="Filter by approval status",
     )
+    @click.option(
+        "--by-group",
+        is_flag=True,
+        help="Show approval summary grouped by tool group",
+    )
     @click.pass_context
     def gate_status(
         ctx: click.Context,
         toolpack: str | None,
         lockfile: str | None,
         status_filter: str | None,
+        by_group: bool,
     ) -> None:
         """List tool approvals from the lockfile.
 
@@ -219,7 +225,82 @@ def register_approval_commands(
           toolwright gate status
           toolwright gate status --toolpack toolpack.yaml
           toolwright gate status --status pending
+          toolwright gate status --by-group --toolpack toolpack.yaml
         """
+        if by_group:
+            # Resolve groups path from toolpack
+            groups_path = None
+            resolved_toolpack = _auto_resolve_toolpack(toolpack, root=ctx.obj.get("root"))
+            if resolved_toolpack:
+                from toolwright.core.toolpack import load_toolpack, resolve_toolpack_paths
+
+                try:
+                    tp = load_toolpack(resolved_toolpack)
+                    resolved = resolve_toolpack_paths(toolpack=tp, toolpack_path=resolved_toolpack)
+                    groups_path = resolved.groups_path
+                    if not lockfile:
+                        lockfile = str(resolved.approved_lockfile_path or resolved.pending_lockfile_path)
+                except Exception:
+                    pass
+
+            if groups_path is None or not groups_path.exists():
+                click.echo("No tool groups found. Run 'toolwright compile' to generate groups.", err=True)
+                ctx.exit(1)
+                return
+
+            from toolwright.core.compile.grouper import load_groups_index
+
+            groups_index = load_groups_index(groups_path)
+            if groups_index is None or not groups_index.groups:
+                click.echo("No tool groups found.", err=True)
+                ctx.exit(1)
+                return
+
+            # Load lockfile for status info
+            from toolwright.core.approval import LockfileManager
+
+            if not lockfile:
+                click.echo("No lockfile found. Run 'toolwright gate sync' first.", err=True)
+                ctx.exit(1)
+                return
+
+            manager = LockfileManager(lockfile)
+            if not manager.exists():
+                click.echo(f"No lockfile found at: {manager.lockfile_path}", err=True)
+                ctx.exit(1)
+                return
+
+            manager.load()
+            lf = manager.lockfile
+            assert lf is not None
+
+            # Build tool -> status map
+            tool_statuses: dict[str, str] = {}
+            for tool in lf.tools.values():
+                tool_statuses[tool.name] = tool.status.value
+
+            click.echo("\nApproval status by group:\n")
+            for group in groups_index.groups:
+                approved = sum(1 for t in group.tools if tool_statuses.get(t) == "approved")
+                pending = sum(1 for t in group.tools if tool_statuses.get(t, "pending") == "pending")
+                rejected = sum(1 for t in group.tools if tool_statuses.get(t) == "rejected")
+
+                parts = []
+                if approved:
+                    parts.append(f"{approved} approved")
+                if pending:
+                    parts.append(f"{pending} pending")
+                if rejected:
+                    parts.append(f"{rejected} rejected")
+
+                status_str = ", ".join(parts) if parts else "unknown"
+                click.echo(f"  {group.name} ({len(group.tools)} tools)    {status_str}")
+
+            if groups_index.ungrouped:
+                click.echo(f"\n  Ungrouped: {len(groups_index.ungrouped)} tools")
+
+            return
+
         if not toolpack and not lockfile:
             toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
         if toolpack and not lockfile:

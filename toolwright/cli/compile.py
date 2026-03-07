@@ -56,6 +56,7 @@ class CompileResult:
     policy_path: Path | None = None
     baseline_path: Path | None = None
     groups_path: Path | None = None
+    shape_baselines_path: Path | None = None
 
 
 def compile_capture_session(
@@ -124,6 +125,7 @@ def compile_capture_session(
     policy_path: Path | None = None
     baseline_path: Path | None = None
     groups_path: Path | None = None
+    shape_baselines_path: Path | None = None
     manifest: dict[str, Any] | None = None
     tool_gen: ToolManifestGenerator | None = None
 
@@ -261,6 +263,18 @@ def compile_capture_session(
             f.write(baseline_gen.to_json(baseline))
         artifacts_created.append(("Baseline", baseline_path))
 
+    # Shape baselines: infer response shapes from exchange bodies
+    if manifest and session.exchanges:
+        from toolwright.core.drift.baselines import compile_shape_baselines
+
+        shape_index = compile_shape_baselines(session, manifest)
+        if shape_index.baselines:
+            shape_baselines_path = output_path / "shape_baselines.json"
+            shape_index.save(shape_baselines_path)
+            artifacts_created.append(("Shape Baselines", shape_baselines_path))
+            if verbose:
+                click.echo(f"  Shape baselines: {len(shape_index.baselines)} tools")
+
     # Scope inference: emit scopes.suggested.yaml
     if filtered_endpoints:
         from toolwright.core.scope.inference import ScopeInferenceEngine
@@ -302,6 +316,7 @@ def compile_capture_session(
         policy_path=policy_path,
         baseline_path=baseline_path,
         groups_path=groups_path,
+        shape_baselines_path=shape_baselines_path,
     )
 
 
@@ -545,6 +560,7 @@ def _package_toolpack(
     copied_policy = artifact_dir / "policy.yaml"
     copied_baseline = artifact_dir / "baseline.json"
     copied_groups = artifact_dir / "groups.json"
+    copied_shape_baselines = artifact_dir / "shape_baselines.json"
     copied_contracts = artifact_dir / "contracts.yaml"
     copied_contract_yaml = artifact_dir / "contract.yaml"
     copied_contract_json = artifact_dir / "contract.json"
@@ -604,6 +620,11 @@ def _package_toolpack(
                 if copied_groups.exists()
                 else None
             ),
+            baselines=(
+                str(copied_shape_baselines.relative_to(toolpack_dir))
+                if copied_shape_baselines.exists()
+                else None
+            ),
             lockfiles=lockfiles,
         ),
         runtime=ToolpackRuntime(mode="local"),
@@ -612,6 +633,26 @@ def _package_toolpack(
     toolpack_file = toolpack_dir / "toolpack.yaml"
     write_toolpack(toolpack, toolpack_file)
     return toolpack_file
+
+
+def _print_group_summary(groups_index: Any, total_tools: int) -> None:
+    """Print a compact group summary after compile."""
+    click.echo(f"\n  {total_tools} tools in {len(groups_index.groups)} groups")
+
+    # Show top 8 groups by tool count
+    top = sorted(groups_index.groups, key=lambda g: len(g.tools), reverse=True)[:8]
+    parts = [f"{g.name} ({len(g.tools)})" for g in top]
+
+    # Format in rows of 4
+    for i in range(0, len(parts), 4):
+        row = "    ".join(f"{p:<20}" for p in parts[i : i + 4])
+        click.echo(f"    {row}")
+
+    if len(groups_index.groups) > 8:
+        click.echo(f"    ... ({len(groups_index.groups) - 8} more)")
+
+    click.echo(f"\n  Serve subset: toolwright serve --scope {top[0].name}")
+    click.echo("  All groups:  toolwright groups list")
 
 
 def run_compile(
@@ -656,6 +697,13 @@ def run_compile(
     click.echo("\nArtifacts:")
     for name, path in result.artifacts_created:
         click.echo(f"  - {name}: {path.name}")
+
+    # Print group summary if groups were generated
+    if result.groups_path and result.groups_path.exists():
+        from toolwright.core.compile.grouper import load_groups_index
+        groups_index = load_groups_index(result.groups_path)
+        if groups_index and groups_index.groups:
+            _print_group_summary(groups_index, result.endpoint_count)
 
     # Package into a toolpack directory if we have the required artifacts
     if result.tools_path and result.toolsets_path and result.policy_path and result.baseline_path:

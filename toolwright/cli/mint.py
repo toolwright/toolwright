@@ -6,6 +6,7 @@ import asyncio
 import dataclasses
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -36,6 +37,118 @@ from toolwright.utils.config import build_mcp_config_payload
 from toolwright.utils.runtime import is_stable_release
 from toolwright.utils.schema_version import resolve_generated_at
 
+# ---------------------------------------------------------------------------
+# Result types for auto-approve and rules helpers
+# ---------------------------------------------------------------------------
+
+
+@dataclasses.dataclass
+class AutoApproveResult:
+    """Summary of auto-approval via smart gate."""
+
+    approved_count: int = 0
+    pending_count: int = 0
+
+
+@dataclasses.dataclass
+class DefaultRulesResult:
+    """Summary of default rule template application."""
+
+    rule_count: int = 0
+    template_name: str = ""
+
+
+# ---------------------------------------------------------------------------
+# Helper functions for mint UX
+# ---------------------------------------------------------------------------
+
+
+def format_capture_message(allowed_hosts: list[str]) -> str:
+    """Return the capture progress message with host names."""
+    hosts = ", ".join(allowed_hosts) if allowed_hosts else "target"
+    return f"  Capturing traffic from {hosts}... Browse normally, then close the browser when done."
+
+
+def format_example_tool(tool: dict) -> str:
+    """Format a single tool for display as an example."""
+    name = tool.get("name", "unknown")
+    method = tool.get("method", "GET")
+    path = tool.get("path", "/")
+    schema = tool.get("input_schema", {})
+    props = schema.get("properties", {})
+
+    lines = [
+        "\n  Example tool:",
+        f"    {name}  {method} {path}",
+    ]
+
+    if props:
+        param_parts = []
+        for pname, pinfo in list(props.items())[:5]:
+            ptype = pinfo.get("type", "string")
+            param_parts.append(f"{pname}: {ptype}")
+        lines.append(f"    Parameters: {', '.join(param_parts)}")
+
+    return "\n".join(lines)
+
+
+def auto_approve_lockfile(lockfile_path: Path) -> AutoApproveResult:
+    """Auto-approve low/medium risk tools using smart gate classification.
+
+    Returns counts of approved and still-pending tools.
+    """
+    from toolwright.core.approval import LockfileManager
+    from toolwright.core.approval.smart_gate import classify_approval
+
+    manager = LockfileManager(lockfile_path)
+    manager.load()
+    assert manager.lockfile is not None
+
+    approved = 0
+    pending = 0
+
+    for tool_id, tool in manager.lockfile.tools.items():
+        if tool.status.value != "pending":
+            continue
+        classification = classify_approval(tool.risk_tier)
+        if classification.auto_approve:
+            manager.approve(
+                tool_id,
+                approved_by=classification.approved_by,
+                reason="auto-approved by risk policy",
+            )
+            approved += 1
+        else:
+            pending += 1
+
+    manager.save()
+    return AutoApproveResult(approved_count=approved, pending_count=pending)
+
+
+def apply_default_rules(
+    *,
+    rules_path: Path,
+    apply_rules: bool = True,
+    template_name: str = "crud-safety",
+) -> DefaultRulesResult:
+    """Apply default rule template (crud-safety) to the toolpack.
+
+    Returns count of rules created.
+    """
+    if not apply_rules:
+        return DefaultRulesResult(rule_count=0, template_name="")
+
+    from toolwright.rules.loader import apply_template
+
+    try:
+        created = apply_template(template_name, rules_path=rules_path)
+        return DefaultRulesResult(
+            rule_count=len(created),
+            template_name=template_name,
+        )
+    except ValueError:
+        return DefaultRulesResult(rule_count=0, template_name=template_name)
+
 
 def run_mint(
     *,
@@ -60,6 +173,8 @@ def run_mint(
     extra_headers: dict[str, str] | None = None,
     no_probe: bool = False,
     recipe: str | None = None,
+    auto_approve: bool = False,
+    apply_rules: bool = True,
 ) -> None:
     """Mint a first-class toolpack from browser traffic capture."""
     if script_path and not Path(script_path).exists():
@@ -114,7 +229,7 @@ def run_mint(
     if script_path:
         click.echo(f"  Capturing traffic (scripted: {Path(script_path).name})...")
     else:
-        click.echo(f"  Capturing traffic ({duration_seconds}s)...")
+        click.echo(format_capture_message(allowed_hosts))
     if verbose:
         click.echo(f"  Allowed hosts: {', '.join(allowed_hosts)}")
         click.echo(f"  Headless: {headless}")
@@ -162,6 +277,8 @@ def run_mint(
     except Exception as exc:
         emit_playwright_error(exc, verbose=verbose, operation="capture")
         sys.exit(1)
+
+    click.echo(f"  Captured {len(session.exchanges)} API calls from {len(session.allowed_hosts)} host(s).")
 
     if webmcp:
         webmcp_exchanges = discover_webmcp_exchanges(
@@ -296,6 +413,11 @@ def run_mint(
         deterministic=deterministic,
     )
 
+    # Smart gate auto-approval (only if flag is set)
+    gate_result: AutoApproveResult | None = None
+    if auto_approve:
+        gate_result = auto_approve_lockfile(pending_lockfile)
+
     approved_lockfile = lockfile_dir / "toolwright.lock.yaml"
     lockfiles: dict[str, str] = {
         "pending": str(pending_lockfile.relative_to(toolpack_dir)),
@@ -375,6 +497,14 @@ def run_mint(
                 except ValueError:
                     pass  # Unknown template -- skip silently
 
+    # Apply default behavioral rules (crud-safety) unless disabled or recipe already applied
+    rules_result: DefaultRulesResult | None = None
+    if apply_rules and not recipe:
+        rules_path = toolpack_dir / "rules.json"
+        rules_result = apply_default_rules(rules_path=rules_path)
+        if rules_result.rule_count > 0:
+            click.echo(f"  Applied default rules '{rules_result.template_name}': {rules_result.rule_count} rules")
+
     if runtime_mode == "container" and runtime is not None:
         if runtime.container is None:
             click.echo("Error: runtime container configuration missing", err=True)
@@ -411,7 +541,14 @@ def run_mint(
     click.echo(f"  Capture location: {capture_path}")
     click.echo(f"  Artifact: {compile_result.artifact_id}")
     click.echo(f"  Toolpack: {toolpack_file}")
-    click.echo(f"  Pending approvals: {sync_result.pending_count}")
+
+    # Show approval summary reflecting auto-approval
+    if gate_result and gate_result.approved_count > 0:
+        click.echo(f"  Auto-approved: {gate_result.approved_count} (low/medium risk)")
+        if gate_result.pending_count > 0:
+            click.echo(f"  Pending review: {gate_result.pending_count} (high/critical risk)")
+    else:
+        click.echo(f"  Pending approvals: {sync_result.pending_count}")
 
     # Show group summary if groups were generated
     if copied_groups.exists():
@@ -429,6 +566,14 @@ def run_mint(
                 click.echo(f"    ... ({len(groups_idx.groups) - 8} more)")
             click.echo(f"\n  Serve subset: toolwright serve --scope {top[0].name}")
             click.echo("  All groups:  toolwright groups list")
+
+    # Show example tool
+    if copied_tools.exists():
+        tools_data = json.loads(copied_tools.read_text())
+        actions = tools_data.get("actions", [])
+        if actions:
+            example = next((a for a in actions if a.get("method") == "GET"), actions[0])
+            click.echo(format_example_tool(example))
 
     # Show auth setup info (only when auth was actually detected)
     if auth_requirements_list and any(ar.scheme != "none" for ar in auth_requirements_list):
@@ -816,13 +961,19 @@ def _render_probe_results(
     if result.base_status is not None:
         if result.auth_required:
             scheme_info = f": {result.auth_scheme}" if result.auth_scheme else ""
-            lines.append(click.style(
-                f"  {WARN} Auth required{scheme_info} ({result.base_status})",
-                fg="yellow",
-            ))
             env_var = _host_to_env_var(primary_host)
-            token_hint = f"{result.auth_scheme} <your-token>" if result.auth_scheme else "<your-token>"
-            lines.append(f'    export {env_var}="{token_hint}"')
+            if os.environ.get(env_var):
+                lines.append(click.style(
+                    f"  {WARN} {primary_host} \u2014 Auth required{scheme_info} ({result.base_status}) {CHECK} configured",
+                    fg="yellow",
+                ))
+            else:
+                lines.append(click.style(
+                    f"  {WARN} {primary_host} \u2014 Auth required{scheme_info} ({result.base_status})",
+                    fg="yellow",
+                ))
+                token_hint = f"{result.auth_scheme} <your-token>" if result.auth_scheme else "<your-token>"
+                lines.append(f'    export {env_var}="{token_hint}"')
         else:
             lines.append(click.style(
                 f"  {CHECK} Reachable ({result.base_status})",
@@ -854,13 +1005,19 @@ def _render_probe_results(
         if info.get("auth_required"):
             scheme = info.get("auth_scheme")
             scheme_info = f": {scheme}" if scheme else ""
-            lines.append(click.style(
-                f"  {WARN} {host} \u2014 Auth required{scheme_info} ({status})",
-                fg="yellow",
-            ))
             env_var = _host_to_env_var(host)
-            token_hint = f"{scheme} <your-token>" if scheme else "<your-token>"
-            lines.append(f'    export {env_var}="{token_hint}"')
+            if os.environ.get(env_var):
+                lines.append(click.style(
+                    f"  {WARN} {host} \u2014 Auth required{scheme_info} ({status}) {CHECK} configured",
+                    fg="yellow",
+                ))
+            else:
+                lines.append(click.style(
+                    f"  {WARN} {host} \u2014 Auth required{scheme_info} ({status})",
+                    fg="yellow",
+                ))
+                token_hint = f"{scheme} <your-token>" if scheme else "<your-token>"
+                lines.append(f'    export {env_var}="{token_hint}"')
         elif ct == "html":
             lines.append(click.style(
                 f"  {WARN} {host} returned HTML (likely web portal, not API root)",

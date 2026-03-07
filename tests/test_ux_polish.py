@@ -254,38 +254,37 @@ def test_verify_baseline_check_mode_no_deprecation_warning(tmp_path: Path) -> No
 
 def test_help_core_commands_in_workflow_order() -> None:
     """Core commands in --help should follow user workflow order:
-    init -> mint -> gate -> serve -> config -> verify -> ..."""
+    create -> mint -> serve -> gate -> ... -> config."""
     runner = CliRunner()
     result = runner.invoke(cli, ["--help"])
 
     assert result.exit_code == 0
     output = result.output
-    # Extract only the Core Commands section to avoid matching words elsewhere
-    core_start = output.find("Core Commands:")
-    assert core_start != -1, "Help should have a 'Core Commands:' section"
+    # Extract only the Quick Start section to avoid matching words elsewhere
+    core_start = output.find("Quick Start:")
+    assert core_start != -1, "Help should have a 'Quick Start:' section"
     core_section = output[core_start:]
 
-    # Find positions within the core section only
-    # Use "  init " pattern to match command entries, not random occurrences
-    init_pos = core_section.find("\n  init ")
+    # Find positions within the quick start section only
+    create_pos = core_section.find("\n  create ")
     mint_pos = core_section.find("\n  mint ")
-    gate_pos = core_section.find("\n  gate ")
     serve_pos = core_section.find("\n  serve ")
+    gate_pos = core_section.find("\n  gate ")
     config_pos = core_section.find("\n  config ")
 
-    assert init_pos < mint_pos, "init should appear before mint in help"
-    assert mint_pos < gate_pos, "mint should appear before gate in help"
-    assert gate_pos < serve_pos, "gate should appear before serve in help"
-    assert serve_pos < config_pos, "serve should appear before config in help"
+    assert create_pos < mint_pos, "create should appear before mint in help"
+    assert mint_pos < serve_pos, "mint should appear before serve in help"
+    assert serve_pos < gate_pos, "serve should appear before gate in help"
+    assert gate_pos < config_pos, "gate should appear before config in help"
 
 
-def test_help_more_section_renamed_to_advanced() -> None:
-    """The 'More' section should be renamed to 'Advanced' for clarity."""
+def test_help_has_operations_section() -> None:
+    """Default help should have an 'Operations' section."""
     runner = CliRunner()
     result = runner.invoke(cli, ["--help"])
 
     assert result.exit_code == 0
-    assert "Advanced" in result.output, "Help should use 'Advanced' instead of 'More'"
+    assert "Operations:" in result.output, "Help should have an 'Operations' section"
 
 
 # --- 10. Outcomes verification should return "skipped" not "pass" ---

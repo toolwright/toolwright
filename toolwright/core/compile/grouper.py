@@ -69,16 +69,16 @@ def extract_semantic_segments(path: str) -> list[str]:
         if _DATE_VERSION_RE.match(lower):
             continue
 
-        # Skip path parameters: {id} or :id.
-        if _PARAM_CURLY_RE.match(segment) or _PARAM_COLON_RE.match(segment):
-            continue
-
-        # Strip file extensions.
+        # Strip file extensions before param check so {id}.json is detected.
         cleaned = lower
         for ext in _FILE_EXTENSIONS:
             if cleaned.endswith(ext):
                 cleaned = cleaned[: -len(ext)]
                 break
+
+        # Skip path parameters: {id} or :id (checked after extension strip).
+        if _PARAM_CURLY_RE.match(cleaned) or _PARAM_COLON_RE.match(cleaned):
+            continue
 
         if cleaned:
             result.append(cleaned)

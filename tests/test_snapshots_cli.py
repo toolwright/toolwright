@@ -159,34 +159,34 @@ class TestRollbackValid:
 
 
 class TestCommandsRegistered:
-    """Test that both commands are registered in CLI help."""
+    """Test that both commands are registered in --help-all output."""
 
-    def test_snapshots_in_cli_help(self, runner):
+    def test_snapshots_in_cli_help_all(self, runner):
         from toolwright.cli.main import cli
 
-        result = runner.invoke(cli, ["--help"])
+        result = runner.invoke(cli, ["--help-all"])
         assert "snapshots" in result.output
 
-    def test_rollback_in_cli_help(self, runner):
+    def test_rollback_in_cli_help_all(self, runner):
         from toolwright.cli.main import cli
 
-        result = runner.invoke(cli, ["--help"])
+        result = runner.invoke(cli, ["--help-all"])
         assert "rollback" in result.output
 
 
-class TestSnapshotsInCoreCommands:
-    """Test that snapshots is in CORE_COMMANDS."""
+class TestSnapshotsInAdvancedCommands:
+    """Test that snapshots is in ADVANCED_COMMANDS."""
 
-    def test_snapshots_in_core_commands(self):
-        from toolwright.cli.main import CORE_COMMANDS
+    def test_snapshots_in_advanced_commands(self):
+        from toolwright.cli.main import ADVANCED_COMMANDS
 
-        assert "snapshots" in CORE_COMMANDS
+        assert "snapshots" in ADVANCED_COMMANDS
 
 
-class TestRollbackInCoreCommands:
-    """Test that rollback is in CORE_COMMANDS."""
+class TestRollbackInAdvancedCommands:
+    """Test that rollback is in ADVANCED_COMMANDS."""
 
-    def test_rollback_in_core_commands(self):
-        from toolwright.cli.main import CORE_COMMANDS
+    def test_rollback_in_advanced_commands(self):
+        from toolwright.cli.main import ADVANCED_COMMANDS
 
-        assert "rollback" in CORE_COMMANDS
+        assert "rollback" in ADVANCED_COMMANDS

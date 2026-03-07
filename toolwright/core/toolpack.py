@@ -89,6 +89,7 @@ class ToolpackPaths(BaseModel):
     evidence_summary: str | None = None
     evidence_summary_sha256: str | None = None
     groups: str | None = None
+    baselines: str | None = None  # Response shape baselines for traffic-captured drift
     lockfiles: dict[str, str] = Field(default_factory=dict)
 
 
@@ -136,6 +137,7 @@ class ResolvedToolpackPaths:
     evidence_summary_path: Path | None
     evidence_summary_sha256_path: Path | None
     groups_path: Path | None
+    baselines_path: Path | None  # Response shape baselines for traffic-captured drift
     pending_lockfile_path: Path | None
     approved_lockfile_path: Path | None
 
@@ -243,6 +245,7 @@ def resolve_toolpack_paths(
         evidence_summary_path=_resolve(toolpack.paths.evidence_summary),
         evidence_summary_sha256_path=_resolve(toolpack.paths.evidence_summary_sha256),
         groups_path=_resolve(toolpack.paths.groups),
+        baselines_path=_resolve(toolpack.paths.baselines),
         pending_lockfile_path=pending_lockfile,
         approved_lockfile_path=approved_lockfile,
     )
