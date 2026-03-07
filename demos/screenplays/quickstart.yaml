@@ -1,0 +1,44 @@
+title: "Toolwright: GitHub API in 60 Seconds"
+output: "quickstart"
+variables:
+  demo_dir: "{{tmp_dir}}/toolwright_quickstart"
+settings:
+  width: 960
+  height: 640
+  font_size: 18
+  theme: "TokyoNightStorm"
+  padding: 20
+  window_bar: "Colorful"
+  framerate: 60
+  line_height: 1.15
+  letter_spacing: 0
+preinstall:
+  - "rm -rf {{demo_dir}} && mkdir -p {{demo_dir}}"
+scenarios:
+  - label: "GitHub API in 60 Seconds"
+    surface: "terminal"
+    prompt:
+      style: "macos"
+      user: "user"
+      host: "dev"
+      path: "basename"
+      symbol: "%"
+    setup:
+      - "cd {{demo_dir}}"
+      - "export PATH=/Users/thomasallicino/oss/toolwright/.venv/bin:$PATH"
+    actions:
+      - type: "toolwright create github --no-interactive"
+      - wait_for: "Next Steps"
+        wait_mode: "screen"
+        wait_timeout: "30s"
+      - sleep: "1500ms"
+      - type: "toolwright auth check"
+      - wait_for: "TOOLWRIGHT_AUTH"
+        wait_mode: "screen"
+        wait_timeout: "10s"
+      - sleep: "1200ms"
+      - type: "toolwright config"
+      - wait_for: "mcpServers"
+        wait_mode: "screen"
+        wait_timeout: "10s"
+      - sleep: "2s"
