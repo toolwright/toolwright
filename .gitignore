@@ -46,5 +46,19 @@ demos/screenplays/.terminal_demo_studio_runs/
 CLAUDE.md
 findings.md
 progress.md
+task_plan.md
 dogfood/
 toolwright-dogfood-playbook.md
+
+# Internal working files (not user-facing)
+AUDIT_REPORT.md
+cli-surface.md
+mint-output.txt
+outputscript.sh
+quickstart-actual-output.md
+server.json
+blog/
+docs/archive/
+docs/plans/
+docs/dogfood-findings.md
+tests/e2e/results/findings.md
