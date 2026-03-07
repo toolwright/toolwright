@@ -175,7 +175,7 @@ class ToolManifestGenerator:
         used_names.add(name)
 
         # Build input schema
-        input_schema = self._build_input_schema(endpoint)
+        input_schema, wrapper_key = self._build_input_schema(endpoint)
         fixed_body: dict[str, Any] | None = None
         if graphql_operation_name:
             fixed_body = self._graphql_fixed_body(endpoint, graphql_operation_name)
@@ -225,16 +225,19 @@ class ToolManifestGenerator:
         if output_schema:
             action["output_schema"] = output_schema
 
+        if wrapper_key:
+            action["request_body_wrapper"] = wrapper_key
+
         return action
 
-    def _build_input_schema(self, endpoint: Endpoint) -> dict[str, Any]:
+    def _build_input_schema(self, endpoint: Endpoint) -> tuple[dict[str, Any], str | None]:
         """Build JSON Schema for action input.
 
         Args:
             endpoint: Endpoint to build schema for
 
         Returns:
-            JSON Schema dict
+            Tuple of (JSON Schema dict, wrapper_key or None)
         """
         properties: dict[str, Any] = {}
         required: list[str] = []
@@ -279,16 +282,39 @@ class ToolManifestGenerator:
             if param.required:
                 required.append(param.name)
 
-        # Add body schema properties if present
+        # Add body schema properties if present, detecting envelope wrappers
+        wrapper_key: str | None = None
         if endpoint.request_body_schema:
             body_props = endpoint.request_body_schema.get("properties", {})
             body_required = endpoint.request_body_schema.get("required", [])
 
-            for prop_name, prop_schema in body_props.items():
-                if prop_name not in properties:
-                    properties[prop_name] = prop_schema
-                    if prop_name in body_required:
-                        required.append(prop_name)
+            # Detect envelope wrapper: exactly 1 top-level property whose type
+            # is "object" with its own sub-properties.
+            if len(body_props) == 1:
+                only_key = next(iter(body_props))
+                only_val = body_props[only_key]
+                if (
+                    isinstance(only_val, dict)
+                    and only_val.get("type") == "object"
+                    and only_val.get("properties")
+                ):
+                    # Envelope detected: flatten inner properties
+                    wrapper_key = only_key
+                    inner_props = only_val.get("properties", {})
+                    inner_required = only_val.get("required", [])
+                    for prop_name, prop_schema in inner_props.items():
+                        if prop_name not in properties:
+                            properties[prop_name] = prop_schema
+                            if prop_name in inner_required:
+                                required.append(prop_name)
+
+            # No envelope detected: add body props directly
+            if wrapper_key is None:
+                for prop_name, prop_schema in body_props.items():
+                    if prop_name not in properties:
+                        properties[prop_name] = prop_schema
+                        if prop_name in body_required:
+                            required.append(prop_name)
 
         schema: dict[str, Any] = {
             "type": "object",
@@ -298,7 +324,7 @@ class ToolManifestGenerator:
         if required:
             schema["required"] = sorted(set(required))
 
-        return schema
+        return schema, wrapper_key
 
     # Endpoints that are not collections despite being GET without trailing {param}
     _SINGLETON_SEGMENTS = {"health", "status", "ping", "ready", "alive", "version", "info", "me", "self", "whoami"}

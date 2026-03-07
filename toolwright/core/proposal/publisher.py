@@ -25,10 +25,9 @@ from toolwright.models.proposal import (
     ToolProposalSet,
     ToolProposalSpec,
 )
+from toolwright.core.risk_keywords import RISK_ORDER
 from toolwright.utils.naming import resolve_collision
 from toolwright.utils.schema_version import CURRENT_SCHEMA_VERSION, resolve_generated_at
-
-RISK_ORDER = {"safe": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
 CONFIRMATION_MAP = {
     "safe": "never",
     "low": "never",

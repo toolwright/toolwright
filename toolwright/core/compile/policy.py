@@ -175,23 +175,6 @@ class PolicyGenerator:
         })
         rule_priority -= 10
 
-        # Rule: Deny admin endpoints by default
-        admin_endpoints = [ep for ep in endpoints if "/admin" in ep.path.lower()]
-        if admin_endpoints:
-            rules.append({
-                "id": "deny_admin",
-                "name": "Block admin access by default",
-                "type": "deny",
-                "priority": 200,  # High priority
-                "match": {
-                    "path_pattern": ".*/admin.*",
-                },
-                "settings": {
-                    "message": "Admin endpoints require explicit allowlist",
-                    "justification": "Admin endpoints are high-risk and denied by default.",
-                },
-            })
-
         # Rule: Audit auth operations
         auth_endpoints = [ep for ep in endpoints if ep.is_auth_related]
         if auth_endpoints:

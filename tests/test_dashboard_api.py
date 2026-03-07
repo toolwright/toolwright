@@ -240,7 +240,7 @@ class TestDashboardStatic:
 
     @pytest.mark.asyncio
     async def test_static_serves_index(self, tmp_path: Path) -> None:
-        """GET / should serve the dashboard index.html."""
+        """GET / should serve the console or dashboard index.html."""
         from httpx import ASGITransport, AsyncClient
 
         app, _ = _make_app(tmp_path)
@@ -248,4 +248,4 @@ class TestDashboardStatic:
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             resp = await client.get("/")
             assert resp.status_code == 200
-            assert "Toolwright Dashboard" in resp.text
+            assert "Toolwright" in resp.text

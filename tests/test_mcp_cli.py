@@ -133,7 +133,8 @@ class TestMCPToolpackResolution:
         assert kwargs["toolset_name"] == "readonly"
         assert kwargs["lockfile_path"] is None
         captured = capsys.readouterr()
-        assert captured.err == ""
+        # Auth warning is expected when no auth env var is set
+        assert "WARNING" in captured.err or captured.err == ""
 
     def test_explicit_tools_override_toolpack_tools(self, tmp_path: Path) -> None:
         toolpack_path, _tools_path, toolsets_path, _policy_path = _write_toolpack_fixture(tmp_path)
@@ -143,7 +144,7 @@ class TestMCPToolpackResolution:
                 {
                     "version": "1.0.0",
                     "schema_version": "1.0",
-                    "actions": [],
+                    "actions": [{"name": "stub", "method": "GET", "path": "/stub"}],
                 }
             )
         )

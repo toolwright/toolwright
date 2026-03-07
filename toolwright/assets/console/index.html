@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Toolwright Console</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f1117;--bg2:#161b22;--bg3:#1c2129;
+  --text:#e2e8f0;--text2:#a0aec0;--text3:#718096;
+  --border:#2d3748;
+  --green:#48bb78;--green-bg:rgba(72,187,120,.1);
+  --amber:#ecc94b;--amber-bg:rgba(236,201,75,.1);
+  --red:#fc8181;--red-bg:rgba(252,129,129,.1);
+  --blue:#63b3ed;--blue-bg:rgba(99,179,237,.1);
+  --radius:6px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+code,pre,.mono{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:13px}
+
+/* Layout */
+.app{max-width:960px;margin:0 auto;padding:16px}
+header{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);margin-bottom:16px}
+header h1{font-size:16px;font-weight:600;letter-spacing:.5px}
+.conn-status{font-size:12px;display:flex;align-items:center;gap:6px}
+.conn-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.conn-dot.connected{background:var(--green)}
+.conn-dot.reconnecting{background:var(--amber)}
+.conn-dot.disconnected{background:var(--red)}
+
+/* Status bar */
+.status-bar{display:flex;gap:16px;padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column;gap:2px;cursor:pointer}
+.stat-value{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.stat:hover .stat-label{color:var(--text2)}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:8px;padding:8px 0;margin-bottom:12px;flex-wrap:wrap}
+.filter-btn{background:var(--bg2);border:1px solid var(--border);color:var(--text2);
+  padding:4px 12px;border-radius:var(--radius);cursor:pointer;font-size:12px;transition:all .15s}
+.filter-btn:hover{border-color:var(--text3);color:var(--text)}
+.filter-btn.active{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+
+/* Event feed */
+.feed{display:flex;flex-direction:column;gap:2px}
+.event{display:flex;align-items:baseline;gap:8px;padding:4px 8px;border-radius:3px;transition:background .1s}
+.event:hover{background:var(--bg2)}
+.event-time{color:var(--text3);font-size:11px;min-width:60px;font-variant-numeric:tabular-nums}
+.event-severity{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.event-severity.success{background:var(--green)}
+.event-severity.info{background:var(--text3)}
+.event-severity.warn{background:var(--amber)}
+.event-severity.error{background:var(--red)}
+.event-summary{flex:1}
+.event-tool{color:var(--blue);font-size:12px}
+
+/* Work Item cards */
+.work-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 16px;margin:8px 0;transition:all .3s}
+.work-item.blocking{border-left:3px solid var(--amber);animation:pulse 2s infinite}
+.work-item.resolved{opacity:.6;border-color:transparent}
+.work-item.approved,.work-item.applied{border-left:3px solid var(--green)}
+.work-item.denied,.work-item.dismissed{border-left:3px solid var(--red)}
+.work-item.expired{border-left:3px solid var(--text3)}
+@keyframes pulse{0%,100%{border-left-color:var(--amber)}50%{border-left-color:transparent}}
+
+.wi-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.wi-kind{font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:2px 6px;
+  border-radius:3px;background:var(--bg3);color:var(--text2)}
+.wi-risk{font-size:11px;padding:2px 6px;border-radius:3px}
+.wi-risk.low{background:var(--green-bg);color:var(--green)}
+.wi-risk.medium{background:var(--amber-bg);color:var(--amber)}
+.wi-risk.high,.wi-risk.critical{background:var(--red-bg);color:var(--red)}
+.wi-subject{font-weight:600;margin-bottom:4px}
+.wi-detail{color:var(--text2);font-size:13px;margin-bottom:8px}
+.wi-blocking{color:var(--amber);font-size:12px;margin-bottom:8px}
+.wi-evidence{background:var(--bg);padding:8px;border-radius:3px;margin-bottom:8px;
+  font-size:12px;max-height:120px;overflow:auto}
+.wi-actions{display:flex;gap:8px;flex-wrap:wrap}
+.wi-actions button{padding:6px 16px;border-radius:var(--radius);border:1px solid var(--border);
+  cursor:pointer;font-size:13px;font-weight:500;transition:all .15s}
+.wi-actions button:disabled{opacity:.5;cursor:not-allowed}
+.wi-actions button.primary{background:var(--green);color:#000;border-color:var(--green)}
+.wi-actions button.primary:hover:not(:disabled){background:#38a169}
+.wi-actions button.danger{background:var(--red-bg);color:var(--red);border-color:var(--red)}
+.wi-actions button.danger:hover:not(:disabled){background:rgba(252,129,129,.2)}
+.wi-actions button.default{background:var(--bg3);color:var(--text2)}
+.wi-actions button.default:hover:not(:disabled){background:var(--border)}
+.wi-resolved{font-size:12px;color:var(--text3);margin-top:8px}
+
+/* Bulk approval bar */
+.bulk-bar{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:8px 16px;margin:8px 0;display:flex;justify-content:space-between;align-items:center}
+.bulk-bar span{font-size:13px;color:var(--text2)}
+.bulk-bar button{padding:6px 20px;border-radius:var(--radius);background:var(--green);
+  color:#000;border:none;cursor:pointer;font-weight:600;font-size:13px}
+.bulk-bar button:hover{background:#38a169}
+
+/* New events pill */
+.new-events-pill{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:var(--blue);color:#000;padding:6px 16px;border-radius:20px;
+  cursor:pointer;font-size:13px;font-weight:600;display:none;z-index:10;
+  box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.new-events-pill:hover{background:#4299e1}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>TOOLWRIGHT CONSOLE</h1>
+    <div class="conn-status">
+      <span class="conn-dot disconnected" id="connDot"></span>
+      <span id="connLabel">Disconnected</span>
+    </div>
+  </header>
+
+  <div class="status-bar" id="statusBar">
+    <div class="stat" onclick="setFilter('all')">
+      <span class="stat-value" id="statOpen">0</span>
+      <span class="stat-label">Open Items</span>
+    </div>
+    <div class="stat" onclick="setFilter('blocking')">
+      <span class="stat-value" id="statBlocking">0</span>
+      <span class="stat-label">Blocking</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value" id="statEvents">0</span>
+      <span class="stat-label">Events</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value" id="statUptime">0s</span>
+      <span class="stat-label">Uptime</span>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="setFilter('all')" data-filter="all">All</button>
+    <button class="filter-btn" onclick="setFilter('tool_approval')" data-filter="tool_approval">Approvals</button>
+    <button class="filter-btn" onclick="setFilter('confirmation')" data-filter="confirmation">Confirmations</button>
+    <button class="filter-btn" onclick="setFilter('circuit_breaker')" data-filter="circuit_breaker">Breakers</button>
+    <button class="filter-btn" onclick="setFilter('repair_patch')" data-filter="repair_patch">Repairs</button>
+    <button class="filter-btn" onclick="setFilter('rule_draft')" data-filter="rule_draft">Rules</button>
+  </div>
+
+  <div id="bulkBar" class="bulk-bar" style="display:none">
+    <span id="bulkCount">0 tools pending approval</span>
+    <button onclick="approveAll()">Approve All</button>
+  </div>
+
+  <div class="feed" id="feed"></div>
+</div>
+
+<div class="new-events-pill" id="newEventsPill" onclick="scrollToBottom()">New events</div>
+
+<script>
+(function(){
+  'use strict';
+
+  // --- State ---
+  const workItems = new Map();
+  const events = [];
+  let lastEventId = '';
+  let currentFilter = 'all';
+  let eventCount = 0;
+  let startTime = Date.now();
+  let reconnectAttempts = 0;
+  let evtSource = null;
+
+  // --- Auth ---
+  const params = new URLSearchParams(location.search);
+  const token = params.get('t') || '';
+
+  // --- DOM helpers (safe, no innerHTML with user data) ---
+  function el(tag, attrs, children) {
+    const e = document.createElement(tag);
+    if (attrs) {
+      for (const [k, v] of Object.entries(attrs)) {
+        if (k === 'class') e.className = v;
+        else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+        else e.setAttribute(k, v);
+      }
+    }
+    if (children) {
+      for (const c of (Array.isArray(children) ? children : [children])) {
+        if (typeof c === 'string') e.appendChild(document.createTextNode(c));
+        else if (c) e.appendChild(c);
+      }
+    }
+    return e;
+  }
+
+  function text(s) { return document.createTextNode(String(s)); }
+
+  // --- Connection ---
+  function connect() {
+    const url = '/api/stream' + (token ? '?t=' + encodeURIComponent(token) : '');
+    evtSource = new EventSource(url);
+
+    evtSource.addEventListener('message', function(e) {
+      const data = JSON.parse(e.data);
+      if (e.lastEventId) lastEventId = e.lastEventId;
+      handleMessage(data);
+    });
+
+    evtSource.addEventListener('sync', function(e) {
+      handleSync(JSON.parse(e.data));
+    });
+
+    evtSource.addEventListener('status', function(e) {
+      handleStatus(JSON.parse(e.data));
+    });
+
+    evtSource.onopen = function() {
+      reconnectAttempts = 0;
+      setConnection('connected');
+    };
+
+    evtSource.onerror = function() {
+      setConnection('reconnecting');
+      reconnectAttempts++;
+      if (reconnectAttempts > 10) {
+        evtSource.close();
+        setConnection('disconnected');
+        setTimeout(connect, Math.min(30000, 1000 * Math.pow(2, reconnectAttempts - 10)));
+      }
+    };
+  }
+
+  function setConnection(state) {
+    document.getElementById('connDot').className = 'conn-dot ' + state;
+    document.getElementById('connLabel').textContent =
+      state.charAt(0).toUpperCase() + state.slice(1);
+  }
+
+  // --- SSE Handlers ---
+  function handleMessage(data) {
+    if (data.type !== 'event') return;
+    const evt = data.event;
+    if (evt.id && evt.id <= lastEventId && lastEventId !== '') return;
+    if (evt.id) lastEventId = evt.id;
+
+    eventCount++;
+    events.push(evt);
+    if (events.length > 1000) events.shift();
+
+    if (data.work_item) workItems.set(data.work_item.id, data.work_item);
+
+    appendEventEl(evt);
+    updateStats();
+  }
+
+  function handleSync(data) {
+    if (data.type !== 'work_items_sync') return;
+    workItems.clear();
+    for (const item of data.items) workItems.set(item.id, item);
+    renderAll();
+  }
+
+  function handleStatus(data) {
+    if (data.type !== 'status') return;
+    document.getElementById('statOpen').textContent = data.counts.open || 0;
+    document.getElementById('statBlocking').textContent = data.counts.blocking || 0;
+  }
+
+  // --- Rendering ---
+  function renderAll() {
+    const feed = document.getElementById('feed');
+    feed.textContent = '';
+
+    const openItems = [...workItems.values()].filter(function(i){ return i.status === 'open'; });
+    const approvals = openItems.filter(function(i){ return i.kind === 'tool_approval'; });
+
+    const bulkBar = document.getElementById('bulkBar');
+    if (approvals.length > 1) {
+      bulkBar.style.display = 'flex';
+      document.getElementById('bulkCount').textContent =
+        approvals.length + ' tools pending approval';
+    } else {
+      bulkBar.style.display = 'none';
+    }
+
+    for (const item of openItems) {
+      if (shouldShow(item.kind)) feed.appendChild(renderWorkItem(item));
+    }
+
+    var recent = events.slice(-200);
+    for (var i = 0; i < recent.length; i++) {
+      if (shouldShowEvent(recent[i])) appendEventEl(recent[i], false);
+    }
+    updateStats();
+  }
+
+  function appendEventEl(evt, scroll) {
+    if (scroll === undefined) scroll = true;
+    if (!shouldShowEvent(evt)) return;
+    var feed = document.getElementById('feed');
+
+    var row = el('div', {class: 'event'}, [
+      el('span', {class: 'event-time'}, [formatTime(evt.timestamp)]),
+      el('span', {class: 'event-severity ' + (evt.severity || 'info')}),
+      el('span', {class: 'event-summary'}, [evt.summary || '']),
+    ]);
+    if (evt.tool_id) {
+      row.appendChild(el('span', {class: 'event-tool mono'}, [evt.tool_id]));
+    }
+
+    feed.appendChild(row);
+    document.getElementById('statEvents').textContent = eventCount;
+
+    if (scroll && isNearBottom()) {
+      row.scrollIntoView({behavior: 'smooth', block: 'end'});
+    } else if (scroll) {
+      document.getElementById('newEventsPill').style.display = 'block';
+    }
+  }
+
+  function renderWorkItem(item) {
+    var classes = ['work-item'];
+    if (item.is_blocking && item.status === 'open') classes.push('blocking');
+    if (item.status !== 'open') classes.push('resolved', item.status);
+
+    var card = el('div', {class: classes.join(' '), id: 'wi-' + item.id});
+
+    // Header row
+    var kindLabel = (item.kind || '').replace(/_/g, ' ');
+    var riskClass = item.risk_tier || 'medium';
+    card.appendChild(el('div', {class: 'wi-header'}, [
+      el('span', {class: 'wi-kind'}, [kindLabel]),
+      el('span', {class: 'wi-risk ' + riskClass}, [riskClass]),
+    ]));
+
+    card.appendChild(el('div', {class: 'wi-subject'}, [item.subject_label || '']));
+    card.appendChild(el('div', {class: 'wi-detail'}, [item.subject_detail || '']));
+
+    // Blocking timer
+    if (item.is_blocking && item.status === 'open') {
+      var waitSecs = Math.floor((Date.now()/1000) - item.created_at);
+      var timerEl = el('div', {class: 'wi-blocking'}, ['Agent waiting (' + waitSecs + 's)']);
+      card.appendChild(timerEl);
+      setInterval(function(){
+        var s = Math.floor((Date.now()/1000) - item.created_at);
+        timerEl.textContent = 'Agent waiting (' + s + 's)';
+      }, 1000);
+    }
+
+    // Evidence
+    if (item.evidence && Object.keys(item.evidence).length > 0) {
+      var pre = el('pre', {class: 'wi-evidence mono'});
+      pre.textContent = JSON.stringify(item.evidence, null, 2);
+      card.appendChild(pre);
+    }
+
+    // Actions or resolved
+    if (item.status === 'open') {
+      var actionsDiv = el('div', {class: 'wi-actions'});
+      (item.actions || []).forEach(function(action) {
+        var btn = el('button', {class: action.style || 'default'}, [action.label]);
+        btn.addEventListener('click', function() {
+          if (action.confirm_text && !confirm(action.confirm_text)) return;
+          performAction(item.id, action.action_id, item.kind);
+        });
+        actionsDiv.appendChild(btn);
+      });
+      card.appendChild(actionsDiv);
+    } else {
+      card.appendChild(el('div', {class: 'wi-resolved'},
+        ['Resolved: ' + item.status + ' by ' + (item.resolved_by || 'unknown')]));
+    }
+
+    return card;
+  }
+
+  // --- Actions ---
+  var ACTION_ROUTES = {
+    tool_approval: { approve: '/api/act/gate/allow', block: '/api/act/gate/block' },
+    confirmation: { confirm: '/api/act/confirm/grant', deny: '/api/act/confirm/deny' },
+    circuit_breaker: { enable: '/api/act/enable', kill: '/api/act/kill' },
+    repair_patch: { apply: '/api/act/repair/apply', dismiss: '/api/act/repair/dismiss' },
+    rule_draft: { activate: '/api/act/rules/activate', dismiss: '/api/act/rules/dismiss' },
+    capability_request: { approve: '/api/act/gate/allow', dismiss: '/api/act/repair/dismiss' },
+  };
+
+  window.performAction = function(itemId, actionId, kind) {
+    var routes = ACTION_ROUTES[kind] || {};
+    var url = routes[actionId];
+    if (!url) return;
+
+    var body;
+    if (kind === 'tool_approval' && actionId === 'approve') {
+      var it = workItems.get(itemId);
+      body = {tool_ids: [it ? it.subject_id : itemId]};
+    } else if (kind === 'tool_approval' && actionId === 'block') {
+      var it2 = workItems.get(itemId);
+      body = {tool_id: it2 ? it2.subject_id : itemId};
+    } else {
+      body = {work_item_id: itemId};
+    }
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? 'Bearer ' + token : '',
+      },
+      body: JSON.stringify(body),
+    })
+    .then(function(resp){ return resp.json(); })
+    .then(function(data){
+      if (data.ok) {
+        if (data.work_item) workItems.set(data.work_item.id, data.work_item);
+        if (data.results) {
+          data.results.forEach(function(r){
+            if (r.work_item) workItems.set(r.work_item.id, r.work_item);
+          });
+        }
+        renderAll();
+      }
+    })
+    .catch(function(e){ console.error('Action error:', e); });
+  };
+
+  window.approveAll = function() {
+    var toolIds = [...workItems.values()]
+      .filter(function(i){ return i.kind === 'tool_approval' && i.status === 'open'; })
+      .map(function(i){ return i.subject_id; });
+    if (toolIds.length === 0) return;
+
+    fetch('/api/act/gate/allow', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? 'Bearer ' + token : '',
+      },
+      body: JSON.stringify({tool_ids: toolIds}),
+    })
+    .then(function(resp){ return resp.json(); })
+    .then(function(data){
+      if (data.results) {
+        data.results.forEach(function(r){
+          if (r.work_item) workItems.set(r.work_item.id, r.work_item);
+        });
+      }
+      renderAll();
+    })
+    .catch(function(e){ console.error('Bulk approve error:', e); });
+  };
+
+  // --- Filters ---
+  window.setFilter = function(filter) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(function(b){
+      b.classList.toggle('active', b.dataset.filter === filter);
+    });
+    renderAll();
+  };
+
+  function shouldShow(kind) {
+    return currentFilter === 'all' || currentFilter === 'blocking' || currentFilter === kind;
+  }
+
+  function shouldShowEvent(evt) {
+    if (currentFilter === 'all' || currentFilter === 'blocking') return true;
+    if (evt.work_item_id) {
+      var item = workItems.get(evt.work_item_id);
+      if (item) return item.kind === currentFilter;
+    }
+    return true;
+  }
+
+  // --- Utilities ---
+  function formatTime(ts) {
+    var d = new Date(ts * 1000);
+    var diff = (Date.now() - d.getTime()) / 1000;
+    if (diff < 60) return Math.floor(diff) + 's ago';
+    if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+    return d.toLocaleTimeString();
+  }
+
+  function isNearBottom() {
+    return (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
+  }
+
+  window.scrollToBottom = function() {
+    window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
+    document.getElementById('newEventsPill').style.display = 'none';
+  };
+
+  function updateStats() {
+    var open = 0, blocking = 0;
+    workItems.forEach(function(i){
+      if (i.status === 'open') { open++; if (i.is_blocking) blocking++; }
+    });
+    document.getElementById('statOpen').textContent = open;
+    document.getElementById('statBlocking').textContent = blocking;
+    document.getElementById('statEvents').textContent = eventCount;
+
+    var secs = Math.floor((Date.now() - startTime) / 1000);
+    var uptimeText;
+    if (secs < 60) uptimeText = secs + 's';
+    else if (secs < 3600) uptimeText = Math.floor(secs/60) + 'm';
+    else uptimeText = Math.floor(secs/3600) + 'h';
+    document.getElementById('statUptime').textContent = uptimeText;
+  }
+
+  setInterval(updateStats, 5000);
+
+  window.addEventListener('scroll', function() {
+    if (isNearBottom()) document.getElementById('newEventsPill').style.display = 'none';
+  });
+
+  // --- Init ---
+  function fetchInitial() {
+    var headers = token ? {'Authorization': 'Bearer ' + token} : {};
+
+    Promise.all([
+      fetch('/api/overview', {headers: headers}),
+      fetch('/api/work-items', {headers: headers}),
+    ])
+    .then(function(responses){
+      return Promise.all(responses.map(function(r){ return r.ok ? r.json() : null; }));
+    })
+    .then(function(results){
+      if (results[0]) {
+        startTime = Date.now() - (results[0].uptime * 1000);
+        updateStats();
+      }
+      if (results[1] && results[1].items) {
+        results[1].items.forEach(function(item){
+          workItems.set(item.id, item);
+        });
+        renderAll();
+      }
+    })
+    .catch(function(e){ console.error('Failed to fetch initial data:', e); });
+  }
+
+  fetchInitial();
+  connect();
+})();
+</script>
+</body>
+</html>

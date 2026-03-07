@@ -26,6 +26,9 @@ def run_drift(
     verbose: bool,
     deterministic: bool = True,
     root_path: str = ".toolwright",
+    shape_baselines: str | None = None,
+    tool: str | None = None,
+    response_file: str | None = None,
 ) -> None:
     """Run the drift command.
 
@@ -38,7 +41,20 @@ def run_drift(
         output_format: Output format (json, markdown, both)
         verbose: Enable verbose output
         deterministic: Use deterministic report IDs and generated_at metadata
+        shape_baselines: Path to shape_baselines.json for shape-based drift
+        tool: Tool name for shape-based drift detection
+        response_file: Path to JSON response body for shape-based drift
     """
+    # Shape-based drift detection mode
+    if shape_baselines:
+        run_shape_drift(
+            shape_baselines_path=shape_baselines,
+            tool=tool,
+            response_file=response_file,
+            verbose=verbose,
+        )
+        return
+
     storage = Storage(base_path=root_path)
     engine = DriftEngine()
 
@@ -205,3 +221,143 @@ def _compare_to_baseline(
 
     # Run comparison
     return engine.compare_to_baseline(baseline, endpoints, deterministic=deterministic)
+
+
+def run_shape_drift(
+    shape_baselines_path: str,
+    tool: str | None,
+    response_file: str | None,
+    verbose: bool,
+) -> None:
+    """Run shape-based drift detection for a single tool.
+
+    Args:
+        shape_baselines_path: Path to shape_baselines.json.
+        tool: Tool name to check. If None, lists available tools.
+        response_file: Path to JSON response body to compare.
+        verbose: Enable verbose output.
+    """
+    from toolwright.core.drift.baselines import detect_drift_for_tool
+    from toolwright.core.drift.shape_diff import DriftSeverity
+    from toolwright.models.baseline import BaselineIndex
+
+    baselines_file = Path(shape_baselines_path)
+    if not baselines_file.exists():
+        click.echo(f"Error: Shape baselines file not found: {shape_baselines_path}", err=True)
+        sys.exit(1)
+
+    index = BaselineIndex.load(baselines_file)
+
+    if not index.baselines:
+        click.echo("No shape baselines found in file.", err=True)
+        sys.exit(1)
+
+    # List mode: show available tools
+    if not tool:
+        click.echo(f"\nShape baselines ({len(index.baselines)} tools):\n")
+        for name, bl in sorted(index.baselines.items()):
+            fields = len(bl.shape.fields)
+            samples = bl.shape.sample_count
+            click.echo(f"  {name:<40} {fields} fields, {samples} samples")
+        click.echo("\nCheck a tool: toolwright drift --shape-baselines ... --tool <name> --response-file <file>")
+        return
+
+    if not response_file:
+        click.echo("Error: --response-file is required with --tool for shape drift detection", err=True)
+        sys.exit(1)
+
+    response_path = Path(response_file)
+    if not response_path.exists():
+        click.echo(f"Error: Response file not found: {response_file}", err=True)
+        sys.exit(1)
+
+    with open(response_path) as f:
+        body = json.load(f)
+
+    if verbose:
+        click.echo(f"Tool: {tool}")
+        click.echo(f"Baselines: {shape_baselines_path}")
+        click.echo(f"Response: {response_file}")
+
+    result = detect_drift_for_tool(tool, body, index)
+
+    if result.error:
+        click.echo(f"Error: {result.error}", err=True)
+        sys.exit(1)
+
+    # Print results
+    click.echo(f"\nShape Drift: {tool}")
+    click.echo(f"  Changes: {len(result.changes)}")
+    click.echo(f"  Severity: {result.severity.value if result.severity else 'none'}")
+
+    if result.changes:
+        click.echo("\nChanges:")
+        for change in result.changes:
+            severity_label = change.severity.value.upper()
+            click.echo(f"  [{severity_label}] {change.change_type.value}: {change.description}")
+
+    if result.severity == DriftSeverity.MANUAL:
+        click.echo("\nMANUAL REVIEW REQUIRED")
+        sys.exit(2)
+    elif result.severity == DriftSeverity.APPROVAL_REQUIRED:
+        click.echo("\nAPPROVAL REQUIRED")
+        sys.exit(1)
+    else:
+        if not result.changes:
+            click.echo("\nNo drift detected.")
+        sys.exit(0)
+
+
+@click.command("status")
+@click.option(
+    "--events-path",
+    type=click.Path(),
+    default=".toolwright/state/drift_events.jsonl",
+    show_default=True,
+    help="Path to drift events JSONL file.",
+)
+@click.option(
+    "--limit", "-n",
+    type=int,
+    default=20,
+    show_default=True,
+    help="Number of recent events to show.",
+)
+def drift_status(events_path: str, limit: int) -> None:
+    """Show recent shape drift events.
+
+    Reads the drift_events.jsonl log produced by the shape probe loop
+    and displays recent drift detections with severity and tool info.
+
+    \b
+    Examples:
+      toolwright drift status
+      toolwright drift status --events-path /path/to/drift_events.jsonl
+      toolwright drift status -n 50
+    """
+    events_file = Path(events_path)
+
+    if not events_file.exists():
+        click.echo("No drift events found. The shape probe loop has not logged any events yet.")
+        return
+
+    lines = events_file.read_text().strip().split("\n")
+    if not lines or lines == [""]:
+        click.echo("No drift events found. The shape probe loop has not logged any events yet.")
+        return
+
+    events = [json.loads(line) for line in lines[-limit:]]
+
+    click.echo(f"\nRecent Drift Events ({len(events)} of {len(lines)} total):\n")
+    for event in events:
+        severity = event.get("severity", "unknown").upper()
+        tool = event.get("tool_name", "unknown")
+        timestamp = event.get("timestamp", "")[:19]
+        changes = event.get("changes", [])
+        change_count = len(changes)
+
+        click.echo(f"  [{severity}] {tool} — {change_count} change(s) at {timestamp}")
+        for change in changes[:3]:  # Show first 3 changes
+            click.echo(f"    {change.get('change_type', '')}: {change.get('description', '')}")
+        if change_count > 3:
+            click.echo(f"    ... and {change_count - 3} more")

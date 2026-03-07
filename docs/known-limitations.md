@@ -12,12 +12,13 @@
 - GraphQL splitting is best-effort: when captured request bodies include `operationName`, Toolwright emits one tool per observed operation. If `operationName` is missing (for example anonymous/persisted-query-only traffic), calls still merge into a generic GraphQL tool.
 - Operation-specific GraphQL tools are constrained by fixed `operationName`, and operation type (`query` vs `mutation`) is inferred from captured query text with operation-name heuristics as fallback. When confidence is low, behavior stays conservative.
 - When query text is unique per operation, operation-specific tools fix `query`/`extensions` in the tool `fixed_body` so operators only provide `variables` (avoid copy/paste of large GraphQL payloads).
+- **Single-endpoint GraphQL APIs** — APIs like Linear are GraphQL-only (single POST to `/graphql`). Minting from this produces one tool for the entire API, which is too coarse for meaningful governance. REST alternatives exist for some APIs (Shopify REST Admin, GitHub REST API), but Linear and others are GraphQL-only. GraphQL introspection support — generating virtual tools per query/mutation — is on the roadmap at P1.
 
 ## Auth and SSO
 
 - Guided interactive reauth is required for MFA/passkeys/device-trust flows.
 - `storageState` reuse may fail on some apps; persistent context fallback exists for difficult cases.
-- **Per-request dynamic auth** — APIs requiring per-request cryptographic signing (Coinbase Advanced Trade EC key → JWT, AWS SigV4, HMAC-SHA256) cannot be governed. Toolwright injects static auth headers (Bearer tokens, API keys). When the Authorization header is a function of (timestamp + method + path + body + secret), static injection fails. A plugin/hook system for custom signing functions is a future option.
+- **Per-request dynamic auth** — APIs requiring per-request cryptographic signing are not supported. Toolwright's auth model injects static headers (Bearer tokens, API keys); it cannot generate per-request signatures that are functions of the request method, path, body, and timestamp. Affected APIs include Coinbase Advanced Trade (EC private key → per-endpoint JWT), AWS services (SigV4), and any HMAC-SHA256 request-signing API. This affects a small slice of the API market — most SaaS APIs (Stripe, Shopify, Notion, GitHub, Slack, etc.) use standard Bearer tokens or API keys that Toolwright handles natively. An auth plugin/hook system is on the roadmap at P3.
 
 ## Telemetry noise
 
@@ -52,6 +53,18 @@
 - `--unsafe-no-lockfile` bypass exists for local debugging only and is intentionally noisy.
 - Some hostile/anti-bot sites (Cloudflare/Akamai protected) will return challenge pages or `403` when executed from a non-browser HTTP runtime. In these cases Toolwright is still valuable for capture/compilation/governance/verification, but live execution should be treated as best-effort unless you run requests via a browser-mediated runtime with explicit operator control.
 - On macOS, GUI apps may be restricted from accessing `~/Documents`, `~/Desktop`, and `~/Downloads` unless explicitly granted permission. If your MCP client spawns `toolwright` from one of these locations, you may see `PermissionError: [Errno 1] Operation not permitted ... pyvenv.cfg`. Prefer installing `toolwright` and storing toolpacks outside those folders for Claude Desktop integration.
+
+## Tool groups
+
+- Groups are auto-generated from URL path structure. There is no built-in `groups edit` command yet; to customize group assignments, edit `groups.json` by hand after compile.
+- The path cleaning algorithm strips common noise segments (`api`, `admin`, `rest`, version prefixes) but may not cover all API-specific conventions. Custom noise patterns are not configurable.
+- Auto-split threshold (80 tools) and max depth (3) are hardcoded constants, not user-configurable.
+
+## HTTP transport authentication
+
+- The HTTP transport (`--use-http`) uses self-generated bearer tokens (`tw_` prefix, 128-bit hex) for MCP endpoint authentication. Tokens are per-session by default (auto-generated at startup) or set via `TOOLWRIGHT_TOKEN` env var. This is sufficient for local and single-user deployments.
+- Tokens are not scoped (no per-tool or per-client permissions), not rotatable without restart, and not integrated with external identity providers. Enterprise environments that require OAuth 2.1, SAML/SSO, or RBAC-scoped tokens will need an auth proxy in front of Toolwright's HTTP endpoint.
+- The June 2025 MCP spec classifies MCP servers as OAuth Resource Servers and mandates RFC 8707 Resource Indicators. Toolwright's `tw_` tokens are simpler than this spec requirement. Compliance with the MCP OAuth flow is a known gap for enterprise adoption.
 
 ## Security boundaries
 

@@ -214,6 +214,8 @@ class OpenAPIParser:
         spec: dict[str, Any],
     ) -> HttpExchange:
         """Create an HttpExchange from an OpenAPI operation."""
+        from urllib.parse import urlencode
+
         # Build URL
         host = self._resolve_exchange_host(default_host)
         url = f"https://{host}{path_template}"
@@ -221,6 +223,11 @@ class OpenAPIParser:
         # Extract parameters
         parameters = self._collect_parameters(operation, path_item)
         request_headers = self._extract_headers(parameters)
+
+        # Append query parameters to URL so the normalize pipeline sees them
+        query_params = self._extract_query_params(parameters)
+        if query_params:
+            url = f"{url}?{urlencode(query_params)}"
 
         # Extract request body schema
         request_body_json = self._extract_request_body(operation, spec)
@@ -291,6 +298,18 @@ class OpenAPIParser:
                 headers[name] = str(example) if example else f"<{name}>"
 
         return headers
+
+    def _extract_query_params(self, parameters: list[dict[str, Any]]) -> dict[str, str]:
+        """Extract query parameters with example/default values."""
+        query: dict[str, str] = {}
+
+        for param in parameters:
+            if param.get("in") == "query":
+                name = param.get("name", "")
+                example = self._get_example_value(param)
+                query[name] = str(example) if example is not None else ""
+
+        return query
 
     def _extract_request_body(
         self, operation: dict[str, Any], spec: dict[str, Any]

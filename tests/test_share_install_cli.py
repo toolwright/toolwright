@@ -151,14 +151,14 @@ class TestInstallErrors:
 class TestHelpOutput:
     """Commands appear in help output."""
 
-    def test_share_in_help(self) -> None:
+    def test_share_in_help_all(self) -> None:
         runner = CliRunner()
-        result = runner.invoke(cli, ["--help"])
+        result = runner.invoke(cli, ["--help-all"])
         assert "share" in result.output
 
-    def test_install_in_help(self) -> None:
+    def test_install_in_help_all(self) -> None:
         runner = CliRunner()
-        result = runner.invoke(cli, ["--help"])
+        result = runner.invoke(cli, ["--help-all"])
         assert "install" in result.output
 
     def test_share_help(self) -> None:

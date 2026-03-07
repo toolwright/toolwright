@@ -26,10 +26,10 @@ def classify_approval(risk_tier: str) -> ApprovalClassification:
     """
     tier = risk_tier.lower()
 
-    if tier == "low":
+    if tier in ("low", "safe"):
         return ApprovalClassification(
             auto_approve=True,
-            approved_by="risk_policy:low",
+            approved_by=f"risk_policy:{tier}",
         )
     if tier == "medium":
         return ApprovalClassification(
