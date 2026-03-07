@@ -5,9 +5,15 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from toolwright.ui import prompts as prompt_primitives
 from toolwright.ui.console import err_console
 from toolwright.ui.echo import echo_plan, echo_summary
-from toolwright.ui.prompts import confirm, input_text
+from toolwright.ui.prompts import input_text
+
+
+def confirm(message: str, *, default: bool = False, console: Any = None) -> bool:
+    """Delegate confirmation through the shared prompt module."""
+    return prompt_primitives.confirm(message, default=default, console=console)
 
 
 def init_flow(
@@ -20,6 +26,7 @@ def init_flow(
     """Guided project initialization."""
     from toolwright.branding import PRODUCT_NAME
 
+    _ = verbose
     con = err_console
 
     con.print()
@@ -52,11 +59,9 @@ def init_flow(
 
     # Execute
     try:
-        from toolwright.cli.init import run_init
+        from toolwright.core.init.service import initialize_project
 
-        run_init(directory=directory, verbose=verbose)
-    except SystemExit:
-        pass
+        initialize_project(directory=directory)
     except Exception as exc:
         con.print(f"[error]Init failed: {exc}[/error]")
         return

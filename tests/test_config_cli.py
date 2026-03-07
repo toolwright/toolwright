@@ -7,8 +7,8 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from toolwright.cli.main import cli
 from tests.helpers import write_demo_toolpack
+from toolwright.cli.main import cli
 
 
 def test_config_outputs_snippet_to_stdout(tmp_path: Path) -> None:
@@ -69,3 +69,20 @@ def test_config_outputs_codex_toml_with_name_override(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert result.stderr == ""
     assert "[mcp_servers.dummyjson]" in result.stdout
+
+
+def test_config_respects_top_level_root_for_auto_resolution(tmp_path: Path) -> None:
+    toolpack_file = write_demo_toolpack(tmp_path)
+    runner = CliRunner()
+
+    result = runner.invoke(
+        cli,
+        ["--root", str(tmp_path), "config", "--format", "json"],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    server = payload["mcpServers"]["app-example-com"]
+    assert server["args"][0] == "--root"
+    assert str((toolpack_file.parent / ".toolwright").resolve()) in server["args"]
+    assert str(toolpack_file.resolve()) in server["args"]

@@ -1,4 +1,4 @@
-"""Auth check command — diagnose auth configuration for a toolpack."""
+"""Auth command registration."""
 
 from __future__ import annotations
 
@@ -6,11 +6,10 @@ import os
 import re
 import urllib.error
 import urllib.request
-from pathlib import Path
 
 import click
 
-from toolwright.utils.state import resolve_root
+from toolwright.cli.command_helpers import cli_root
 
 
 def _host_to_env_var(host: str) -> str:
@@ -49,6 +48,63 @@ def _probe_host(host: str, auth_value: str | None) -> tuple[int | None, str]:
         return None, f"error: {e}"
 
 
+def _resolve_auth_root(ctx: click.Context, root: str | None) -> str:
+    """Resolve the auth command root from CLI context or explicit override."""
+    if root:
+        return root
+    return str(cli_root(ctx))
+
+
+def register_auth_commands(*, cli: click.Group) -> None:
+    """Register the auth command group and its subcommands."""
+
+    @cli.group()
+    def auth() -> None:
+        """Manage authentication profiles and check auth configuration."""
+
+    register_auth_check_command(auth_group=auth)
+
+    @auth.command("login")
+    @click.option("--profile", required=True, help="Profile name")
+    @click.option("--url", required=True, help="Target URL to authenticate against")
+    @click.option("--root", default=None, help="Toolwright root directory override")
+    @click.pass_context
+    def auth_login(ctx: click.Context, profile: str, url: str, root: str | None) -> None:
+        """Launch headful browser for one-time login, saving storage state."""
+        from toolwright.cli.auth import auth_login as _do_login
+
+        ctx.invoke(_do_login, profile=profile, url=url, root=_resolve_auth_root(ctx, root))
+
+    @auth.command("status")
+    @click.option("--profile", required=True, help="Profile name")
+    @click.option("--root", default=None, help="Toolwright root directory override")
+    @click.pass_context
+    def auth_status(ctx: click.Context, profile: str, root: str | None) -> None:
+        """Show the status of an auth profile."""
+        from toolwright.cli.auth import auth_status as _do_status
+
+        ctx.invoke(_do_status, profile=profile, root=_resolve_auth_root(ctx, root))
+
+    @auth.command("clear")
+    @click.option("--profile", required=True, help="Profile name")
+    @click.option("--root", default=None, help="Toolwright root directory override")
+    @click.pass_context
+    def auth_clear(ctx: click.Context, profile: str, root: str | None) -> None:
+        """Delete an auth profile."""
+        from toolwright.cli.auth import auth_clear as _do_clear
+
+        ctx.invoke(_do_clear, profile=profile, root=_resolve_auth_root(ctx, root))
+
+    @auth.command("list")
+    @click.option("--root", default=None, help="Toolwright root directory override")
+    @click.pass_context
+    def auth_list_cmd(ctx: click.Context, root: str | None) -> None:
+        """List all auth profiles."""
+        from toolwright.cli.auth import auth_list as _do_list
+
+        ctx.invoke(_do_list, root=_resolve_auth_root(ctx, root))
+
+
 def register_auth_check_command(*, auth_group: click.Group) -> None:
     """Register the 'check' subcommand on the auth group."""
 
@@ -85,11 +141,9 @@ def register_auth_check_command(*, auth_group: click.Group) -> None:
         from toolwright.core.toolpack import load_toolpack
         from toolwright.utils.resolve import resolve_toolpack_path
 
-        root: Path = ctx.obj.get("root", resolve_root()) if ctx.obj else resolve_root()
-
         # Resolve toolpack
         try:
-            tp_path = resolve_toolpack_path(explicit=toolpack, root=root)
+            tp_path = resolve_toolpack_path(explicit=toolpack, root=cli_root(ctx))
         except (FileNotFoundError, click.UsageError) as e:
             click.echo(str(e), err=True)
             ctx.exit(1)

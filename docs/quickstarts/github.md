@@ -62,7 +62,7 @@ Use this if you want to capture only the specific endpoints you actually use.
 
 ```bash
 pip install "toolwright[all]"
-python -m playwright install chromium
+python -m playwright install chromium    # use the same interpreter you installed with; on some systems use python3
 ```
 
 ### Step 2: Mint your toolpack
@@ -112,7 +112,7 @@ Restart Claude Desktop.
 **"Playwright not installed"**
 ```bash
 pip install "toolwright[playwright]"
-python -m playwright install chromium
+python -m playwright install chromium    # use the same interpreter you installed with; on some systems use python3
 ```
 
 **"No auth configured for api.github.com"** — Check: `echo $TOOLWRIGHT_AUTH_API_GITHUB_COM` (should start with `Bearer `)

@@ -28,7 +28,7 @@ Live browser capture requires Playwright and Chromium:
 
 ```bash
 pip install "toolwright[playwright]"
-python -m playwright install chromium
+python -m playwright install chromium    # use the same interpreter you installed with; on some systems use python3
 ```
 
 If you see `BrowserType.launch: Executable doesn't exist`, run the install command again. Playwright downloads browser binaries to `~/.cache/ms-playwright/`.

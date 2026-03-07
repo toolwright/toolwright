@@ -4,6 +4,8 @@
 
 ---
 
+Toolwright is the trusted MCP supply chain for AI tools. It captures APIs or wraps existing MCP servers, keeps credentials out of model context, signs and approves tool changes before they run, and applies bounded self-healing when upstream systems drift.
+
 Here's a failure mode nobody talks about at MCP demo day.
 
 You build an agent. You give it access to Stripe, GitHub, your internal API. It works great in dev. You ship it. Two weeks later, Stripe changes a response field. Your agent doesn't know. It keeps calling the endpoint, keeps getting back data it doesn't understand, keeps retrying. By the time someone notices, the damage is done -- failed transactions, stale data, a confused agent that's been spinning its wheels for hours.
@@ -44,7 +46,7 @@ That's the model I think agent tool infrastructure needs to follow.
 
 **Memory** isn't prompt engineering. It's persistent behavioral rules -- prerequisites ("always read the repo before modifying issues"), prohibitions ("never delete files"), rate limits ("max 5 new issues per session"), parameter constraints ("label colors must be valid hex"). These rules survive across sessions. When an agent violates one, it gets structured feedback: here's what you did, here's what the rule says, here's what to do instead. The agent learns from the infrastructure, not from increasingly fragile system prompts.
 
-And here's the part that I think changes the paradigm: **the agent participates in its own governance**. Through meta-tools, agents can check their own risk summaries, diagnose why a call was blocked, monitor the health of their tools, and even suggest new behavioral rules. These suggestions always start as drafts -- humans have final say. But the agent isn't just a passive subject of rules. It's an active participant in improving them.
+And here's the part that I think changes the feedback loop: agents don't have to operate blind. Through meta-tools, they can check their own risk summaries, diagnose why a call was blocked, monitor the health of their tools, and even suggest new behavioral rules. Those suggestions always start as drafts and humans still have final say, so the runtime stays governed even when the agent can explain what it needs.
 
 ## This Is Toolwright
 
@@ -87,8 +89,8 @@ toolwright ship
 
 It walks you through the full lifecycle -- capture, review, approve, verify, serve.
 
-The code is MIT licensed. The repo is at [github.com/toolwright/toolwright](https://github.com/toolwright/toolwright). I'd genuinely appreciate feedback -- especially from people running agents against real APIs in production.
+If you already have an MCP server, `toolwright wrap ...` lets you put the same governance layer around it without recreating the tools. The code is MIT licensed. The repo is at [github.com/toolwright/toolwright](https://github.com/toolwright/toolwright). I'd genuinely appreciate feedback -- especially from people running agents against real APIs in production.
 
 ---
 
-*Toolwright is open-source infrastructure for keeping AI agent tools alive in production. It detects API drift, circuit-breaks failing tools, enforces persistent behavioral rules, and lets agents participate in their own governance.*
+*Toolwright is open-source infrastructure for making APIs and MCP tools agent-usable, then keeping them safe and stable in production. It acts as a trusted MCP supply chain with signed approvals, fail-closed enforcement, drift detection, and bounded self-healing.*

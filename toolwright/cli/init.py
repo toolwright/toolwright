@@ -7,13 +7,8 @@ import sys
 from pathlib import Path
 
 import click
-import yaml
 
-from toolwright.core.init.detector import (
-    detect_project,
-    generate_config,
-    generate_gitignore_entries,
-)
+from toolwright.core.init.service import initialize_project
 
 
 def run_init(
@@ -22,12 +17,13 @@ def run_init(
     verbose: bool,
 ) -> None:
     """Initialize Toolwright in a project directory."""
-    project_dir = Path(directory).resolve()
-    if not project_dir.exists():
-        click.echo(f"Error: Directory not found: {project_dir}", err=True)
+    try:
+        result = initialize_project(directory)
+    except FileNotFoundError as exc:
+        click.echo(f"Error: {exc}", err=True)
         sys.exit(1)
 
-    detection = detect_project(project_dir)
+    detection = result.detection
 
     if verbose:
         click.echo("Project detection:")
@@ -39,38 +35,15 @@ def run_init(
         if detection.api_specs:
             click.echo(f"  API specs: {', '.join(detection.api_specs)}")
 
-    if detection.has_existing_toolwright:
+    if not result.created:
         click.echo(".toolwright/ already exists — will not overwrite existing config.")
         if verbose:
             for suggestion in detection.suggestions:
                 click.echo(f"  Suggestion: {suggestion}")
         return
 
-    # Create .toolwright/ directory structure
-    toolwright_dir = project_dir / ".toolwright"
-    toolwright_dir.mkdir(parents=True, exist_ok=True)
-    (toolwright_dir / "captures").mkdir(exist_ok=True)
-    (toolwright_dir / "artifacts").mkdir(exist_ok=True)
-    (toolwright_dir / "reports").mkdir(exist_ok=True)
-
-    # Write config.yaml
-    config = generate_config(detection)
-    config_path = toolwright_dir / "config.yaml"
-    config_path.write_text(yaml.dump(config, sort_keys=False), encoding="utf-8")
-
-    # Append to .gitignore if it exists
-    gitignore_path = project_dir / ".gitignore"
-    gitignore_entries = generate_gitignore_entries()
-    if gitignore_path.exists():
-        existing = gitignore_path.read_text(encoding="utf-8")
-        if "# Toolwright" not in existing:
-            with open(gitignore_path, "a", encoding="utf-8") as f:
-                f.write("\n" + "\n".join(gitignore_entries) + "\n")
-    else:
-        gitignore_path.write_text("\n".join(gitignore_entries) + "\n", encoding="utf-8")
-
-    click.echo(f"✓ Initialized Toolwright in {toolwright_dir}")
-    click.echo(f"  Config: {config_path}")
+    click.echo(f"✓ Initialized Toolwright in {result.toolwright_dir}")
+    click.echo(f"  Config: {result.config_path}")
 
     # Print next steps — show all entry paths so users know their options.
     click.echo()

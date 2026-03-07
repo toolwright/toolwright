@@ -26,7 +26,7 @@ class TestInitFlow:
         with (
             patch("toolwright.ui.flows.init.err_console", mock_console),
             patch("toolwright.ui.flows.init.confirm", return_value=True),
-            patch("toolwright.cli.init.run_init"),
+            patch("toolwright.core.init.service.initialize_project"),
         ):
             init_flow(directory=".")
 
@@ -40,7 +40,7 @@ class TestInitFlow:
         with (
             patch("toolwright.ui.flows.init.err_console", mock_console),
             patch("toolwright.ui.flows.init.confirm", return_value=True),
-            patch("toolwright.cli.init.run_init"),
+            patch("toolwright.core.init.service.initialize_project"),
         ):
             init_flow(directory="/my/project")
 
@@ -53,7 +53,7 @@ class TestInitFlow:
         with (
             patch("toolwright.ui.flows.init.err_console", mock_console),
             patch("toolwright.ui.flows.init.confirm", return_value=False),
-            patch("toolwright.cli.init.run_init") as mock_run,
+            patch("toolwright.core.init.service.initialize_project") as mock_run,
         ):
             init_flow(directory=".")
             mock_run.assert_not_called()
@@ -65,7 +65,7 @@ class TestInitFlow:
             patch("toolwright.ui.flows.init.err_console", mock_console),
             patch("toolwright.ui.flows.init.input_text", return_value="/some/dir"),
             patch("toolwright.ui.flows.init.confirm", return_value=True),
-            patch("toolwright.cli.init.run_init"),
+            patch("toolwright.core.init.service.initialize_project"),
         ):
             init_flow()
 
@@ -79,7 +79,7 @@ class TestInitFlow:
         with (
             patch("toolwright.ui.flows.init.err_console", mock_console),
             patch("toolwright.ui.flows.init.confirm", return_value=True),
-            patch("toolwright.cli.init.run_init"),
+            patch("toolwright.core.init.service.initialize_project"),
         ):
             init_flow(directory="/my/project")
 
@@ -92,7 +92,10 @@ class TestInitFlow:
         with (
             patch("toolwright.ui.flows.init.err_console", mock_console),
             patch("toolwright.ui.flows.init.confirm", return_value=True),
-            patch("toolwright.cli.init.run_init", side_effect=RuntimeError("boom")),
+            patch(
+                "toolwright.core.init.service.initialize_project",
+                side_effect=RuntimeError("boom"),
+            ),
         ):
             init_flow(directory=".")
 
@@ -116,7 +119,7 @@ class TestConfigFlow:
                 "toolwright.ui.flows.config.select_one",
                 return_value="Claude Code",
             ),
-            patch("toolwright.cli.config.run_config"),
+            patch("toolwright.core.config_snippets.render_mcp_client_config", return_value="{}"),
         ):
             config_flow(root=tmp_path)
 
@@ -146,7 +149,7 @@ class TestConfigFlow:
                 "toolwright.ui.flows.config.select_one",
                 return_value="Claude Desktop",
             ),
-            patch("toolwright.cli.config.run_config"),
+            patch("toolwright.core.config_snippets.render_mcp_client_config", return_value="{}"),
         ):
             config_flow(toolpack_path="/some/toolpack.yaml")
 
@@ -161,13 +164,17 @@ class TestConfigFlow:
         with (
             patch("toolwright.ui.flows.config.err_console", mock_console),
             patch("toolwright.ui.flows.config.select_one", return_value="Codex"),
-            patch("toolwright.cli.config.run_config") as mock_run_config,
+            patch(
+                "toolwright.core.config_snippets.render_mcp_client_config",
+                return_value="{}",
+            ) as mock_render,
         ):
             config_flow(toolpack_path="/some/toolpack.yaml")
 
-        # Check that run_config was called with fmt="codex"
-        mock_run_config.assert_called_once_with(
-            toolpack_path="/some/toolpack.yaml", fmt="codex"
+        # Check that the shared renderer was called with fmt="codex"
+        mock_render.assert_called_once_with(
+            toolpack_path="/some/toolpack.yaml",
+            fmt="codex",
         )
 
 

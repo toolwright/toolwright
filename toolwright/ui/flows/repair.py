@@ -23,6 +23,7 @@ from toolwright.ui.ops import (
     run_repair_preflight,
 )
 from toolwright.ui.prompts import confirm, prompt_action, select_one
+from toolwright.ui.runner import run_verify_report
 from toolwright.ui.views.tables import doctor_checklist, preflight_checklist
 
 # ---------------------------------------------------------------------------
@@ -355,10 +356,8 @@ def _run_engine_diagnosis(toolpack_path: str, con: Any) -> Any:
 def _run_verify(toolpack_path: str, con: Any, sym: Any) -> None:
     """Run verification and display results."""
     try:
-        from toolwright.cli.verify import run_verify
-
         con.print("  Running verification...")
-        run_verify(
+        run_verify_report(
             toolpack_path=toolpack_path,
             mode="contracts",
             lockfile_path=None,

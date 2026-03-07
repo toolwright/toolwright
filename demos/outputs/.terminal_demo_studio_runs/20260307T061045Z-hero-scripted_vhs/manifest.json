@@ -1,0 +1,8 @@
+{
+  "command": "tds render",
+  "created_at": "20260307T061045Z",
+  "lane": "scripted_vhs",
+  "mode": "scripted_vhs",
+  "run_id": "20260307T061045Z-hero-scripted_vhs",
+  "screenplay": "/Users/thomasallicino/oss/toolwright/demos/screenplays/hero.yaml"
+}

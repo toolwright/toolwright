@@ -967,7 +967,7 @@ def run_mcp_server(
     if groups_json_path.exists():
         from toolwright.core.compile.grouper import load_groups_index
 
-        groups_index = load_groups_index(str(groups_json_path))
+        groups_index = load_groups_index(groups_json_path)
 
     if scope:
         if groups_index is None:
@@ -997,7 +997,7 @@ def run_mcp_server(
     # Tool count guardrails
     import click as _click
 
-    from toolwright.cli.mcp import check_tool_count_guardrails
+    from toolwright.mcp.runtime import check_tool_count_guardrails
 
     tool_count = len(server.actions)
     guardrail_warnings, should_block = check_tool_count_guardrails(
@@ -1008,7 +1008,7 @@ def run_mcp_server(
     if should_block:
         sys.exit(1)
 
-    from toolwright.cli.mcp import check_jsonschema_available
+    from toolwright.mcp.runtime import check_jsonschema_available
 
     jsonschema_warning = check_jsonschema_available()
     if jsonschema_warning:
@@ -1080,11 +1080,11 @@ def run_mcp_server(
         # HTTP transport runs its own event loop via uvicorn
         server.run_http(host=host, port=port)
     else:
-        from toolwright.cli.mcp import stdio_transport_warning
+        from toolwright.mcp.runtime import stdio_transport_warning
 
         _click.echo(f"  {stdio_transport_warning()}", err=True)
         async def main() -> None:
-            shape_probe_task: asyncio.Task | None = None
+            shape_probe_task: asyncio.Task[None] | None = None
             try:
                 if reconcile_loop is not None:
                     await reconcile_loop.start()

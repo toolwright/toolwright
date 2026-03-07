@@ -1,0 +1,1 @@
+Command '['vhs', '/Users/thomasallicino/oss/toolwright/demos/outputs/.terminal_demo_studio_runs/20260307T060844Z-hero-scripted_vhs/tapes/scene_0.tape']' returned non-zero exit status 1.

@@ -1,6 +1,6 @@
 # Toolwright User Guide
 
-Toolwright is the immune system for AI agent tools -- it monitors your tools in production, heals them when APIs change, circuit-breaks them when they fail, and enforces behavioral rules that agents learn from. This guide walks you through the full lifecycle. See the [Glossary](glossary.md) for definitions of key terms.
+Toolwright helps you make APIs agent-usable, then keep them safe and stable in production. It captures APIs or wraps existing MCP servers, keeps credentials out of model context, enforces signed approvals, detects drift, verifies behavior, and applies bounded self-healing with snapshots, available rollback, and human-gated escalation. This guide walks through the full lifecycle. See the [Glossary](glossary.md) for definitions of key terms.
 
 ## Install
 
@@ -16,7 +16,7 @@ pip install "toolwright[mcp]"
 
 # Live browser capture
 pip install "toolwright[playwright]"
-python -m playwright install chromium
+python -m playwright install chromium    # use the same interpreter you installed with; on some systems use python3
 
 # Full-screen TUI dashboard
 pip install "toolwright[tui]"
@@ -43,6 +43,7 @@ pip install -e ".[dev]"
 |---|---|
 | Create tools from a known API | `toolwright create github` |
 | Capture tools from a browser | `toolwright mint <url> -a <host>` |
+| Govern an existing MCP server | `toolwright wrap npx -y @modelcontextprotocol/server-github` |
 | See what tools I have | `toolwright groups list` |
 | Approve all tools | `toolwright gate allow --all` |
 | Start the MCP server | `toolwright serve` |
@@ -56,7 +57,7 @@ pip install -e ".[dev]"
 
 ## Five Pillars
 
-Toolwright governance is organized around five pillars:
+The rest of this guide is organized around five pillars. They are useful for navigation and operations, but the product promise stays simple: make APIs agent-usable, then keep them safe and stable.
 
 | Pillar | What it does | Key commands |
 |--------|-------------|-------------|
@@ -77,10 +78,10 @@ The fastest way to go from zero to a governed MCP server:
 ```bash
 toolwright create github
 export TOOLWRIGHT_AUTH_API_GITHUB_COM="Bearer ghp_yourToken"
-toolwright serve
+toolwright config
 ```
 
-`create` fetches the OpenAPI spec, compiles tools, auto-approves low/medium risk, applies behavioral rules, and prints the MCP config to paste into Claude Desktop.
+`create` fetches the OpenAPI spec, compiles tools, auto-approves low/medium risk, applies behavioral rules, and points you to `toolwright config` for the MCP snippet to paste into Claude Desktop, Cursor, or Codex.
 
 ### Custom path (5 minutes) — from any web app
 
@@ -194,6 +195,20 @@ Then run `toolwright ship` to walk through the remaining stages.
 ```bash
 toolwright capture record https://app.example.com -a api.example.com
 ```
+
+### You already have an MCP server
+
+```bash
+toolwright wrap npx -y @modelcontextprotocol/server-github
+```
+
+Or wrap a remote Streamable HTTP server:
+
+```bash
+toolwright wrap --url https://mcp.sentry.dev/mcp --header "Authorization: Bearer $TOKEN"
+```
+
+`wrap` discovers the upstream tool surface and applies the same approval, rule, and circuit-breaker layer without recreating the tools.
 
 ---
 
@@ -531,11 +546,11 @@ toolwright serve --toolpack toolpack.yaml \
 
 ---
 
-## Continuous Reconciliation (HEAL Pillar)
+## Continuous Reconciliation And Bounded Self-Healing
 
 Toolwright uses Kubernetes-style reconciliation for recovery of its own artifacts and runtime, and Terraform-style plan/apply for changes to what tools do.
 
-Start the MCP server with `--watch` and Toolwright continuously monitors your tools for API drift, schema changes, and endpoint failures. When issues are detected, repairs are classified and handled automatically or queued for your review.
+Start the MCP server with `--watch` and Toolwright continuously monitors your tools for API drift, schema changes, and endpoint failures. Safe maintenance can be automated, every repair is snapshotted, and anything riskier is queued or escalated for operator review.
 
 ### Watch mode
 
@@ -547,7 +562,9 @@ Three auto-heal levels:
 
 - `off` — detect drift and failures, but never auto-apply repairs
 - `safe` — auto-apply patches classified as SAFE (e.g., new optional response fields)
-- `all` — auto-apply SAFE and APPROVAL_REQUIRED patches (use with caution)
+- `all` — auto-apply SAFE and APPROVAL_REQUIRED patches in tightly controlled environments (operator override, use with caution)
+
+Recommended posture: keep production on `safe` unless you explicitly want broader operator-controlled automation.
 
 Probe intervals are configured per risk tier:
 
@@ -570,7 +587,7 @@ toolwright watch log --tool search_api --last 10
 
 ### Repair workflow
 
-When drift or failures are detected, use the Terraform-style repair workflow:
+When drift or failures are detected, use the Terraform-style repair workflow. Toolwright treats repair as bounded self-healing: safe fixes can move automatically, while anything riskier is surfaced clearly for review.
 
 ```bash
 # See what changed and what needs fixing
@@ -588,9 +605,11 @@ Repairs are classified by patch safety:
 
 > Patch safety classifies how a repair can be applied. Not to be confused with risk tiers (low/medium/high/critical), which classify tools.
 
+By default, bounded self-healing only auto-applies SAFE patches. Use broader automation only when you explicitly choose it.
+
 ### Snapshots and rollback
 
-Every auto-repair is preceded by a snapshot. If something goes wrong, restore the exact previous state:
+Every auto-repair is preceded by a snapshot. Verification feeds the repair loop, and operator rollback is available if something goes wrong. Restore the exact previous state with:
 
 ```bash
 # List available snapshots
@@ -732,6 +751,7 @@ Falls back to `toolwright status` output when Textual is not installed.
 | `toolwright status` | Show governance status and recommended next action |
 | `toolwright init` | Initialize Toolwright in your project |
 | `toolwright mint <url>` | Capture traffic and compile a governed toolpack |
+| `toolwright wrap <command>` | Govern an existing MCP server without recreating its tools |
 | `toolwright gate allow\|block\|check\|status` | Approve, block, or audit tools via signed lockfile |
 | `toolwright serve` | Start the governed MCP server (stdio or `--http`) |
 | `toolwright diff` | Generate a risk-classified change report |

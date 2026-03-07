@@ -8,8 +8,10 @@ from __future__ import annotations
 
 import json
 import threading
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from toolwright.models.probe_template import ProbeTemplate
 from toolwright.models.shape import ShapeModel
@@ -24,7 +26,7 @@ class ToolBaseline:
     content_hash: str
     source: str  # "har", "browser", "curl", "passive"
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "shape": self.shape.to_dict(),
             "probe_template": self.probe_template.to_dict(),
@@ -33,7 +35,7 @@ class ToolBaseline:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> ToolBaseline:
+    def from_dict(cls, data: dict[str, Any]) -> ToolBaseline:
         shape = ShapeModel.from_dict(data["shape"])
         return cls(
             shape=shape,
@@ -65,19 +67,30 @@ class BaselineIndex:
         corrupting the file. Writes to a temp file first, then does
         an atomic rename.
         """
-        data = {
-            "version": self.version,
-            "baselines": {
-                k: v.to_dict() for k, v in self.baselines.items()
-            },
-        }
-        serialized = json.dumps(data, indent=2)
-
         with self._save_lock:
+            snapshot = self._snapshot_baselines()
+            data = {
+                "version": self.version,
+                "baselines": {tool_id: baseline.to_dict() for tool_id, baseline in snapshot},
+            }
+            serialized = json.dumps(data, indent=2)
             path.parent.mkdir(parents=True, exist_ok=True)
             tmp_path = path.with_suffix(".json.tmp")
             tmp_path.write_text(serialized)
             tmp_path.replace(path)
+
+    def _snapshot_baselines(self) -> list[tuple[str, ToolBaseline]]:
+        """Capture a stable snapshot even if another thread is adding entries.
+
+        Some callers mutate ``baselines`` directly. A short retry loop prevents
+        ``RuntimeError: dictionary changed size during iteration`` while save()
+        is serializing a best-effort on-disk snapshot.
+        """
+        while True:
+            try:
+                return list(self.baselines.items())
+            except RuntimeError:
+                time.sleep(0)
 
     @classmethod
     def load(cls, path: Path) -> BaselineIndex:
