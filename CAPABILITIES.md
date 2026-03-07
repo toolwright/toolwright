@@ -75,9 +75,14 @@ Start a governed MCP server on stdio transport serving compiled tools. Supports 
 
 - `toolwright/mcp/server.py` -> `ToolwrightMCPServer`, `_resolve_auth_for_host()`
 - `toolwright/cli/commands_mcp.py` -> `run_mcp_serve()`, auto-resolution via `resolve_toolpack_path()`
-- CLI: `toolwright serve [--toolpack <path>] [--auth "Bearer <token>"]`
+- CLI: `toolwright serve [--toolpack <path>] [--auth "Bearer <token>"] [--toolset <name>] [--max-risk <tier>] [--extra-header "Name: value"] [--schema-validation strict|warn|off]`
 - Auth priority: `--auth` flag > `TOOLWRIGHT_AUTH_<NORMALIZED_HOST>` env var > `TOOLWRIGHT_AUTH_HEADER` env var > None
 - Per-host env var naming: replace dots/hyphens with underscores, uppercase (e.g., `api.github.com` -> `TOOLWRIGHT_AUTH_API_GITHUB_COM`)
+- `--toolset`: filter to named tool set (e.g., `readonly`)
+- `--max-risk`: cap exposed tools by risk tier (`low`, `medium`, `high`, `critical`)
+- `--extra-header` / `-H`: inject custom headers into every upstream request (e.g., `Notion-Version: 2025-09-03`). Can be specified multiple times. Does not override Authorization.
+- `--schema-validation`: control outputSchema advertisement. `strict` advertises schemas, `warn` (default) and `off` suppress them.
+- Auth warning: prints `WARNING` at startup when expected per-host auth env vars are not set
 
 ### CAP-CONNECT-008: Toolset Scoping
 
@@ -450,6 +455,15 @@ Three-state lifecycle for behavioral rules enabling agent suggestion and human a
 - CLI: `toolwright rules drafts`, `toolwright rules activate <id>`, `toolwright rules disable <id>`
 - Tests: `tests/test_rule_status_lifecycle.py`, `tests/test_rules_lifecycle_cli.py`
 
+### CAP-CORRECT-010: Rule Templates
+
+Bundled reusable rule templates (crud-safety, rate-control, retry-safety) that create DRAFT behavioral rules. Templates use glob-based targeting (`target_name_patterns`) for overlay-forward compatibility.
+
+- `toolwright/rules/templates/*.yaml` -> Template definitions
+- `toolwright/rules/loader.py` -> `list_templates()`, `load_template()`, `apply_template()`
+- `toolwright/cli/commands_rules.py` -> `rules template list|show|apply`
+- CLI: `toolwright rules template list`, `toolwright rules template apply crud-safety`
+
 ### CAP-CORRECT-007: Rules CLI Management
 
 CLI commands for creating, listing, removing, inspecting, exporting, and importing behavioral rules.
@@ -629,6 +643,39 @@ Verify auth configuration for the active toolpack. Shows per-host and global env
 - CLI: `toolwright auth check [--no-probe]`
 - Probes by default with `--no-probe` for offline/CI environments
 
+### CAP-UX-005: Smart Pre-Flight Probe (Mint)
+
+Before every `mint` command (opt-out via `--no-probe`), probe each allowed host for auth requirements (401/403 + WWW-Authenticate parsing), Content-Type (JSON vs HTML portal), OpenAPI specs at well-known paths, and GraphQL introspection. Outputs structured results with exact `export` commands for auth setup.
+
+- `toolwright/cli/mint.py` -> `_probe_hosts()`, `_probe_base_url()`, `_probe_openapi()`, `_probe_graphql()`
+- `toolwright/cli/mint.py` -> `_render_probe_results()` (✓/⚠/✗/○ icons)
+- `toolwright/core/drift/probe_executor.py` -> `ProbeExecutor`
+- `toolwright/core/drift/probe_template.py` -> `extract_probe_template()`
+- `toolwright/models/probe_template.py` -> `ProbeTemplate`
+
+### CAP-UX-006: Auth Startup Warning
+
+At `toolwright serve` startup, warn when expected per-host auth env vars (`TOOLWRIGHT_AUTH_<HOST>`) are not set. Prints actionable `export` command with correct env var name and `"Bearer <token>"` format.
+
+- `toolwright/cli/mcp.py` -> `warn_missing_auth()`
+- Env var pattern: `TOOLWRIGHT_AUTH_` + uppercased host with non-alnum replaced by `_`
+
+### CAP-UX-007: Empty Toolpack Guard
+
+Block `toolwright serve` when the toolpack contains 0 tools. Prints actionable error directing the user to run `toolwright mint`.
+
+- `toolwright/cli/mcp.py` -> `run_mcp_serve()` (0-actions check before auth warnings)
+
+### CAP-UX-008: API Recipes
+
+Bundled API recipes (github, shopify, notion, stripe, slack) that pre-fill mint settings — hosts, auth headers, extra headers, rule template references, and probe hints. Recipes reduce setup friction, not governance decisions.
+
+- `toolwright/recipes/*.yaml` -> Recipe definitions
+- `toolwright/recipes/loader.py` -> `list_recipes()`, `load_recipe()`
+- `toolwright/cli/commands_recipes.py` -> `recipes list|show`
+- `toolwright/cli/main.py` -> `mint --recipe <name>`
+- CLI: `toolwright recipes list`, `toolwright recipes show shopify`, `toolwright mint --recipe shopify`
+
 ---
 
 ## SERVE -- HTTP Transport & Dashboard
@@ -647,7 +694,7 @@ MCP server over HTTP with Starlette + StreamableHTTPSessionManager. Default port
 
 - `toolwright/mcp/http_transport.py` -> `create_toolwright_http_app()`
 - Routes: `/health`, `/mcp`, `/api/*`, `/` (static dashboard)
-- CLI: `toolwright serve --http [--host HOST] [--port PORT] [--no-open]`
+- CLI: `toolwright serve --http [--host HOST] [--port PORT]`
 
 ### CAP-CROSS-019: Token Authentication
 
@@ -701,9 +748,47 @@ Filter served tools by glob pattern and max risk ceiling.
 
 ### CAP-CROSS-030: Rich Startup Card
 
-Formatted startup banner showing tool count, risk breakdown, context budget, URLs.
+Formatted startup banner showing tool count, risk breakdown, context budget, URLs. Shows scope info and total compiled count when `--scope` is active.
 
-- `toolwright/mcp/startup_card.py` -> `render_startup_card()`
+- `toolwright/mcp/startup_card.py` -> `render_startup_card(scope_info=, total_compiled=)`
+
+### CAP-CROSS-031: Auto-Generated Tool Groups
+
+Automatically group tools by URL resource path during compilation. Groups are generated from the first semantic URL segment (after stripping noise like `api`, `admin`, version prefixes, path params). Large groups (>80 tools) are recursively split by secondary segments up to depth 3.
+
+- `toolwright/models/groups.py` -> `ToolGroup`, `ToolGroupIndex`
+- `toolwright/core/compile/grouper.py` -> `generate_tool_groups()`, `extract_semantic_segments()`
+- Output: `groups.json` alongside `tools.json`
+- Integrated into: `toolwright compile` and `toolwright mint`
+
+### CAP-CROSS-032: Serve-Time Scope Filtering
+
+Filter served tools to specific groups via `--scope`. Accepts comma-separated group names with prefix matching (`repos` matches `repos`, `repos/issues`, `repos/pulls`). Unknown names trigger fuzzy suggestions (Levenshtein distance <= 2).
+
+- `toolwright/core/compile/grouper.py` -> `filter_by_scope()`, `suggest_group_name()`
+- CLI: `toolwright serve --scope products,orders`
+
+### CAP-CROSS-033: Tool Count Guardrails
+
+Warn when serving 31-200 tools; block above 200 unless `--no-tool-limit` overrides. Warnings include group suggestions when groups.json is available.
+
+- `toolwright/cli/mcp.py` -> `check_tool_count_guardrails()`
+- Constants: `TOOL_COUNT_WARN_THRESHOLD = 30`, `TOOL_COUNT_BLOCK_THRESHOLD = 200`
+- CLI: `toolwright serve --no-tool-limit`
+
+### CAP-CROSS-034: Groups CLI Commands
+
+List and inspect auto-generated tool groups from a toolpack.
+
+- `toolwright/cli/commands_groups.py` -> `register_groups_commands()`
+- CLI: `toolwright groups list [--toolpack ...]`, `toolwright groups show <name> [--toolpack ...]`
+
+### CAP-CROSS-035: Gate Status by Group
+
+Show per-group approval summary in the gate status command.
+
+- `toolwright/cli/commands_approval.py` -> `gate_status(by_group=True)`
+- CLI: `toolwright gate status --by-group [--toolpack ...]`
 
 ---
 
@@ -740,6 +825,107 @@ Package toolpacks into signed .twp bundles (gzipped tar) for distribution.
 
 ---
 
+## CONSOLE -- Real-Time Agent Operations Console
+
+### CAP-CONSOLE-001: WorkItem Model
+
+Unified data model for actionable items requiring human attention. Six kinds with deterministic IDs for dedup across reconnects/restarts.
+
+- `toolwright/models/work_item.py` -> `WorkItem`, `WorkItemKind`, `WorkItemStatus`, `WorkItemAction`
+- Kinds: TOOL_APPROVAL, CONFIRMATION, REPAIR_PATCH, CIRCUIT_BREAKER, RULE_DRAFT, CAPABILITY_REQUEST
+- Statuses: OPEN → APPROVED / DENIED / APPLIED / DISMISSED / EXPIRED
+- Deterministic IDs: `wi_approval_{tool_id}`, `wi_confirm_{token_id}`, etc.
+- Tests: `tests/test_work_item.py`
+
+### CAP-CONSOLE-002: WorkItem Factory Functions
+
+Type-safe factory functions producing WorkItems with deterministic IDs, evidence payloads, and pre-configured action buttons.
+
+- `toolwright/core/work_items.py` -> `create_tool_approval_item()`, `create_confirmation_item()`, `create_circuit_breaker_item()`, `create_repair_patch_item()`, `create_rule_draft_item()`, `create_capability_request_item()`
+- Tests: `tests/test_work_item.py` (factory tests)
+
+### CAP-CONSOLE-003: EventStore (Persistent Event Stream)
+
+Persistent event store with ring buffer, per-item JSON file persistence, audit JSONL log, and SSE subscription queues. Crash-safe via atomic writes (tmp + os.replace).
+
+- `toolwright/mcp/event_store.py` -> `EventStore`, `ConsoleEvent`
+- Ring buffer: 5000 max events, monotonic IDs
+- Persistence: `.toolwright/state/console/items/<id>.json`
+- Audit: `.toolwright/state/console/audit.jsonl`
+- Methods: `publish_event()`, `publish_work_item()` (upsert), `resolve_work_item()` (async with lock), `check_expirations()`, `events_since()`, `subscribe()`/`unsubscribe()`
+- Tests: `tests/test_event_store.py`
+
+### CAP-CONSOLE-004: Action Handlers (Control Plane API)
+
+POST endpoints following "side effect BEFORE resolution" pattern. Each handler: lookup → idempotent check → conflict check → side effect → resolve → publish event.
+
+- `toolwright/mcp/action_handlers.py` -> `ActionContext`, `set_context()`, all `handle_*` functions
+- Gate: `handle_gate_allow` (bulk), `handle_gate_block`
+- Confirm: `handle_confirm_grant`, `handle_confirm_deny`
+- Breaker: `handle_kill_tool`, `handle_enable_tool`
+- Rules: `handle_rule_activate`, `handle_rule_dismiss`
+- Repair: `handle_repair_apply`, `handle_repair_dismiss`
+- GET: `handle_list_work_items`, `handle_get_work_item`, `handle_status_counts`
+- Tests: `tests/test_action_handlers.py`
+
+### CAP-CONSOLE-005: Console SSE Stream
+
+Resumable SSE stream with Last-Event-ID support, full-state sync on connect, and status counter updates.
+
+- `toolwright/mcp/http_transport.py` -> `handle_console_stream`, `_format_sse_event()`, `_format_sse_sync()`, `_format_sse_status()`
+- Route: `GET /api/stream`
+- Event types: `message` (with optional work_item), `sync` (full state replace), `status` (counters)
+- Headers: `X-Accel-Buffering: no`, `Referrer-Policy: no-referrer`
+
+### CAP-CONSOLE-006: Action Routes
+
+POST routes for control plane actions, gated by token auth.
+
+- `toolwright/mcp/http_transport.py` -> Action route registration
+- Routes:
+  - `POST /api/act/gate/allow` (bulk tool approval)
+  - `POST /api/act/gate/block` (tool rejection)
+  - `POST /api/act/confirm/grant`, `/api/act/confirm/deny`
+  - `POST /api/act/kill`, `/api/act/enable`
+  - `POST /api/act/rule/activate`, `/api/act/rule/dismiss`
+  - `POST /api/act/repair/apply`, `/api/act/repair/dismiss`
+- GET routes: `/api/work-items`, `/api/work-items/{item_id}`, `/api/status`
+
+### CAP-CONSOLE-007: Expiration Loop
+
+Background asyncio.Task that checks for expired work items (e.g., confirmations with TTL) and calls `confirmation_store.deny()` to unblock frozen agents.
+
+- `toolwright/mcp/http_transport.py` -> `_run_expiration_loop()`
+- Interval: 5 seconds
+- Side effect: denies expired confirmations before marking EXPIRED
+
+### CAP-CONSOLE-008: Console Frontend (Single-File SPA)
+
+Dark-themed, vanilla JS console frontend served as static HTML. Terminal aesthetic, no framework, no build step.
+
+- `toolwright/assets/console/index.html` -> Complete console UI (<25KB)
+- Features: status bar (open/blocking/events/uptime), filter bar (6 kinds), event feed, work item cards with action buttons, bulk approval bar, blocking timer, new events pill
+- SSE auto-reconnect with exponential backoff
+- Safe DOM methods (createElement, textContent) — no innerHTML
+- Auth: token-in-URL → memory → strip via replaceState
+
+### CAP-CONSOLE-009: Pipeline Console Integration
+
+RequestPipeline emits console events for tool calls, confirmations, and failures.
+
+- `toolwright/mcp/pipeline.py` -> `_emit_console_event()`, console event publishing in `_handle_confirm()` and `_execute_and_process()`
+- Event types: `confirmation_requested`, `tool_call_success`, `tool_call_failed`
+- Creates CONFIRMATION WorkItems for blocking confirmation requests
+
+### CAP-CONSOLE-010: Startup WorkItem Generation
+
+At HTTP server startup, creates TOOL_APPROVAL WorkItems for all pending (unapproved) tools in the lockfile.
+
+- `toolwright/mcp/server.py` -> `_create_startup_work_items()`
+- Emits `tool_pending` console events for each unapproved tool
+
+---
+
 ## OBSERVE -- Telemetry
 
 ### CAP-CROSS-029: Observability (Tracing & Metrics)
@@ -750,3 +936,146 @@ No-op tracer (OTEL-compatible) and hand-rolled Prometheus metrics registry.
 - Tracer: no-op fallback when opentelemetry not installed
 - Metrics: counters, gauges, histograms with Prometheus text exposition
 - No external deps required; optional OTEL/prometheus-client for production
+
+### CAP-CROSS-036: Response Baseline Inference for Traffic-Captured Tools
+
+Automatically infer structural JSON schemas from captured HTTP responses. Store as canonical shape model with presence statistics. Zero configuration required.
+
+- `toolwright/models/shape.py` -> `ShapeModel`, `FieldShape`
+- `toolwright/core/drift/shape_inference.py` -> `infer_shape()`, `merge_observation()`, `InferenceMetadata`
+- Shape model uses flat JSON pointer paths (e.g., `.products[].id`)
+- Per-field presence tracking: `seen_count` / `sample_count` -> `presence_ratio`
+- Array presence is per-sample (100-item array = 1 observation, not 100)
+- Empty/truncated array metadata prevents false dilution of presence stats
+
+### CAP-CROSS-037: Probe Templates for Drift Detection
+
+Store sanitized request templates per tool at compile time. Reproduce query params, headers, and API version for accurate probing. Strip ephemeral tokens, pagination cursors, and auth credentials.
+
+- `toolwright/models/probe_template.py` -> `ProbeTemplate`
+- `toolwright/core/drift/probe_template.py` -> `extract_probe_template()`, param/header sanitization
+- STRIP_PARAMS: pagination cursors, auth tokens, cache busters, request IDs
+- KEEP_PARAMS: field selection, filters, sort, pagination size, API version
+- STRIP_HEADERS: Authorization, Cookie, x-api-key, auth-pattern X-* headers
+- Value heuristics: JWTs and long base64 tokens stripped regardless of header name
+
+### CAP-CROSS-038: Structural Drift Detection for Traffic-Captured GET Endpoints
+
+Probe endpoints using stored request template. Diff response shape against baseline with severity classification: SAFE (new fields), APPROVAL_REQUIRED (nullability changes), MANUAL (required field removed).
+
+- `toolwright/core/drift/shape_diff.py` -> `diff_shapes()`, `overall_severity()`
+- `toolwright/core/drift/shape_diff.py` -> `DriftChange`, `DriftChangeType`, `DriftSeverity`
+- 10 change types: FIELD_ADDED, TYPE_WIDENED_SAFE, NULLABILITY_CHANGED, ARRAY_ITEM_TYPE_CHANGED, OPTIONAL_KEY_REMOVED, REQUIRED_PATH_MISSING, TYPE_NARROWED, TYPE_CHANGED_BREAKING, ROOT_TYPE_CHANGED, OPTIONAL_PATH_ADDED
+- Empty/truncated array awareness: descendants are "unknown," not "missing"
+- Decide-first-merge-later: baseline is never mutated during classification
+
+### CAP-CROSS-039: Effectively-Required Field Detection
+
+Track per-field presence statistics across observations. Fields present in >= 95% of samples are "effectively required." Missing effectively-required fields classify as MANUAL (breaking).
+
+- `toolwright/models/shape.py` -> `FieldShape.is_effectively_required()`
+- `toolwright/core/drift/constants.py` -> `EFFECTIVELY_REQUIRED_THRESHOLD` (0.95), `MIN_SAMPLES_FOR_PRESENCE` (3)
+- Low sample counts (< MIN_SAMPLES) always classify as APPROVAL_REQUIRED, never MANUAL
+- Prevents false alarms from single-sample baselines
+
+### CAP-CROSS-040: Decide-First-Merge-Later Drift Resolution
+
+Drift is classified before any baseline mutation. SAFE changes auto-merge; others require approval. Baseline integrity preserved until explicit action.
+
+- `toolwright/core/drift/shape_diff.py` -> `diff_shapes()` does NOT mutate models
+- `toolwright/core/drift/shape_inference.py` -> `merge_observation()` is the single merge function
+- All merges (compile-time, SAFE drift, approved drift) go through `merge_observation()`
+- `toolwright/models/baseline.py` -> `BaselineIndex`, `ToolBaseline` with atomic save + threading lock
+- `toolwright/core/toolpack.py` -> `ToolpackPaths.baselines`, `ResolvedToolpackPaths.baselines_path`
+
+
+---
+
+## OVERLAY — Govern any existing MCP server
+
+### CAP-OVERLAY-001: Wrap CLI Command
+
+`toolwright wrap` connects to any existing MCP server (stdio or Streamable HTTP) and exposes a governed proxy. Supports auto-derived server names, saved configs, and header passthrough.
+
+- `toolwright/cli/commands_wrap.py` -> `wrap_command()` Click command
+- `toolwright/cli/main.py` -> registered in `CORE_COMMANDS`
+- Subcommands: `--url` (HTTP target), `--auto-approve` (low-risk), `--dry-run`, `--rules`, `--circuit-breaker`
+
+### CAP-OVERLAY-002: Upstream Connection (stdio + HTTP)
+
+Unified connection interface for upstream MCP servers. Supports stdio (subprocess) and Streamable HTTP targets. Uses `AsyncExitStack` for lifetime management and `Semaphore(10)` for concurrency.
+
+- `toolwright/overlay/connection.py` -> `WrappedConnection`
+- Methods: `connect()`, `list_tools()`, `call_tool()`, `reconnect()`, `close()`
+- Delegates to MCP SDK's `stdio_client` and `streamablehttp_client`
+
+### CAP-OVERLAY-003: Tool Discovery + Risk Classification
+
+Enumerates upstream tools, classifies risk tiers using name heuristics + MCP annotations, and computes digest-based signatures for change detection.
+
+- `toolwright/overlay/discovery.py` -> `discover_tools()`, `classify_risk()`, `tool_def_digest()`
+- Critical: delete/remove/destroy/drop/purge/revoke patterns
+- High: create/update/modify/write/send/push/execute/run (default)
+- Low: only when BOTH heuristics AND annotations agree (readOnlyHint)
+- `compute_tool_def_digest()` -> SHA256(name+desc+schema+annotations)[:16]
+
+### CAP-OVERLAY-004: Synthetic Manifest Generation
+
+Converts DiscoveryResult into a tools.json-compatible manifest with synthetic `method="MCP"`, `path="mcp://<server>/<tool>"`, `host="<server_name>"` values.
+
+- `toolwright/overlay/discovery.py` -> `build_synthetic_manifest()`
+- Enables reuse of existing lockfile, pipeline, and decision engine infrastructure
+
+### CAP-OVERLAY-005: MCP Result Normalizer
+
+Converts MCP `CallToolResult` (content blocks + isError) into the pipeline envelope format `{status_code, data, action}`. Handles text, JSON, multi-content, non-text (graceful degradation), and errors.
+
+- `toolwright/overlay/normalizer.py` -> `normalize_mcp_result()`
+- Single text block: attempts JSON parse; multiple blocks: concatenates with newlines
+- Non-text content: placeholder string `[<type> content]`
+
+### CAP-OVERLAY-006: Overlay Server (Governance Proxy)
+
+Composition-based MCP proxy that wires RequestPipeline, DecisionEngine, and all governance pillars (CORRECT, KILL) with the overlay executor. Does NOT subclass ToolwrightMCPServer.
+
+- `toolwright/overlay/server.py` -> `OverlayServer`
+- `_proxy_call()` -> upstream call + normalize
+- `_register_handlers()` -> MCP list_tools/call_tool handlers
+- `_format_mcp_result()` -> PipelineResult to MCP wire format
+- `run_stdio()` -> stdio transport
+- `sync_lockfile()` -> approval tracking via LockfileManager
+
+### CAP-OVERLAY-007: Per-Server Lockfile + Approval Flow
+
+Each wrapped server gets its own lockfile at `.toolwright/wrap/<name>/lockfile.yaml`. New tools are PENDING; changed digests trigger re-approval; auto-approve low-risk when `--auto-approve` flag is set.
+
+- `toolwright/models/overlay.py` -> `WrapConfig.lockfile_path` property
+- `toolwright/overlay/server.py` -> `sync_lockfile()` delegates to `LockfileManager.sync_from_manifest()`
+- `signature_id = tool_def_digest` enables existing change detection
+
+### CAP-OVERLAY-008: Config Persistence + Name Derivation
+
+Saves/loads wrap config as YAML at `.toolwright/wrap/<name>/wrap.yaml`. Server names auto-derived from command patterns, stripping `server-` and `mcp-server-` prefixes.
+
+- `toolwright/overlay/config.py` -> `derive_server_name()`, `save_wrap_config()`, `load_wrap_config()`
+- `build_client_config()` -> generates Claude Desktop + Claude Code config blocks
+
+### CAP-OVERLAY-009: Lifecycle Management
+
+Crash detection + exponential backoff restart for stdio targets. Health monitoring via `list_tools()` probe for HTTP targets.
+
+- `toolwright/overlay/lifecycle.py` -> `StdioLifecycleManager`, `HttpHealthMonitor`
+
+### CAP-OVERLAY-010: Source Locator
+
+Finds editable source code for wrapped MCP servers (vendored > .py script > .js script).
+
+- `toolwright/overlay/source_locator.py` -> `SourceLocator.locate()`
+
+### CAP-OVERLAY-011: Overlay Data Models
+
+Pydantic models for overlay mode: target types, config, wrapped tools, discovery results.
+
+- `toolwright/models/overlay.py` -> `TargetType`, `WrapConfig`, `WrappedTool`, `SourceInfo`, `DiscoveryResult`
+- `compute_tool_def_digest()` -> deterministic signature for change detection
+

@@ -220,6 +220,76 @@ def register_rules_commands(*, cli: click.Group) -> None:
         engine.update_rule(rule_id, status=RuleStatus.DISABLED)
         click.echo(f"Disabled rule: {rule_id}")
 
+    # -----------------------------------------------------------------------
+    # Template subgroup
+    # -----------------------------------------------------------------------
+
+    @rules.group("template")
+    @click.pass_context
+    def rules_template(ctx: click.Context) -> None:
+        """Manage rule templates."""
+        ctx.ensure_object(dict)
+
+    @rules_template.command("list")
+    def template_list() -> None:
+        """List available rule templates."""
+        from toolwright.rules.loader import list_templates
+
+        templates = list_templates()
+        if not templates:
+            click.echo("No rule templates found.")
+            return
+        for t in templates:
+            click.echo(
+                f"  {t['name']:<20} {t['description']} ({t['rule_count']} rules)"
+            )
+
+    @rules_template.command("show")
+    @click.argument("name")
+    def template_show(name: str) -> None:
+        """Show details of a rule template."""
+        from toolwright.rules.loader import load_template
+
+        try:
+            template = load_template(name)
+        except ValueError as e:
+            click.echo(f"Error: {e}", err=True)
+            raise SystemExit(1) from e
+        click.echo(f"Template: {template['name']}")
+        click.echo(f"Description: {template.get('description', '')}")
+        click.echo(f"Rules ({len(template.get('rules', []))}):")
+        for r in template.get("rules", []):
+            click.echo(f"  - [{r['kind']}] {r['name']}: {r['description']}")
+
+    @rules_template.command("apply")
+    @click.argument("name")
+    @click.option(
+        "--activate",
+        is_flag=True,
+        help="Create rules as ACTIVE instead of DRAFT.",
+    )
+    @click.pass_context
+    def template_apply(ctx: click.Context, name: str, activate: bool) -> None:
+        """Apply a rule template to the active toolpack."""
+        from toolwright.rules.loader import apply_template
+
+        rules_path = ctx.obj["rules_path"]
+        try:
+            created = apply_template(
+                name, rules_path=rules_path, activate=activate
+            )
+        except ValueError as e:
+            click.echo(f"Error: {e}", err=True)
+            raise SystemExit(1) from e
+        status = "ACTIVE" if activate else "DRAFT"
+        click.echo(
+            f"Applied template '{name}': {len(created)} rules created as {status}."
+        )
+        for r in created:
+            click.echo(f"  {r.rule_id}: {r.description}")
+        if not activate:
+            click.echo("\nActivate with: toolwright rules activate <rule-id>")
+
 
 def _build_config(
     kind: RuleKind,

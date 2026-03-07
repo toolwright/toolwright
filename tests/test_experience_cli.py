@@ -14,12 +14,13 @@ def test_top_help_includes_core_commands() -> None:
     runner = CliRunner()
     result = runner.invoke(cli, ["--help"])
     assert result.exit_code == 0
-    assert "demo" in result.stdout
-    assert "init" in result.stdout
+    # Quick Start (core) commands
+    assert "create" in result.stdout
     assert "mint" in result.stdout
     assert "gate" in result.stdout
     assert "serve" in result.stdout
-    assert "run" in result.stdout
+    assert "config" in result.stdout
+    # Operations commands
     assert "drift" in result.stdout
     assert "verify" in result.stdout
 

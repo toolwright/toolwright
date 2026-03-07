@@ -2,12 +2,134 @@
 
 from __future__ import annotations
 
+import json
+import os
+import re
 import sys
 from pathlib import Path
+from typing import Any
 
 import click
 
 from toolwright.utils.deps import require_mcp_dependency
+
+TOOL_COUNT_WARN_THRESHOLD = 30
+TOOL_COUNT_BLOCK_THRESHOLD = 200
+
+
+def check_tool_count_guardrails(
+    tool_count: int,
+    *,
+    groups_index: Any | None,
+    no_tool_limit: bool,
+) -> tuple[list[str], bool]:
+    """Check tool count against safety thresholds.
+
+    Returns (warning_messages, should_block).
+    - 0-30 tools: no warnings
+    - 31-200 tools: warning, server starts
+    - 201+ tools: error + block (unless no_tool_limit overrides)
+    """
+    warnings: list[str] = []
+    block = False
+
+    if tool_count <= TOOL_COUNT_WARN_THRESHOLD:
+        return warnings, block
+
+    # Build group suggestion text
+    group_hint = ""
+    if groups_index is not None:
+        from toolwright.models.groups import ToolGroupIndex
+
+        if isinstance(groups_index, ToolGroupIndex) and groups_index.groups:
+            top = sorted(
+                groups_index.groups, key=lambda g: len(g.tools), reverse=True
+            )[:8]
+            parts = [f"{g.name} ({len(g.tools)})" for g in top]
+            group_hint = (
+                "\n  Consider narrowing with --scope:\n    "
+                + "    ".join(f"{p:<20}" for p in parts)
+                + f"\n  Example: toolwright serve --scope {top[0].name}"
+            )
+        else:
+            group_hint = "\n  Run 'toolwright compile' to generate tool groups, then use --scope to narrow."
+    else:
+        group_hint = "\n  Run 'toolwright compile' to generate tool groups, then use --scope to narrow."
+
+    if tool_count > TOOL_COUNT_BLOCK_THRESHOLD:
+        if no_tool_limit:
+            warnings.append(
+                f"Serving {tool_count} tools (--no-tool-limit override active). "
+                f"Agent performance degrades above ~{TOOL_COUNT_WARN_THRESHOLD} tools."
+                + group_hint
+            )
+        else:
+            warnings.append(
+                f"Refusing to serve {tool_count} tools. "
+                f"Agents cannot reliably select from this many tools."
+                + group_hint
+            )
+            block = True
+    else:
+        warnings.append(
+            f"Serving {tool_count} tools. "
+            f"Agent performance degrades above ~{TOOL_COUNT_WARN_THRESHOLD} tools."
+            + group_hint
+        )
+
+    return warnings, block
+
+
+def stdio_transport_warning() -> str:
+    """Return a one-line warning about stdio mode being local-only."""
+    return (
+        "Running in stdio mode (local only). "
+        "Use --use-http for networked/production deployments."
+    )
+
+
+def check_jsonschema_available() -> str | None:
+    """Return a warning if jsonschema is not installed, None otherwise."""
+    try:
+        import jsonschema  # noqa: F401
+
+        return None
+    except ImportError:
+        return (
+            "jsonschema not installed — input validation disabled. "
+            "Install with: pip install jsonschema"
+        )
+
+
+def warn_missing_auth(
+    tools_path: str | Path,
+    auth_header: str | None,
+) -> list[str]:
+    """Check for missing auth env vars and return warning messages.
+
+    Returns a list of warning strings for hosts without auth configuration.
+    """
+    if auth_header:
+        return []
+
+    path = Path(tools_path)
+    if not path.exists():
+        return []
+
+    with open(path) as f:
+        manifest = json.load(f)
+
+    hosts = manifest.get("allowed_hosts", [])
+    warnings: list[str] = []
+    for host in hosts:
+        normalized = re.sub(r"[^A-Za-z0-9]", "_", host).upper()
+        env_key = f"TOOLWRIGHT_AUTH_{normalized}"
+        if not os.environ.get(env_key):
+            warnings.append(
+                f"No auth configured for {host}. "
+                f'Set: export {env_key}="Bearer <token>"'
+            )
+    return warnings
 
 
 def run_mcp_serve(
@@ -37,6 +159,12 @@ def run_mcp_serve(
     transport: str = "stdio",
     host: str = "127.0.0.1",
     port: int = 8745,
+    extra_headers: dict[str, str] | None = None,
+    schema_validation: str = "warn",
+    scope: str | None = None,
+    no_tool_limit: bool = False,
+    shape_baselines_path: str | None = None,
+    shape_probe_interval: int = 300,
 ) -> None:
     """Run the MCP server command."""
     resolved_toolpack = None
@@ -243,8 +371,107 @@ def run_mcp_serve(
             if watch_config_path:
                 click.echo(f"  Watch config: {watch_config_path}", err=True)
 
+    # Merge extra headers: toolpack stored headers as base, CLI flags override
+    merged_extra_headers: dict[str, str] | None = None
+    if resolved_toolpack and resolved_toolpack.extra_headers:
+        merged_extra_headers = dict(resolved_toolpack.extra_headers)
+    if extra_headers:
+        if merged_extra_headers is None:
+            merged_extra_headers = {}
+        merged_extra_headers.update(extra_headers)
+
+    # Check for empty tool manifest
+    try:
+        with open(resolved_tools_path) as f:
+            _manifest = json.load(f)
+        _actions = _manifest.get("actions", [])
+        if not _actions:
+            click.echo(
+                "Error: Toolpack has 0 tools. "
+                "Run 'toolwright mint' first to capture API traffic.",
+                err=True,
+            )
+            sys.exit(1)
+    except (json.JSONDecodeError, OSError):
+        pass  # Let downstream code handle invalid manifests
+
+    # Warn about missing auth env vars
+    auth_warnings = warn_missing_auth(
+        tools_path=resolved_tools_path,
+        auth_header=auth_header,
+    )
+    for warning in auth_warnings:
+        click.echo(f"  WARNING: {warning}", err=True)
+
+    # Render startup card with governance layers
+    from toolwright.mcp.startup_card import render_startup_card
+
+    _tools_manifest = {}
+    try:
+        with open(resolved_tools_path) as _tf:
+            _tools_manifest = json.load(_tf)
+    except (json.JSONDecodeError, OSError):
+        pass
+    _tool_actions = _tools_manifest.get("actions", [])
+
+    _tool_categories: dict[str, int] = {}
+    _risk_counts: dict[str, int] = {}
+    for _action in _tool_actions:
+        method = _action.get("method", "GET").upper()
+        cat = "read" if method == "GET" else "write" if method in ("POST", "PUT", "PATCH") else "admin"
+        _tool_categories[cat] = _tool_categories.get(cat, 0) + 1
+        tier = _action.get("risk_tier", "low")
+        _risk_counts[tier] = _risk_counts.get(tier, 0) + 1
+
+    _total_tokens = len(_tool_actions) * 500  # rough estimate
+    _tokens_per = 500 if _tool_actions else 0
+
+    # Build governance dict
+    _governance: dict[str, str | None] = {
+        "lockfile": "active" if resolved_lockfile_path else None,
+        "rules": None,
+        "policy": None,
+        "breakers": None,
+        "watch": None,
+    }
+    if rules_path and Path(rules_path).exists():
+        try:
+            _rules_data = json.loads(Path(rules_path).read_text())
+            _governance["rules"] = f"{len(_rules_data)} rules"
+        except (json.JSONDecodeError, OSError):
+            _governance["rules"] = "configured"
+    if resolved_policy_path and resolved_policy_path.exists():
+        _governance["policy"] = "active"
+    if circuit_breaker_path and Path(circuit_breaker_path).exists():
+        _governance["breakers"] = "configured"
+    if watch:
+        _governance["watch"] = auto_heal_override or "on"
+
+    _card_name = ""
+    if resolved_toolpack:
+        _card_name = resolved_toolpack.display_name or resolved_toolpack.toolpack_id
+    else:
+        _card_name = str(resolved_tools_path.stem)
+
+    card = render_startup_card(
+        name=_card_name,
+        tools=_tool_categories,
+        risk_counts=_risk_counts,
+        context_tokens=_total_tokens,
+        tokens_per_tool=_tokens_per,
+        auto_heal=auto_heal_override if watch else None,
+        scope_info=scope,
+        governance=_governance,
+    )
+    click.echo(card, err=True)
+
     # Import here to avoid loading MCP dependencies unless needed
     from toolwright.mcp.server import run_mcp_server
+
+    # Extract auth requirements from toolpack for per-host header name resolution
+    auth_requirements = None
+    if resolved_toolpack and resolved_toolpack.auth_requirements:
+        auth_requirements = resolved_toolpack.auth_requirements
 
     try:
         run_mcp_server(
@@ -271,6 +498,13 @@ def run_mcp_serve(
             transport=transport,
             host=host,
             port=port,
+            extra_headers=merged_extra_headers,
+            schema_validation=schema_validation,
+            scope=scope,
+            no_tool_limit=no_tool_limit,
+            shape_baselines_path=shape_baselines_path,
+            shape_probe_interval=shape_probe_interval,
+            auth_requirements=auth_requirements,
         )
     except ValueError as exc:
         click.echo(f"Error: {exc}", err=True)

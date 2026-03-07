@@ -93,6 +93,7 @@ class DecisionEngine:
                 host=host,
                 risk_tier=risk_tier,
                 scope=request.toolset_name,
+                dry_run=True,  # Always dry_run; consume only on final ALLOW
             )
             audit_fields["rule_id"] = policy_result.rule_id
             if not policy_result.allowed:
@@ -148,6 +149,11 @@ class DecisionEngine:
                     lockfile_digest=context.lockfile_digest_current,
                 )
                 if consumed:
+                    if policy_engine is not None:
+                        policy_engine.consume_budget(
+                            method=method, path=path, host=host,
+                            risk_tier=risk_tier, scope=request.toolset_name,
+                        )
                     return DecisionResult(
                         decision=DecisionType.ALLOW,
                         reason_code=ReasonCode.ALLOWED_CONFIRMATION_GRANTED,
@@ -189,6 +195,11 @@ class DecisionEngine:
                 audit_fields=audit_fields,
             )
 
+        if policy_engine is not None:
+            policy_engine.consume_budget(
+                method=method, path=path, host=host,
+                risk_tier=risk_tier, scope=request.toolset_name,
+            )
         return DecisionResult(
             decision=DecisionType.ALLOW,
             reason_code=ReasonCode.ALLOWED_POLICY,

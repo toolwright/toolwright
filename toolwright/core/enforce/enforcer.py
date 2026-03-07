@@ -119,9 +119,12 @@ class Enforcer:
         """
         start_time = time.time()
 
-        # Check if we have a valid confirmation token
+        # Check if we have a valid confirmation token.
+        # NOTE: This short-circuits before engine.evaluate(), so budget is
+        # consumed only once (during the initial evaluate() call below).
+        # If this flow is refactored, use the dry_run/consume_budget pattern
+        # from DecisionEngine to prevent double-counting.
         if confirmation_token and self._check_confirmation_token(confirmation_token):
-            # Token is valid, allow the request
             latency_ms = (time.time() - start_time) * 1000
             self.audit_logger.log_enforce_decision(
                 action_id=action_id,

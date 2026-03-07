@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -42,6 +42,7 @@ class PrerequisiteConfig(BaseModel):
 
     required_tool_ids: list[str]
     required_args: dict[str, Any] = Field(default_factory=dict)
+    required_tool_patterns: list[str] = Field(default_factory=list)
 
 
 class ProhibitionConfig(BaseModel):
@@ -121,6 +122,8 @@ class BehavioralRule(BaseModel):
     target_tool_ids: list[str] = Field(default_factory=list)
     target_methods: list[str] = Field(default_factory=list)
     target_hosts: list[str] = Field(default_factory=list)
+    target_name_patterns: list[str] = Field(default_factory=list)
+    match: Literal["any", "all"] = "all"
     config: RuleConfig
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     created_by: str = "system"

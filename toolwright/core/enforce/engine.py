@@ -50,6 +50,8 @@ class PolicyEngine:
         headers: dict[str, str] | None = None,
         risk_tier: str | None = None,
         scope: str | None = None,
+        *,
+        dry_run: bool = False,
     ) -> EvaluationResult:
         """Evaluate a request against the policy.
 
@@ -60,6 +62,7 @@ class PolicyEngine:
             headers: Request headers
             risk_tier: Risk tier of the endpoint
             scope: Scope name
+            dry_run: If True, check budget without consuming (for two-phase budget pattern)
 
         Returns:
             EvaluationResult with decision and details
@@ -116,7 +119,8 @@ class PolicyEngine:
                             matched_rule = rule
                             break
                         else:
-                            tracker.consume()
+                            if not dry_run:
+                                tracker.consume()
                             budget_remaining = tracker.remaining
                             if matched_rule is None:
                                 matched_rule = rule
@@ -213,6 +217,32 @@ class PolicyEngine:
             redact_fields=list(set(redact_fields)),
             reason="Unknown rule type",
         )
+
+    def consume_budget(
+        self,
+        method: str,
+        path: str,
+        host: str,
+        headers: dict[str, str] | None = None,
+        risk_tier: str | None = None,
+        scope: str | None = None,
+    ) -> None:
+        """Explicitly consume budget for matching rules.
+
+        Called after a final ALLOW decision to debit the budget tracker.
+        This is separate from evaluate() to support dry_run evaluation.
+
+        Consumes from ALL matching budget rules (not just the first),
+        supporting layered budgets (e.g. per_minute + per_hour).
+        """
+        rules = self.policy.get_rules_by_priority()
+        for rule in rules:
+            if rule.type == RuleType.BUDGET and rule.match.matches(
+                method, path, host, headers, risk_tier, scope
+            ):
+                tracker = self._budgets.get(rule.id)
+                if tracker and tracker.check():
+                    tracker.consume()
 
     def reset_budget(self, rule_id: str) -> None:
         """Reset the budget for a specific rule.

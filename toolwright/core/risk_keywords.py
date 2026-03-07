@@ -16,3 +16,5 @@ HIGH_RISK_PATH_KEYWORDS = re.compile(
     r"(delete|destroy|remove|purge|revoke|suspend|deactivate|terminate)",
     re.IGNORECASE,
 )
+
+RISK_ORDER: dict[str, int] = {"safe": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}

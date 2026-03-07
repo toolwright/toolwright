@@ -120,15 +120,43 @@ class RuleEngine:
         for rule in self._rules.values():
             if rule.status != RuleStatus.ACTIVE:
                 continue
-            if rule.target_tool_ids and tool_id not in rule.target_tool_ids:
-                continue
-            if rule.target_methods and method not in rule.target_methods:
-                continue
-            if rule.target_hosts and host not in rule.target_hosts:
+            if not self._matches_targets(rule, tool_id, method, host):
                 continue
             result.append(rule)
         result.sort(key=lambda r: r.priority)
         return result
+
+    @staticmethod
+    def _matches_targets(
+        rule: BehavioralRule, tool_id: str, method: str, host: str
+    ) -> bool:
+        """Check if a tool call matches rule targeting fields.
+
+        match="all": tool must match ALL non-empty targeting fields (AND).
+        match="any": tool matches if ANY non-empty targeting field hits (OR).
+        Empty fields are ignored.
+        """
+        from fnmatch import fnmatch
+
+        checks: list[bool] = []
+
+        if rule.target_tool_ids:
+            checks.append(tool_id in rule.target_tool_ids)
+        if rule.target_name_patterns:
+            checks.append(
+                any(fnmatch(tool_id, pat) for pat in rule.target_name_patterns)
+            )
+        if rule.target_methods:
+            checks.append(method in rule.target_methods)
+        if rule.target_hosts:
+            checks.append(host in rule.target_hosts)
+
+        if not checks:
+            return True  # no targeting = matches all
+
+        if rule.match == "any":
+            return any(checks)
+        return all(checks)
 
     # ------------------------------------------------------------------
     # Per-kind evaluators
@@ -162,6 +190,8 @@ class RuleEngine:
         _params: dict[str, Any],
         session: SessionHistory,
     ) -> RuleViolation | None:
+        from fnmatch import fnmatch
+
         config: PrerequisiteConfig = rule.config  # type: ignore[assignment]
         required_args = config.required_args or {}
 
@@ -186,6 +216,25 @@ class RuleEngine:
                         feedback=f"Prerequisite not met: {req_tool} not called",
                         suggestion=f"Call {req_tool} first.",
                     )
+
+        # Check glob pattern prerequisites (any pattern match satisfies)
+        if config.required_tool_patterns:
+            called_ids = session.call_sequence()
+            if not any(
+                fnmatch(cid, pattern)
+                for pattern in config.required_tool_patterns
+                for cid in called_ids
+            ):
+                patterns_str = ", ".join(config.required_tool_patterns)
+                return RuleViolation(
+                    rule_id=rule.rule_id,
+                    rule_kind=rule.kind,
+                    tool_id=tool_id,
+                    description=rule.description,
+                    feedback=f"Prerequisite not met: no tool matching '{patterns_str}' called",
+                    suggestion=f"Call a tool matching one of [{patterns_str}] first.",
+                )
+
         return None
 
     def _evaluate_prohibition(

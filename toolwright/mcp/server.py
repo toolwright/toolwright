@@ -44,6 +44,7 @@ from toolwright.core.network_safety import (
     validate_network_target,
     validate_url_scheme,
 )
+from toolwright.core.toolpack import ToolpackAuthRequirement
 from toolwright.mcp._compat import (
     InitializationOptions,
     NotificationOptions,
@@ -117,7 +118,12 @@ class ToolwrightMCPServer:
         allow_redirects: bool = False,
         rules_path: str | Path | None = None,
         circuit_breaker_path: str | Path | None = None,
+        extra_headers: dict[str, str] | None = None,
+        schema_validation: str = "warn",
+        auth_requirements: list[ToolpackAuthRequirement] | None = None,
     ) -> None:
+        self.schema_validation = schema_validation
+        self._auth_requirements = auth_requirements or []
         self.tools_path = Path(tools_path)
         self.toolsets_path = Path(toolsets_path) if toolsets_path else None
         self.toolset_name = toolset_name
@@ -125,6 +131,7 @@ class ToolwrightMCPServer:
         self.lockfile_path = Path(lockfile_path) if lockfile_path else None
         self.base_url = base_url
         self.auth_header = auth_header
+        self.extra_headers = extra_headers
         self.dry_run = dry_run
         self.allow_private_networks = [
             ipaddress.ip_network(cidr)
@@ -360,18 +367,19 @@ class ToolwrightMCPServer:
                     description=self._build_description(action),
                     inputSchema=action.get("input_schema", {"type": "object", "properties": {}}),
                 )
-                output_schema = action.get("output_schema")
-                if isinstance(output_schema, dict):
-                    # MCP structuredContent is object-only in practice (and in the reference
-                    # `mcp` types). Avoid advertising an outputSchema for non-object payloads
-                    # (arrays/scalars), since clients will require structuredContent when an
-                    # outputSchema is present.
-                    schema_type = output_schema.get("type")
-                    is_object_schema = schema_type == "object" or (
-                        schema_type is None and "properties" in output_schema
-                    )
-                    if is_object_schema:
-                        tool.outputSchema = output_schema
+                if self.schema_validation == "strict":
+                    output_schema = action.get("output_schema")
+                    if isinstance(output_schema, dict):
+                        # MCP structuredContent is object-only in practice (and in the reference
+                        # `mcp` types). Avoid advertising an outputSchema for non-object payloads
+                        # (arrays/scalars), since clients will require structuredContent when an
+                        # outputSchema is present.
+                        schema_type = output_schema.get("type")
+                        is_object_schema = schema_type == "object" or (
+                            schema_type is None and "properties" in output_schema
+                        )
+                        if is_object_schema:
+                            tool.outputSchema = output_schema
                 tools.append(tool)
             return tools
 
@@ -406,7 +414,9 @@ class ToolwrightMCPServer:
             return result
 
         # Structured output: return raw dict for MCP structuredContent
-        if result.is_structured:
+        # Only when outputSchema is advertised (strict mode); otherwise
+        # fall through to text content so the client doesn't choke.
+        if result.is_structured and self.schema_validation == "strict":
             return result.payload
 
         # Raw (non-envelope dict): return as-is for MCP
@@ -465,6 +475,17 @@ class ToolwrightMCPServer:
         env_key = f"TOOLWRIGHT_AUTH_{normalized}"
         return os.environ.get(env_key)
 
+    def _resolve_auth_header_name(self, host: str) -> str:
+        """Resolve which header name to use for auth on this host.
+
+        Checks ToolpackAuthRequirement entries for a custom header_name.
+        Falls back to 'Authorization'.
+        """
+        for req in self._auth_requirements:
+            if req.host == host and req.header_name:
+                return req.header_name
+        return "Authorization"
+
     def _resolve_action_endpoint(self, action: dict[str, Any]) -> tuple[str, str, str]:
         endpoint = action.get("endpoint")
         endpoint_data = endpoint if isinstance(endpoint, dict) else {}
@@ -512,7 +533,9 @@ class ToolwrightMCPServer:
         headers: dict[str, str] = {"User-Agent": "Toolwright/1.0"}
         auth = self._resolve_auth_for_host(action_host)
         if auth:
-            headers["Authorization"] = auth
+            headers[self._resolve_auth_header_name(action_host)] = auth
+        if self.extra_headers:
+            headers.update(self.extra_headers)
 
         client = await self._get_http_client()
         current_url = probe_url
@@ -681,12 +704,17 @@ class ToolwrightMCPServer:
             headers: dict[str, str] = {"User-Agent": "Toolwright/1.0"}
             auth = self._resolve_auth_for_host(action_host)
             if auth:
-                headers["Authorization"] = auth
+                headers[self._resolve_auth_header_name(action_host)] = auth
+            if self.extra_headers:
+                headers.update(self.extra_headers)
 
             kwargs: dict[str, Any] = {"headers": headers, "follow_redirects": False}
             if method.upper() in ("POST", "PUT", "PATCH"):
                 body_params = {k: v for k, v in args.items() if f"{{{k}}}" not in path}
                 if body_params:
+                    wrapper = action.get("request_body_wrapper")
+                    if wrapper:
+                        body_params = {wrapper: body_params}
                     headers["Content-Type"] = "application/json"
                     kwargs["json"] = body_params
             elif method.upper() in ("GET", "HEAD", "OPTIONS"):
@@ -820,10 +848,49 @@ class ToolwrightMCPServer:
 
     def run_http(self, *, host: str = "127.0.0.1", port: int = 8745) -> None:
         """Start the HTTP transport (StreamableHTTP via Starlette/uvicorn)."""
+        from toolwright.mcp.event_store import EventStore
         from toolwright.mcp.http_transport import ToolwrightHTTPApp
 
-        app = ToolwrightHTTPApp(self, host=host, port=port)
+        # Create console EventStore in the state directory
+        state_dir = Path(self.approval_root_path) / ".toolwright" / "state" / "console"
+        console_event_store = EventStore(state_dir=state_dir)
+
+        # Create TOOL_APPROVAL work items for pending tools
+        self._create_startup_work_items(console_event_store)
+
+        app = ToolwrightHTTPApp(
+            self,
+            host=host,
+            port=port,
+            console_event_store=console_event_store,
+            confirmation_store=self.confirmation_store,
+            lockfile_manager=self.lockfile_manager,
+            circuit_breaker=self.circuit_breaker,
+            rule_engine=self.rule_engine,
+        )
         app.run()
+
+    def _create_startup_work_items(self, event_store: Any) -> None:
+        """Create TOOL_APPROVAL work items for pending tools at serve startup."""
+        if self.lockfile_manager is None:
+            return
+
+        from toolwright.core.work_items import create_tool_approval_item
+
+        lockfile = self.lockfile_manager.lockfile
+        if lockfile is None:
+            return
+
+        for tool_id, tool in lockfile.tools.items():
+            if tool.status == ApprovalStatus.PENDING:
+                item = create_tool_approval_item(
+                    tool_id=tool.tool_id or tool_id,
+                    method=tool.method,
+                    path=tool.path,
+                    risk_tier=tool.risk_tier,
+                    description=f"{tool.name} ({tool.host})",
+                )
+                event_store.publish_work_item(item)
 
     async def close(self) -> None:
         if self._http_client:
@@ -855,6 +922,13 @@ def run_mcp_server(
     transport: str = "stdio",
     host: str = "127.0.0.1",
     port: int = 8745,
+    extra_headers: dict[str, str] | None = None,
+    schema_validation: str = "warn",
+    scope: str | None = None,
+    no_tool_limit: bool = False,
+    shape_baselines_path: str | None = None,
+    shape_probe_interval: int = 300,
+    auth_requirements: list[ToolpackAuthRequirement] | None = None,
 ) -> None:
     """Run the Toolwright MCP server."""
     server = ToolwrightMCPServer(
@@ -872,6 +946,9 @@ def run_mcp_server(
         allow_redirects=allow_redirects,
         rules_path=rules_path,
         circuit_breaker_path=circuit_breaker_path,
+        extra_headers=extra_headers,
+        schema_validation=schema_validation,
+        auth_requirements=auth_requirements,
     )
 
     # Context efficiency: apply tool filters and description mode
@@ -884,7 +961,61 @@ def run_mcp_server(
         )
         server.pipeline.actions = server.actions
 
+    # Scope filtering (requires groups.json from compile output)
+    groups_index = None
+    groups_json_path = Path(tools_path).parent / "groups.json"
+    if groups_json_path.exists():
+        from toolwright.core.compile.grouper import load_groups_index
+
+        groups_index = load_groups_index(str(groups_json_path))
+
+    if scope:
+        if groups_index is None:
+            import click as _click
+
+            _click.echo(
+                "Warning: No tool groups found. Run 'toolwright compile' to generate groups.\n"
+                f"Serving all {len(server.actions)} tools.",
+                err=True,
+            )
+        else:
+            import click as _click
+
+            from toolwright.core.compile.grouper import filter_by_scope
+
+            try:
+                # filter_by_scope expects list[dict], server.actions is dict[str, dict]
+                filtered_list = filter_by_scope(
+                    list(server.actions.values()), scope, groups_index
+                )
+                server.actions = {a["name"]: a for a in filtered_list}
+                server.pipeline.actions = server.actions
+            except ValueError as exc:
+                _click.echo(f"Error: {exc}", err=True)
+                sys.exit(1)
+
+    # Tool count guardrails
+    import click as _click
+
+    from toolwright.cli.mcp import check_tool_count_guardrails
+
+    tool_count = len(server.actions)
+    guardrail_warnings, should_block = check_tool_count_guardrails(
+        tool_count, groups_index=groups_index, no_tool_limit=no_tool_limit,
+    )
+    for warning in guardrail_warnings:
+        _click.echo(f"  {warning}", err=True)
+    if should_block:
+        sys.exit(1)
+
+    from toolwright.cli.mcp import check_jsonschema_available
+
+    jsonschema_warning = check_jsonschema_available()
+    if jsonschema_warning:
+        _click.echo(f"  WARNING: {jsonschema_warning}", err=True)
+
     reconcile_loop = None
+    shape_probe_loop = None
     if watch:
         from toolwright.core.reconcile.loop import ReconcileLoop
         from toolwright.models.reconcile import WatchConfig
@@ -910,20 +1041,85 @@ def run_mcp_server(
             breaker_registry=server.circuit_breaker,
         )
 
+        # Shape probe loop: autonomous drift detection via probe templates
+        if shape_baselines_path:
+            from toolwright.core.drift.shape_probe_loop import ShapeProbeLoop
+            from toolwright.models.baseline import BaselineIndex
+
+            sb_path = Path(shape_baselines_path)
+            if sb_path.exists():
+                baseline_index = BaselineIndex.load(sb_path)
+                if baseline_index.baselines:
+                    # Extract host from first action (all actions share the same API host)
+                    first_action = actions[0] if actions else {}
+                    probe_host = str(first_action.get("host", ""))
+
+                    events_path = Path(project_root) / ".toolwright" / "state" / "drift_events.jsonl"
+
+                    shape_probe_loop = ShapeProbeLoop(
+                        baseline_index=baseline_index,
+                        baselines_path=sb_path,
+                        events_path=events_path,
+                        host=probe_host,
+                        auth_header=auth_header,
+                        extra_headers=extra_headers,
+                        base_url=base_url,
+                        probe_interval=shape_probe_interval,
+                    )
+                    _click.echo(
+                        f"  Shape probes: {len(baseline_index.baselines)} tools, "
+                        f"interval={shape_probe_interval}s",
+                        err=True,
+                    )
+                else:
+                    _click.echo("  WARNING: shape_baselines.json has no baselines", err=True)
+            else:
+                _click.echo(f"  WARNING: shape baselines not found: {sb_path}", err=True)
+
     if transport == "http":
         # HTTP transport runs its own event loop via uvicorn
         server.run_http(host=host, port=port)
     else:
+        from toolwright.cli.mcp import stdio_transport_warning
+
+        _click.echo(f"  {stdio_transport_warning()}", err=True)
         async def main() -> None:
+            shape_probe_task: asyncio.Task | None = None
             try:
                 if reconcile_loop is not None:
                     await reconcile_loop.start()
                     logger.info("Reconciliation loop started (watch mode)")
+                if shape_probe_loop is not None:
+                    shape_probe_task = asyncio.create_task(
+                        _run_shape_probe_loop(shape_probe_loop, shape_probe_interval)
+                    )
+                    logger.info("Shape probe loop started")
                 await server.run_stdio()
             finally:
+                if shape_probe_task is not None:
+                    shape_probe_task.cancel()
+                    with __import__("contextlib").suppress(asyncio.CancelledError):
+                        await shape_probe_task
+                    logger.info("Shape probe loop stopped")
                 if reconcile_loop is not None:
                     await reconcile_loop.stop()
                     logger.info("Reconciliation loop stopped")
                 await server.close()
 
         asyncio.run(main())
+
+
+async def _run_shape_probe_loop(
+    loop: object,
+    interval: int,
+) -> None:
+    """Run shape probe cycles at the given interval until cancelled."""
+    from toolwright.core.drift.shape_probe_loop import ShapeProbeLoop
+
+    assert isinstance(loop, ShapeProbeLoop)
+    while True:
+        try:
+            await loop.probe_cycle()
+        except Exception:
+            logger.exception("Shape probe cycle error")
+        await asyncio.sleep(interval)

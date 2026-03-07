@@ -1,0 +1,34 @@
+name: crud-safety
+description: Require reading a resource before destructive operations
+rules:
+  - kind: prerequisite
+    name: read-before-delete
+    description: Require a read call before any destructive operation
+    target_name_patterns: ["delete_*", "*_delete", "remove_*", "destroy_*"]
+    target_methods: [DELETE]
+    match: any
+    config:
+      required_tool_ids: []
+      required_tool_patterns: ["get_*", "list_*", "read_*", "fetch_*"]
+    priority: 100
+
+  - kind: prerequisite
+    name: read-before-update
+    description: Require a read call before any mutation
+    target_name_patterns: ["update_*", "*_update", "edit_*", "modify_*"]
+    target_methods: [PUT, PATCH]
+    match: any
+    config:
+      required_tool_ids: []
+      required_tool_patterns: ["get_*", "list_*", "read_*", "fetch_*"]
+    priority: 100
+
+  - kind: approval
+    name: confirm-destructive
+    description: Require confirmation before destructive operations
+    target_name_patterns: ["delete_*", "*_delete", "remove_*", "destroy_*"]
+    target_methods: [DELETE]
+    match: any
+    config:
+      approval_message: "This will permanently delete a resource. Confirm?"
+    priority: 50

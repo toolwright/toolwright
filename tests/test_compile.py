@@ -585,8 +585,8 @@ class TestPolicyGenerator:
         assert "graphql" in gql_rule["match"]["path_pattern"]
         assert gql_rule["match"]["scopes"] == ["readonly"]
 
-    def test_generate_admin_deny_rule(self):
-        """Test that admin endpoints get deny rule."""
+    def test_no_deny_admin_rule_generated(self):
+        """Admin endpoints must NOT get a deny_admin rule (F-032)."""
         endpoints = [
             make_endpoint(path="/api/admin/users"),
         ]
@@ -594,9 +594,8 @@ class TestPolicyGenerator:
         generator = PolicyGenerator()
         policy = generator.generate(endpoints)
 
-        deny_rules = [r for r in policy["rules"] if r["type"] == "deny"]
-        admin_rule = next((r for r in deny_rules if "admin" in r.get("id", "")), None)
-        assert admin_rule is not None
+        rule_ids = [r["id"] for r in policy["rules"]]
+        assert "deny_admin" not in rule_ids
 
     def test_to_yaml(self):
         """Test YAML serialization."""

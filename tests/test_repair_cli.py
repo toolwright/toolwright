@@ -8,7 +8,7 @@ from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
-from toolwright.cli.main import CORE_COMMANDS, cli
+from toolwright.cli.main import OPERATIONS_COMMANDS, cli
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -107,13 +107,13 @@ def _deny_entry(reason_code: str, tool_id: str = "get_users") -> dict:
 class TestRepairHelp:
     """Tests for repair command help and visibility."""
 
-    def test_repair_visible_in_core_commands(self) -> None:
-        """repair appears in CORE_COMMANDS after drift."""
-        assert "repair" in CORE_COMMANDS
-        drift_idx = CORE_COMMANDS.index("drift")
-        repair_idx = CORE_COMMANDS.index("repair")
-        assert repair_idx == drift_idx + 1, (
-            f"repair should appear right after drift, but drift={drift_idx}, repair={repair_idx}"
+    def test_repair_visible_in_operations_commands(self) -> None:
+        """repair appears in OPERATIONS_COMMANDS after diff."""
+        assert "repair" in OPERATIONS_COMMANDS
+        diff_idx = OPERATIONS_COMMANDS.index("diff")
+        repair_idx = OPERATIONS_COMMANDS.index("repair")
+        assert repair_idx == diff_idx + 1, (
+            f"repair should appear right after diff, but diff={diff_idx}, repair={repair_idx}"
         )
 
     def test_repair_help_shows_examples(self) -> None:

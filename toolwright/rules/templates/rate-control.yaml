@@ -1,0 +1,23 @@
+name: rate-control
+description: Rate limits on write operations and session budgets
+rules:
+  - kind: rate
+    name: write-rate-limit
+    description: Limit write operations to 10 per minute
+    target_name_patterns: ["create_*", "update_*", "delete_*", "post_*", "put_*"]
+    target_methods: [POST, PUT, PATCH, DELETE]
+    match: any
+    config:
+      max_calls: 10
+      window_seconds: 60
+      per_tool: false
+    priority: 100
+
+  - kind: rate
+    name: session-budget
+    description: Cap total tool calls at 200 per session
+    config:
+      max_calls: 200
+      window_seconds: null
+      per_tool: false
+    priority: 200

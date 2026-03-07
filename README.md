@@ -1,190 +1,157 @@
 # Toolwright
 
-> Give your AI agent any API. Safely.
+Give your AI agent safe API access in 60 seconds.
 
-Toolwright turns API traffic into governed MCP tools and keeps them working. Point it at an OpenAPI spec, a HAR file, or a live web app; it compiles typed tool definitions, classifies every tool by risk, and serves them through an MCP server that enforces approval gates, circuit breakers, and behavioral rules at runtime. Your credentials are automatically redacted from captured traffic. Nothing runs without your explicit sign-off.
+Toolwright compiles any REST API into governed MCP tools — with schema validation, auth isolation, and drift detection and repair built in.
 
-![Toolwright hero demo](demos/outputs/hero.gif)
-
-## What It Looks Like
+The immune system for agent tools.
 
 ```bash
-$ toolwright mint https://dashboard.stripe.com -a api.stripe.com
-  ✓ Captured 47 API calls across 12 endpoints
-  ✓ Compiled 12 tools (8 read, 3 write, 1 admin)
-  ✓ Risk classified: 3 low, 6 medium, 2 high, 1 critical
-  ✓ Auth detected: Bearer token (Authorization header)
-  ✓ Credentials redacted from captured traffic
+pip install "toolwright[all]"
 
-  Set before serving:
-    export TOOLWRIGHT_AUTH_API_STRIPE_COM="Bearer <your-token>"
-
-$ toolwright gate allow --all        # review and approve every tool
-$ toolwright serve                   # start the governed MCP server
-  12 governed tools ready
+toolwright create github
+export TOOLWRIGHT_AUTH_API_GITHUB_COM="Bearer ghp_yourToken"
+# Paste the MCP config into Claude Desktop, restart — done.
 ```
 
-The `-a` flag specifies which host to capture -- only traffic to that host is recorded. For OpenAPI specs and HAR files, the host is detected automatically.
+Your agent now has governed access to GitHub's API. Your token never enters the LLM context.
+
+For custom APIs, use `mint` to capture from a browser:
 
 ```bash
-# Later, the API changes under you:
-$ toolwright repair plan
-  SAFE (auto-apply):
-    + update_user: response field added (role)
-  APPROVAL_REQUIRED:
-    ~ delete_user: path changed /users/{id} -> /v2/users/{id}
-
-$ toolwright repair apply
-  Applied 1 safe patch. 1 queued for your review.
+toolwright mint https://app.example.com -a api.example.com
+toolwright gate allow --all
+toolwright serve
 ```
 
-> **No paths to memorize.** Toolwright auto-detects your toolpack when there's only one. For multiple toolpacks, run `toolwright use stripe` to set a default.
+## What you get
 
-## Try It Now
+- **Tools from real API traffic** — Toolwright captures browser traffic and generates complete MCP tool definitions automatically
+- **Auth never touches the LLM** — credentials are injected at the proxy layer, invisible to your agent
+- **Drift detection** — catches API schema changes before your agent breaks
+- **Schema validation** — every tool call validated against inferred schemas
+- **Risk classification** — every tool tiered (low/medium/high/critical), nothing runs without explicit approval
+- **Continuous health monitoring** — watches for API changes and self-heals before your agent breaks
+- **Works with any MCP client** — Claude Desktop, Cursor, or any MCP-compatible platform
 
-```bash
-pip install toolwright
-toolwright demo
+## Quickstarts
+
+- **[GitHub API in 60 seconds](docs/quickstarts/github.md)** — `toolwright create github`
+- **[Any REST API](docs/quickstarts/any-rest-api.md)** — browser capture for custom APIs
+
+## How it works
+
+```
+                    ┌──────────────────────────────────────────────┐
+  Browser traffic   │                                              │
+  OpenAPI spec   ──>│   mint / capture   ──>   compile   ──>      │
+  HAR file          │                                              │
+                    │   toolpack (tools + policy + lockfile)        │
+                    │                                              │
+                    │   serve  ──>  governed MCP server             │
+                    │     ├── auth injection (proxy layer)          │
+                    │     ├── schema validation                     │
+                    │     ├── risk-based approval gates             │
+                    │     ├── circuit breakers                      │
+                    │     └── drift detection                       │
+                    └──────────────────────────────────────────────┘
 ```
 
-Compiles a governed toolpack from bundled traffic, enforces fail-closed gates, and writes a full audit log. Exit `0` means every safety check passed.
+1. **`mint`** opens a browser and captures API traffic. A smart probe detects auth requirements, OpenAPI specs, and GraphQL endpoints before capture starts.
+2. **`compile`** (runs inside mint) infers schemas, generates MCP tool definitions, classifies risk tiers, creates tool groups, and builds drift baselines.
+3. **`gate allow`** approves tools via a signed lockfile. Nothing executes without explicit approval.
+4. **`serve`** runs the MCP server. Auth is injected at the proxy layer. Schema validation, circuit breakers, and behavioral rules enforce governance at runtime.
 
-## Commands
-
-**Getting started:**
-
-```bash
-toolwright demo          # see it work (60 seconds)
-toolwright ship          # build + approve + serve (your API)
-toolwright ship <url>    # one-command onboarding from URL
-toolwright serve         # run your governed MCP server (stdio)
-toolwright serve --http  # serve over HTTP with web dashboard
-```
-
-**Operations:**
-
-```bash
-toolwright drift         # check for API changes
-toolwright repair plan   # see what needs fixing
-toolwright repair apply  # apply fixes
-toolwright kill <tool>   # emergency stop a tool
-toolwright quarantine    # list stopped tools
-toolwright watch status  # reconciliation status
-```
-
-**Sharing & notifications:**
-
-```bash
-toolwright share <toolpack>   # package into signed .twp bundle
-toolwright install <file.twp> # verify + install a shared bundle
-```
-
-**All commands:** `toolwright --help`
-
-## Why This Exists
-
-APIs change silently. Tools break with no warning. Nobody knows until the agent starts failing. And giving an AI agent API access today still means writing MCP tool definitions by hand, then hoping it doesn't call a destructive endpoint.
-
-Toolwright closes that gap. It compiles tools from real API traffic, classifies them by risk, enforces approval gates before anything can run, and automatically circuit-breaks tools that start failing -- before the failures cascade to your agent.
-
-## How It Stays Safe
-
-**Secrets are redacted before anything reaches disk.** Captured traffic is redacted in memory -- tokens, cookies, API keys, and PII are stripped before toolpacks, logs, and evidence bundles are written. Auth is injected at runtime via environment variables, never stored in any artifact Toolwright produces.
-
-**Nothing runs without approval.** Toolwright is fail-closed. Every tool must pass through a gate review before it can execute. The approval is cryptographically signed and recorded in a tamper-evident lockfile. If a tool isn't explicitly approved, it doesn't run. There is no "allow by default" mode.
-
-**You see everything before it ships.** During compilation, every tool is classified by risk tier -- critical (destructive operations), high (writes), medium (sensitive reads), low (read-only). You approve tools individually or by tier, with full visibility into what each one does.
-
-**Agents propose, you decide.** Agents can propose new API capabilities and suggest behavioral rules through MCP meta-tools. Both create DRAFT proposals that require your explicit activation. The agent never gains a capability it didn't ask for, and you never approve something you haven't reviewed.
-
-## When APIs Break
-
-**Drift detection and repair.** When an API changes under you, drift detection catches it and repair proposes classified fixes -- safe (auto-apply), approval-required, or manual:
-
-```bash
-toolwright drift                           # detect what changed
-toolwright repair plan                     # Terraform-style diff
-toolwright repair apply                    # apply with confirmation
-```
-
-**Continuous reconciliation.** Start the MCP server with `--watch` and Toolwright monitors every tool on a risk-tier schedule. When drift is detected, safe patches auto-apply; risky ones queue for your review:
-
-```bash
-toolwright serve --watch --auto-heal safe
-toolwright watch status                    # see per-tool health
-```
-
-**Snapshots and rollback.** Every auto-repair is preceded by a snapshot. If something goes wrong, restore the exact previous state:
-
-```bash
-toolwright snapshots                       # list available snapshots
-toolwright rollback <snapshot-id>          # restore
-```
-
-## Runtime Safety
-
-**Circuit breakers.** When an API starts failing, per-tool circuit breakers trip automatically after repeated errors, blocking further calls until the API recovers. You can also kill or re-enable tools manually:
-
-```bash
-toolwright kill search_api --reason "Upstream 500s"
-toolwright quarantine             # see what's killed and why
-toolwright enable search_api      # bring it back
-```
-
-![Circuit breaker lifecycle demo](demos/outputs/kill_cycle.gif)
-
-**Behavioral rules.** Define constraints that persist across agent sessions -- no retraining, no prompt engineering. When a rule is violated, the agent gets structured feedback explaining what went wrong and how to proceed:
-
-```bash
-toolwright rules add --kind prerequisite --target update_issue \
-  --requires get_repo --description "Read context before modifying"
-
-toolwright rules add --kind prohibition --target delete_contents \
-  --description "Never delete repository files"
-```
-
-Six rule types: prerequisites, prohibitions, parameter constraints, rate limits, call sequencing, and approval gates. Agents can suggest new rules via MCP meta-tools. Suggestions start as DRAFT and require `toolwright rules activate` before taking effect.
-
-## Start Where You Are
+## Give your agent any API
 
 | You have... | Run |
 |------------|-----|
 | A web app | `toolwright mint https://app.example.com -a api.example.com` |
-| An OpenAPI spec | `toolwright capture import openapi.yaml` |
-| A HAR file from DevTools | `toolwright capture import traffic.har` |
-| OpenTelemetry traces | `toolwright capture import traces.json --input-format otel` |
-| No idea | `toolwright ship` |
+| An OpenAPI spec | `toolwright capture import openapi.yaml -a api.example.com` |
+| A HAR file | `toolwright capture import traffic.har -a api.example.com` |
+| OTEL traces | `toolwright capture import traces.json --input-format otel -a api.example.com` |
 
-All paths converge: capture → compile → approve → serve.
+All paths produce a toolpack: tool definitions + policy + lockfile + drift baselines.
 
-## What's Inside
+## Serving options
 
-| Capability | What It Does | Maturity |
-|-----------|-------------|----------|
-| **Connect** | Compile MCP tools from any API source (browser, spec, HAR, OTEL) | Stable |
-| **Govern** | Risk classification, cryptographic signing, approval gates, audit logging | Stable |
-| **Heal** | Drift detection, auto-repair, continuous reconciliation, snapshots & rollback | Stable (incl. reconciliation & auto-heal) |
-| **Kill** | Per-tool circuit breakers with auto-recovery and manual kill switches | Stable |
-| **Correct** | Persistent behavioral rules with agent suggestion and human-gated activation | Stable |
-| **Transport** | HTTP server, web dashboard, SSE live feed, token auth | Stable |
-| **Share** | Signed .twp bundles for toolpack distribution | Stable |
-| **Observe** | OTEL-compatible tracing, Prometheus metrics (no-op fallback) | Stable |
-| **Notify** | Webhook notifications with Slack auto-detection | Stable |
+```bash
+toolwright serve                                    # stdio (Claude Desktop)
+toolwright serve --http                             # HTTP with web dashboard
+toolwright serve --scope repos,issues               # serve specific tool groups
+toolwright serve --max-risk low                     # cap risk tier exposure
+toolwright serve -H "Notion-Version: 2022-06-28"   # inject custom headers
+toolwright serve --watch --auto-heal safe           # continuous drift detection
+```
 
-87 capabilities. 2150+ tests.
+**Tool groups** keep context manageable. Toolwright auto-groups tools by URL path during compilation. Use `--scope` to serve subsets:
 
-Agents introspect their own governance via MCP meta-tools -- check risk summaries, diagnose failures, manage circuit breakers, and read behavioral rules. Agents can also propose new API capabilities and suggest behavioral rules; both create DRAFT proposals that require human approval before taking effect.
+```bash
+toolwright groups list                    # see available groups
+toolwright groups show repos              # inspect a group
+toolwright serve --scope repos            # serve just that group
+```
+
+## Commands
+
+```bash
+# Quick start
+toolwright create github                 # create tools from a known API
+toolwright mint <url> -a <api-host>      # capture from browser + compile
+toolwright gate allow --all              # approve tools
+toolwright serve                         # start MCP server
+
+# Operations
+toolwright groups list                   # browse tool groups
+toolwright recipes list                  # list bundled API recipes
+toolwright recipes show shopify          # show recipe details
+toolwright auth check                    # verify auth configuration
+toolwright drift                         # detect API changes
+toolwright config                        # generate MCP client config
+
+# Advanced
+toolwright repair plan                   # Terraform-style drift repair
+toolwright rules add --kind rate ...     # behavioral constraints
+toolwright rules template list           # browse bundled rule templates
+toolwright rules template apply crud-safety  # create DRAFT rules from template
+toolwright kill <tool> --reason "..."    # circuit breaker kill switch
+toolwright serve --watch --auto-heal safe # continuous reconciliation
+
+# All commands
+toolwright --help
+```
+
+## How is this different from other MCP servers?
+
+Most MCP servers are hand-written wrappers around specific APIs. They break when the API changes. They expose credentials to the LLM. They don't validate inputs or outputs.
+
+Toolwright compiles tools from real traffic, governs them at runtime, and detects drift automatically. Credentials never enter the LLM context. Every tool call is validated against inferred schemas. Circuit breakers prevent cascading failures. Behavioral rules constrain what agents can do.
 
 ## Install
 
 ```bash
-pip install toolwright                 # core
-pip install "toolwright[playwright]"   # + browser capture
-pip install "toolwright[mcp]"          # + MCP server
-pip install "toolwright[all]"          # everything
+pip install "toolwright[all]"             # MCP server + browser capture + TUI
+python -m playwright install chromium     # browser binary for traffic capture
 ```
 
-`tw` works as shorthand for `toolwright`. Full docs: **[docs/user-guide.md](docs/user-guide.md)**
+Or install components separately:
+
+```bash
+pip install toolwright                    # core
+pip install "toolwright[mcp]"             # + MCP server
+pip install "toolwright[playwright]"      # + browser capture
+```
+
+`tw` works as shorthand for `toolwright`.
+
+## Documentation
+
+- [User Guide](docs/user-guide.md) — full reference
+- [Architecture](docs/architecture.md) — how it works internally
+- [Quickstart: GitHub](docs/quickstarts/github.md)
+- [Quickstart: Any REST API](docs/quickstarts/any-rest-api.md)
+- [Known Limitations](docs/known-limitations.md)
+- [Troubleshooting](docs/troubleshooting.md)
 
 ## License
 

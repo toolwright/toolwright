@@ -45,7 +45,7 @@ async def test_mcp_tool_call_returns_structured_content_when_output_schema_defin
         encoding="utf-8",
     )
 
-    server = ToolwrightMCPServer(tools_path=tools_path)
+    server = ToolwrightMCPServer(tools_path=tools_path, schema_validation="strict")
     handler = server.server.request_handlers[mcp_types.CallToolRequest]
     req = mcp_types.CallToolRequest(
         params=mcp_types.CallToolRequestParams(name="get_users", arguments={})
@@ -93,7 +93,7 @@ async def test_mcp_tool_call_uses_wrapped_data_for_structured_output_when_output
         encoding="utf-8",
     )
 
-    server = ToolwrightMCPServer(tools_path=tools_path)
+    server = ToolwrightMCPServer(tools_path=tools_path, schema_validation="strict")
     handler = server.server.request_handlers[mcp_types.CallToolRequest]
     req = mcp_types.CallToolRequest(
         params=mcp_types.CallToolRequestParams(name="get_users", arguments={})
@@ -147,7 +147,7 @@ async def test_mcp_tool_call_bypasses_output_validation_on_http_error(
         encoding="utf-8",
     )
 
-    server = ToolwrightMCPServer(tools_path=tools_path)
+    server = ToolwrightMCPServer(tools_path=tools_path, schema_validation="strict")
     handler = server.server.request_handlers[mcp_types.CallToolRequest]
     req = mcp_types.CallToolRequest(
         params=mcp_types.CallToolRequestParams(name="get_users", arguments={})
@@ -200,7 +200,7 @@ async def test_mcp_list_tools_omits_output_schema_for_non_object_output_schema(
         encoding="utf-8",
     )
 
-    server = ToolwrightMCPServer(tools_path=tools_path)
+    server = ToolwrightMCPServer(tools_path=tools_path, schema_validation="strict")
     handler = server.server.request_handlers[mcp_types.ListToolsRequest]
     req = mcp_types.ListToolsRequest(params=None)
 
@@ -241,7 +241,7 @@ async def test_mcp_tool_call_returns_unstructured_text_for_non_object_payload_wi
         encoding="utf-8",
     )
 
-    server = ToolwrightMCPServer(tools_path=tools_path)
+    server = ToolwrightMCPServer(tools_path=tools_path, schema_validation="strict")
     handler = server.server.request_handlers[mcp_types.CallToolRequest]
     req = mcp_types.CallToolRequest(
         params=mcp_types.CallToolRequestParams(name="get_categories", arguments={})
