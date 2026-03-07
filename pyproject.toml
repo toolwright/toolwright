@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "toolwright"
 version = "1.0.0a2"
-description = "Self-expanding, self-repairing, human-correctable tool infrastructure for AI agents"
+description = "Trusted MCP supply chain for AI tools with signed approvals, fail-closed runtime, drift detection, verification, and bounded auto-repair."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"

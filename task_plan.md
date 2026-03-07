@@ -1,95 +1,84 @@
-# Toolwright Control Plane — Implementation Plan
+# Task Plan: Full Project Audit And Stabilization
 
 ## Goal
-Transform Toolwright's monitoring dashboard into a real-time agent operations console with WorkItem-based governance.
+Build a complete understanding of Toolwright's goals, pillars, technology, architecture, and capabilities; review the documentation and runtime shape; validate runtime behavior; and assess whether Toolwright is worth building as an open source project by testing market demand, differentiation, positioning, and strategic direction against the current ecosystem.
 
-## Architecture Summary
-- **WorkItem model**: First-class objects representing human-actionable items with deterministic IDs
-- **EventStore**: Persistent event store with atomic file writes, ring buffer for SSE replay, audit JSONL log
-- **Action handlers**: POST endpoints that perform side effects BEFORE resolving WorkItems
-- **SSE stream**: Resumable with Last-Event-ID, sync events, status events
-- **Console frontend**: Single HTML file (<80KB), dark theme, vanilla JS
-- **Integration points**: Pipeline, server startup, breaker, reconcile, meta-server
+## Current Phase
+Phase 7
 
-## Build Sequence
+## Phases
 
-### Phase 1: Foundation (WorkItem + EventStore + Actions)
-1. **WorkItem model** (`toolwright/models/work_item.py`)
-   - WorkItemKind, WorkItemStatus, WorkItemAction, WorkItem dataclasses
-   - Deterministic IDs, to_dict/from_dict serialization
+### Phase 1: Requirements & Discovery
+- [x] Understand user intent
+- [x] Identify constraints and requirements
+- [x] Document initial repository findings in findings.md
+- **Status:** complete
 
-2. **WorkItem factories** (`toolwright/core/work_items.py`)
-   - create_tool_approval_item, create_confirmation_item, create_circuit_breaker_item
-   - create_repair_patch_item, create_rule_draft_item, create_capability_request_item
+### Phase 2: Repository Inventory
+- [x] Inventory documentation, Python modules, configs, tests, and entrypoints
+- [x] Map package boundaries and runtime flows
+- [x] Record architecture notes and open questions
+- **Status:** complete
 
-3. **EventStore** (`toolwright/mcp/event_store.py`)
-   - ConsoleEvent dataclass
-   - EventStore: ring buffer (5000), audit JSONL, per-item JSON persistence
-   - Atomic writes (tmp + os.replace), asyncio.Lock for critical section
-   - Reconstruct from files on startup, expiration logic with confirmation_store.deny()
-   - SSE subscription via asyncio.Queue
+### Phase 3: Code & Docs Review
+- [x] Review every Python file
+- [x] Review project documentation and user-facing guidance
+- [x] Record maintainability, correctness, UX, and packaging risks
+- **Status:** complete
 
-4. **Action handlers** (`toolwright/mcp/action_handlers.py`)
-   - Side-effect-before-resolution pattern (critical)
-   - Routes: gate/allow (bulk), gate/block, confirm/grant, confirm/deny, kill, enable
-   - Routes: rules/activate, rules/dismiss, repair/apply, repair/dismiss
-   - GET routes: work-items, work-items/{id}, status
+### Phase 4: Validation & Diagnosis
+- [x] Run tests, lint, typing, and CLI smoke checks where available
+- [x] Reproduce and diagnose failures or broken workflows
+- [x] Prioritize fixes that unblock intended usage
+- **Status:** complete
 
-5. **SSE stream** (in http_transport.py)
-   - Last-Event-ID support for reconnection
-   - Three event types: message (with work_item), sync, status
-   - Keepalive every 30s
+### Phase 5: Remediation
+- [x] Implement correctness and maintainability fixes
+- [x] Improve user-facing setup or CLI ergonomics where needed
+- [x] Keep findings and progress logs current
+- **Status:** complete
 
-### Phase 2: Integration Wiring
-6. **Pipeline integration** (pipeline.py)
-   - Confirmation gate creates CONFIRMATION WorkItems
-   - Tool calls emit events to EventStore
+### Phase 6: Re-Verification & Delivery
+- [x] Re-run targeted validation
+- [x] Complete domain-based CLI regrouping
+- [x] Remove the next low-risk UI → CLI boundary leaks (`config`, `init`)
+- [x] Remove the remaining direct UI-flow imports of CLI `mint` / `verify`
+- [ ] Summarize architecture, capabilities, and project pillars
+- [ ] Report remaining gaps and concrete next steps
+- **Status:** in_progress
 
-7. **Server startup integration** (server.py)
-   - Pending tools → TOOL_APPROVAL WorkItems on serve startup
+### Phase 7: Market Viability Assessment
+- [ ] Re-state Toolwright's product thesis from repo docs and code
+- [ ] Research adjacent and competing projects across OSS and commercial markets
+- [ ] Assess demand, differentiation, and positioning with source-backed evidence
+- [ ] Recommend what to cut, change, add, or emphasize
+- **Status:** in_progress
 
-8. **Breaker integration** (core/kill/breaker.py)
-   - Trip → CIRCUIT_BREAKER WorkItem (upsert)
-   - Recovery → resolve existing WorkItem
+## Key Questions
+1. What problem does Toolwright solve, and what are its core product pillars?
+2. What are the main runtime entrypoints, architectural layers, and integration points?
+3. Which workflows are currently broken, brittle, or confusing for users?
+4. Where is the codebase strong, and where is maintainability lagging behind the intended product goals?
+5. Is there real demand for governed API-to-MCP tooling and related agent infrastructure?
+6. Which projects overlap with Toolwright directly or partially, and how strong are they?
+7. Is Toolwright's current framing differentiated enough to win attention as an OSS project?
+8. Which parts of the current scope strengthen the thesis, and which parts dilute it?
 
-9. **Reconcile integration** (core/reconcile/loop.py)
-   - Drift detection → REPAIR_PATCH WorkItems
+## Decisions Made
+| Decision | Rationale |
+|----------|-----------|
+| Use file-based planning for this task | The audit will span many files, commands, and verification steps; persistent notes reduce context loss. |
+| Start with inventory before remediation | A full map of the repo is required before making targeted fixes without regressions. |
+| Anchor intended behavior in the top-level docs first | The product promise and v1 boundaries need to be clear before judging implementation quality. |
 
-10. **Meta-server integration** (meta_server.py)
-    - toolwright_pending_actions meta-tool
-    - toolwright_suggest_rule → RULE_DRAFT WorkItem
+## Errors Encountered
+| Error | Attempt | Resolution |
+|-------|---------|------------|
+| None yet | 1 | N/A |
 
-### Phase 3: Console Frontend
-11. **Console HTML** (`toolwright/assets/console/index.html`)
-    - Status bar, filter bar, event feed, work item cards
-    - SSE with reconnection + client-side merge rules
-    - All 6 WorkItem kinds + generic unknown handler
-    - Blocking timer, bulk approval, card transitions
-
-### Phase 4: Tests
-12. **Unit tests**: work_item, event_store, action_handlers
-13. **Integration tests**: pipeline events, meta work items, SSE reconnect
-
-## Key Files
-### New
-- `toolwright/models/work_item.py`
-- `toolwright/core/work_items.py`
-- `toolwright/mcp/event_store.py`
-- `toolwright/mcp/action_handlers.py`
-- `toolwright/assets/console/index.html`
-
-### Modified
-- `toolwright/mcp/http_transport.py` (routes, SSE, expiration loop)
-- `toolwright/mcp/pipeline.py` (confirmation -> WorkItem)
-- `toolwright/mcp/server.py` (startup -> TOOL_APPROVAL items)
-- `toolwright/mcp/meta_server.py` (pending_actions, suggest_rule)
-- `toolwright/core/kill/breaker.py` (trip/recovery -> WorkItems)
-- `toolwright/core/reconcile/loop.py` (drift -> REPAIR_PATCH items)
-- `toolwright/mcp/auth.py` (Referrer-Policy header)
-
-## Critical Design Decisions
-1. **Side effect BEFORE resolution**: Action handlers must perform the actual action (e.g., confirmation_store.grant()) before transitioning the WorkItem to terminal state
-2. **Deterministic IDs**: All WorkItem IDs are deterministic to handle reconnects and dedup
-3. **Atomic file writes**: tmp + os.replace pattern for crash safety
-4. **Upsert policy**: Re-publishing an existing OPEN WorkItem updates evidence without resetting created_at
-5. **Expiration + deny**: Expired confirmation WorkItems MUST call confirmation_store.deny() to unblock agents
+## Notes
+- Re-read this plan before major decisions.
+- Record findings after each exploration pass.
+- Avoid destructive git operations because the branch may contain user work.
+- Current cleanup direction remains incremental: keep the new domain-based CLI modules lint/type clean, preserve `toolwright/cli/main.py` as a thin entrypoint, and keep peeling boundary leaks off in small slices. The next heavier holdout is extracting the `mint` / `verify` implementations below the new runner seam, not another flow-level import cleanup.
+- Keep the market assessment source-backed and separate stable product facts from strategy inferences.

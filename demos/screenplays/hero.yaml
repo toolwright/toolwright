@@ -1,4 +1,4 @@
-title: "Toolwright: API Governance for AI Agents"
+title: "Toolwright: Trusted MCP Supply Chain"
 output: "hero"
 variables:
   demo_dir: "{{tmp_dir}}/toolwright_hero"
@@ -14,9 +14,141 @@ settings:
   letter_spacing: 0
 preinstall:
   - "rm -rf {{demo_dir}} && mkdir -p {{demo_dir}}"
-  - "cd {{demo_dir}} && PATH=$PATH:.venv/bin /Users/thomasallicino/oss/toolwright/.venv/bin/toolwright demo --generate-only --out ./demo 2>/dev/null"
+  - |
+    cat > {{demo_dir}}/hero_proof.py <<'PY'
+    #!/Users/thomasallicino/oss/toolwright/.venv/bin/python
+    from __future__ import annotations
+
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    import yaml
+
+    from toolwright.cli.enforce import EnforcementGateway
+
+    TOOLWRIGHT_BIN = "/Users/thomasallicino/oss/toolwright/.venv/bin/toolwright"
+
+
+    def latest_toolpack() -> Path:
+        toolpacks = sorted(
+            Path("demo/toolpacks").glob("*/toolpack.yaml"),
+            key=lambda path: path.stat().st_mtime,
+        )
+        if not toolpacks:
+            raise SystemExit("No toolpack found. Run `toolwright demo --out ./demo` first.")
+        return toolpacks[-1]
+
+
+    def resolve_paths() -> tuple[Path, Path, Path, Path]:
+        toolpack_path = latest_toolpack()
+        toolpack_dir = toolpack_path.parent
+        payload = yaml.safe_load(toolpack_path.read_text())
+        paths = payload["paths"]
+        return (
+            toolpack_dir / paths["tools"],
+            toolpack_dir / paths["toolsets"],
+            toolpack_dir / paths["policy"],
+            Path("hero.lock.yaml"),
+        )
+
+
+    def ensure_pending_lock(tools: Path, toolsets: Path, policy: Path, lockfile: Path) -> None:
+        if lockfile.exists():
+            return
+        subprocess.run(
+            [
+                TOOLWRIGHT_BIN,
+                "gate",
+                "sync",
+                "--tools",
+                str(tools),
+                "--policy",
+                str(policy),
+                "--toolsets",
+                str(toolsets),
+                "--lockfile",
+                str(lockfile),
+            ],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+
+    def gateway(lockfile: Path, tools: Path, toolsets: Path, policy: Path) -> EnforcementGateway:
+        return EnforcementGateway(
+            tools_path=str(tools),
+            toolsets_path=str(toolsets),
+            policy_path=str(policy),
+            lockfile_path=str(lockfile),
+            mode="proxy",
+            dry_run=True,
+            confirmation_store_path=".toolwright/confirmations.db",
+        )
+
+
+    def print_blocked() -> None:
+        tools, toolsets, policy, lockfile = resolve_paths()
+        ensure_pending_lock(tools, toolsets, policy, lockfile)
+        result = gateway(lockfile, tools, toolsets, policy).execute_action(
+            "delete_user",
+            {"id": "usr_1"},
+        )
+        print("Governed runtime: fail-closed by default")
+        print("Tool: delete_user")
+        print(f"Decision: {result['decision']}")
+        print(f"Reason: {result['reason_code']}")
+        print("Summary: state-changing call blocked until the lockfile approves it")
+
+
+    def print_allowed() -> None:
+        tools, toolsets, policy, lockfile = resolve_paths()
+        result = gateway(lockfile, tools, toolsets, policy).execute_action(
+            "delete_user",
+            {"id": "usr_1"},
+        )
+        token = result.get("confirmation_token_id")
+        if not token:
+            raise SystemExit("Expected confirmation token after approval.")
+        subprocess.run(
+            [
+                TOOLWRIGHT_BIN,
+                "confirm",
+                "grant",
+                token,
+                "--store",
+                ".toolwright/confirmations.db",
+            ],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        confirmed = gateway(lockfile, tools, toolsets, policy).execute_action(
+            "delete_user",
+            {"id": "usr_1"},
+            token,
+        )
+        print("Approved and confirmed under governance")
+        print("Tool: delete_user")
+        print(f"Decision: {confirmed['decision']}")
+        print(f"Allowed: {confirmed['allowed']}")
+        print("Summary: the same call now proceeds only after approval and confirmation")
+
+
+    if __name__ == "__main__":
+        mode = sys.argv[1] if len(sys.argv) > 1 else "blocked"
+        Path(".toolwright").mkdir(exist_ok=True)
+        if mode == "blocked":
+            print_blocked()
+        elif mode == "allowed":
+            print_allowed()
+        else:
+            raise SystemExit(f"unknown mode: {mode}")
+    PY
+  - "chmod +x {{demo_dir}}/hero_proof.py"
 scenarios:
-  - label: "Compile & Govern"
+  - label: "Supply Chain -> Governed Runtime"
     surface: "terminal"
     prompt:
       style: "macos"
@@ -25,21 +157,31 @@ scenarios:
       path: "basename"
       symbol: "%"
     setup:
-      - "cd {{demo_dir}}/demo"
+      - "cd {{demo_dir}}"
       - "export PATH=/Users/thomasallicino/oss/toolwright/.venv/bin:$PATH"
+      - "mkdir -p .toolwright"
     actions:
-      - type: "toolwright gate status"
-      - wait_for: "Pending: 8"
+      - type: "toolwright demo --out ./demo"
+      - wait_for: "Pending:"
+        wait_mode: "screen"
+        wait_timeout: "20s"
+      - sleep: "1200ms"
+      - type: "clear"
+      - sleep: "300ms"
+      - type: "python ./hero_proof.py blocked"
+      - wait_for: "denied_not_approved"
         wait_mode: "screen"
         wait_timeout: "10s"
       - sleep: "1200ms"
-      - type: "toolwright gate allow --all"
-      - wait_for: "Approved 8"
+      - type: "toolwright gate allow --all --lockfile hero.lock.yaml --by ci@toolwright -y"
+      - wait_for: "Approved"
         wait_mode: "screen"
         wait_timeout: "10s"
       - sleep: "1200ms"
-      - type: "toolwright gate check"
-      - wait_for: "All tools approved"
+      - type: "clear"
+      - sleep: "300ms"
+      - type: "python ./hero_proof.py allowed"
+      - wait_for: "Decision: allow"
         wait_mode: "screen"
         wait_timeout: "10s"
       - sleep: "2s"

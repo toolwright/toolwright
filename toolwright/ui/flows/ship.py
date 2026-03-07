@@ -21,11 +21,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, TextIO
 
+from toolwright.core.approval.lockfile import ToolApproval
 from toolwright.ui.console import err_console, get_symbols
 from toolwright.ui.discovery import find_lockfiles, find_toolpacks
 from toolwright.ui.echo import echo_plan, echo_summary
 from toolwright.ui.ops import load_lockfile_tools
 from toolwright.ui.prompts import confirm, input_text, select_one
+from toolwright.ui.runner import run_mint_capture, run_verify_report
 
 # ---------------------------------------------------------------------------
 # Stage definitions
@@ -255,9 +257,7 @@ def _stage_capture(
 
     con.print("  [info]Starting capture...[/info]")
     try:
-        from toolwright.cli.mint import run_mint
-
-        run_mint(
+        run_mint_capture(
             start_url=start_url,
             allowed_hosts=list(hosts),
             name=name or None,
@@ -331,7 +331,7 @@ def _stage_review(
     return lockfile_path
 
 
-def _show_tool_preview(tools: list, con: Any, sym: Any) -> None:
+def _show_tool_preview(tools: list[ToolApproval], con: Any, sym: Any) -> None:
     """Display a compact preview of discovered tools with risk summary."""
     from collections import Counter
 
@@ -466,9 +466,7 @@ def _stage_verify(
         return
 
     try:
-        from toolwright.cli.verify import run_verify
-
-        run_verify(
+        run_verify_report(
             toolpack_path=toolpack_path,
             mode="all",
             lockfile_path=None,

@@ -97,20 +97,12 @@ class TestJsonschemaCheck:
 
     def test_check_message_format(self):
         """The warning message mentions pip install when missing."""
-        import importlib
         from unittest.mock import patch
 
         from toolwright.cli.mcp import check_jsonschema_available
 
-        # Simulate jsonschema not being importable
-        real_import = __builtins__.__import__ if hasattr(__builtins__, '__import__') else importlib.__import__
-
-        def mock_import(name, *args, **kwargs):
-            if name == "jsonschema":
-                raise ImportError("No module named 'jsonschema'")
-            return real_import(name, *args, **kwargs)
-
-        with patch("builtins.__import__", side_effect=mock_import):
+        # Simulate jsonschema not being discoverable by importlib.
+        with patch("importlib.util.find_spec", return_value=None):
             msg = check_jsonschema_available()
 
         assert msg is not None

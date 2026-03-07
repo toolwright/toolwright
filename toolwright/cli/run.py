@@ -10,8 +10,8 @@ from pathlib import Path
 import click
 
 from toolwright.cli.doctor import run_doctor
-from toolwright.cli.mcp import run_mcp_serve
 from toolwright.core.toolpack import load_toolpack
+from toolwright.mcp.runtime import run_mcp_serve
 from toolwright.utils.config import build_mcp_config_payload, render_config_payload
 from toolwright.utils.runtime import docker_available
 

@@ -18,7 +18,7 @@ This guide works with any API that uses bearer token or API key authentication. 
 
 ```bash
 pip install "toolwright[all]"
-python -m playwright install chromium
+python -m playwright install chromium    # use the same interpreter you installed with; on some systems use python3
 ```
 
 ## Step 2: Identify your API host

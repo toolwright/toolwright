@@ -1,4 +1,4 @@
-"""Repair plan/apply CLI commands: repair plan, repair apply."""
+"""Repair command registration."""
 
 from __future__ import annotations
 
@@ -8,10 +8,92 @@ from pathlib import Path
 
 import click
 
-from toolwright.utils.state import resolve_root
+from toolwright.cli.command_helpers import cli_root, cli_root_str
 
 # Default staleness threshold: 1 hour
 STALENESS_THRESHOLD_SECONDS = 3600
+
+
+def register_repair_commands(*, cli: click.Group) -> None:
+    """Register the top-level repair command group."""
+
+    @cli.group()
+    def repair() -> None:
+        """Diagnose, plan, and apply fixes for a governed toolpack.
+
+        \b
+        Subcommands:
+          diagnose  Diagnose issues from audit logs, drift, and verify reports
+          plan      Show the current repair plan (Terraform-style)
+          apply     Apply patches from the repair plan
+        """
+
+    @repair.command(
+        epilog="""\b
+Examples:
+  toolwright repair diagnose --toolpack toolpack.yaml
+  toolwright repair diagnose --toolpack toolpack.yaml --from audit.log.jsonl
+  toolwright repair diagnose --toolpack toolpack.yaml --from audit.log.jsonl --from drift.json
+  toolwright repair diagnose --toolpack toolpack.yaml --no-auto-discover
+""",
+    )
+    @click.option(
+        "--toolpack",
+        type=click.Path(exists=True),
+        help="Path to toolpack.yaml (auto-resolved if not given)",
+    )
+    @click.option(
+        "--from",
+        "from_",
+        multiple=True,
+        type=click.Path(),
+        help="Context file(s) to diagnose (audit log, drift report, verify report). Repeatable.",
+    )
+    @click.option(
+        "--output",
+        "-o",
+        type=click.Path(),
+        help="Output directory for repair artifacts (defaults to <root>/repairs/<timestamp>_repair/)",
+    )
+    @click.option(
+        "--auto-discover/--no-auto-discover",
+        default=True,
+        show_default=True,
+        help="Auto-discover context files near the toolpack",
+    )
+    @click.pass_context
+    def diagnose(
+        ctx: click.Context,
+        toolpack: str | None,
+        from_: tuple[str, ...],
+        output: str | None,
+        auto_discover: bool,
+    ) -> None:
+        """Diagnose issues and propose fixes for a governed toolpack.
+
+        Parses audit logs, drift reports, and verify reports to diagnose problems,
+        then proposes copy-pasteable remediation commands classified by safety level.
+
+        \b
+        Safety levels:
+          safe              Read-only, zero capability expansion
+          approval_required Changes approved state or grants new capability
+          manual            Requires investigation or new capture
+        """
+        from toolwright.cli.repair import run_repair
+        from toolwright.utils.resolve import resolve_toolpack_path
+
+        resolved = str(resolve_toolpack_path(explicit=toolpack, root=cli_root(ctx)))
+        run_repair(
+            toolpack_path=resolved,
+            context_paths=list(from_),
+            output_dir=output,
+            auto_discover=auto_discover,
+            verbose=ctx.obj.get("verbose", False),
+            root_path=cli_root_str(ctx),
+        )
+
+    register_repair_plan_apply(repair_group=repair)
 
 
 def register_repair_plan_apply(*, repair_group: click.Group) -> None:
@@ -35,7 +117,7 @@ def register_repair_plan_apply(*, repair_group: click.Group) -> None:
           toolwright repair plan
           toolwright repair plan --root /path/to/project
         """
-        project_root = Path(root) if root else resolve_root()
+        project_root = Path(root) if root else cli_root(click.get_current_context())
         plan_file = project_root / ".toolwright" / "state" / "repair_plan.json"
 
         if not plan_file.exists():
@@ -74,7 +156,7 @@ def register_repair_plan_apply(*, repair_group: click.Group) -> None:
             return
 
         # Group by kind
-        by_kind: dict[str, list[dict]] = {}
+        by_kind: dict[str, list[dict[str, object]]] = {}
         for patch in patches:
             kind = patch.get("kind", "unknown")
             by_kind.setdefault(kind, []).append(patch)
@@ -122,7 +204,7 @@ def register_repair_plan_apply(*, repair_group: click.Group) -> None:
           toolwright repair apply
           toolwright repair apply --root /path/to/project
         """
-        project_root = Path(root) if root else resolve_root()
+        project_root = Path(root) if root else cli_root(click.get_current_context())
         plan_file = project_root / ".toolwright" / "state" / "repair_plan.json"
 
         if not plan_file.exists():

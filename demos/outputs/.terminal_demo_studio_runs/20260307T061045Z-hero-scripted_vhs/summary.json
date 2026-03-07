@@ -1,0 +1,15 @@
+{
+  "lane": "scripted_vhs",
+  "media": {
+    "gif": "/Users/thomasallicino/oss/toolwright/demos/outputs/.terminal_demo_studio_runs/20260307T061045Z-hero-scripted_vhs/media/hero.gif",
+    "mp4": "/Users/thomasallicino/oss/toolwright/demos/outputs/.terminal_demo_studio_runs/20260307T061045Z-hero-scripted_vhs/media/hero.mp4"
+  },
+  "media_redaction": "off",
+  "playback_mode": "sequential",
+  "run_id": "20260307T061045Z-hero-scripted_vhs",
+  "scenes": [
+    "/Users/thomasallicino/oss/toolwright/demos/outputs/.terminal_demo_studio_runs/20260307T061045Z-hero-scripted_vhs/scenes/scene_0.mp4"
+  ],
+  "screenplay": "/Users/thomasallicino/oss/toolwright/demos/screenplays/hero.yaml",
+  "status": "success"
+}
