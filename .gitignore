@@ -61,4 +61,8 @@ blog/
 docs/archive/
 docs/plans/
 docs/dogfood-findings.md
+docs/specs/
+docs/*-spec.md
 tests/e2e/results/findings.md
+dogfood-checkpoint.md
+toolwright-spec.md
