@@ -78,19 +78,19 @@ def _render_health_bar(statuses: list[Any], con: Any) -> None:
         drift_icon = _status_icon(model.drift_state)
         verify_icon = _status_icon(model.verification_state)
 
+        name_part = f"  [bold]{name}[/bold]"
+        if model.pending_count > 0:
+            name_part += f"  [warning]({model.pending_count} pending)[/warning]"
+
         parts = [
-            f"  [bold]{name}[/bold]",
+            name_part,
             f"  {lockfile_icon} lockfile",
             f"  {baseline_icon} baseline",
             f"  {drift_icon} drift",
             f"  {verify_icon} verify",
         ]
 
-        if model.pending_count > 0:
-            noun = "pending" if model.pending_count == 1 else "pending"
-            parts.append(f"  [warning]({model.pending_count} {noun})[/warning]")
-
-        con.print("".join(parts))
+        con.print("".join(parts), no_wrap=True)
 
 
 # ---------------------------------------------------------------------------
@@ -258,39 +258,35 @@ def _returning_flow(*, root: Path, verbose: bool) -> None:
 
     render_rich_header(root=str(root), console=con)
 
-    # Gather governance state
-    toolpacks = find_toolpacks(root)
-    statuses = _gather_governance_status(toolpacks)
+    while True:
+        # Refresh governance state each loop so the wizard adapts after each action.
+        toolpacks = find_toolpacks(root)
+        statuses = _gather_governance_status(toolpacks)
 
-    # Health bar
-    _render_health_bar(statuses, con)
-    con.print()
-
-    # Show primary recommendation
-    if statuses:
-        from toolwright.ui.views.next_steps import NextStepsInput, compute_next_steps
-
-        model = statuses[0]
-        inp = NextStepsInput(
-            command="wizard",
-            toolpack_id=model.toolpack_id,
-            lockfile_state=model.lockfile_state,
-            verification_state=model.verification_state,
-            drift_state=model.drift_state,
-            pending_count=model.pending_count,
-            has_baseline=model.has_baseline,
-            has_mcp_config=model.has_mcp_config,
-            has_approved_lockfile=model.lockfile_state in ("sealed", "stale"),
-            has_pending_lockfile=model.lockfile_state == "pending",
-        )
-        ns = compute_next_steps(inp)
-        con.print(f"  [next]Next {sym.arrow}[/next] {ns.primary.why}")
+        _render_health_bar(statuses, con)
         con.print()
 
-    # Dynamic menu
-    menu = _build_menu(statuses, toolpacks)
+        if statuses:
+            from toolwright.ui.views.next_steps import NextStepsInput, compute_next_steps
 
-    while True:
+            model = statuses[0]
+            inp = NextStepsInput(
+                command="wizard",
+                toolpack_id=model.toolpack_id,
+                lockfile_state=model.lockfile_state,
+                verification_state=model.verification_state,
+                drift_state=model.drift_state,
+                pending_count=model.pending_count,
+                has_baseline=model.has_baseline,
+                has_mcp_config=model.has_mcp_config,
+                has_approved_lockfile=model.lockfile_state in ("sealed", "stale"),
+                has_pending_lockfile=model.lockfile_state == "pending",
+            )
+            ns = compute_next_steps(inp)
+            con.print(f"  [next]Next {sym.arrow}[/next] {ns.primary.why}")
+            con.print()
+
+        menu = _build_menu(statuses, toolpacks)
         choice = select_one(
             [key for key, _ in menu],
             labels=[label for _, label in menu],
@@ -302,9 +298,7 @@ def _returning_flow(*, root: Path, verbose: bool) -> None:
             return
 
         _dispatch(choice, root=root, verbose=verbose)
-
-        if not confirm("Return to menu?", default=False, console=con):
-            return
+        con.print()
 
 
 # ---------------------------------------------------------------------------
@@ -468,12 +462,11 @@ def _quickstart_flow(
 
     # Execute mint with progress
     try:
+        from toolwright.ui.runner import run_mint_capture
         from toolwright.ui.views.progress import toolwright_progress
 
         with toolwright_progress("Capturing API surface..."):
-            from toolwright.cli.mint import run_mint
-
-            run_mint(
+            run_mint_capture(
                 start_url=start_url,
                 allowed_hosts=list(hosts),
                 name=name or None,

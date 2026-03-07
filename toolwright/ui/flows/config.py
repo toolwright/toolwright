@@ -77,12 +77,14 @@ def config_flow(
 
     # Generate snippet
     try:
-        from toolwright.cli.config import run_config
+        from toolwright.core.config_snippets import render_mcp_client_config
 
         con.print()
-        run_config(toolpack_path=toolpack_path, fmt=fmt)
-    except SystemExit:
-        pass
+        snippet = render_mcp_client_config(toolpack_path=toolpack_path, fmt=fmt)
+        con.print(snippet, markup=False)
+    except (FileNotFoundError, ValueError) as exc:
+        con.print(f"[error]Config generation failed: {exc}[/error]")
+        return
     except Exception as exc:
         con.print(f"[error]Config generation failed: {exc}[/error]")
         return

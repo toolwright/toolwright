@@ -6,10 +6,9 @@ import json
 from pathlib import Path
 
 import click
-import pytest
 from click.testing import CliRunner
 
-from toolwright.cli.commands_mcp import register_mcp_commands
+from toolwright.cli.commands_runtime import register_runtime_commands
 
 
 def _write_minimal_tools(tmp_path: Path) -> Path:
@@ -25,7 +24,7 @@ def _write_minimal_tools(tmp_path: Path) -> Path:
     return tools_path
 
 
-def _make_cli_with_capture(captured: dict[str, object]):
+def _make_cli_with_capture() -> click.Group:
     """Build a CLI group with serve registered, capturing run_mcp_serve kwargs."""
 
     @click.group()
@@ -45,18 +44,17 @@ def _make_cli_with_capture(captured: dict[str, object]):
         # callback closure by grabbing parameters from ctx.
         pass
 
-    register_mcp_commands(cli=cli, run_with_lock=fake_run_with_lock)
+    register_runtime_commands(cli=cli, run_with_lock=fake_run_with_lock)
     return cli
 
 
 def test_serve_uses_auth_env_var(tmp_path: Path) -> None:
     """When TOOLWRIGHT_AUTH_HEADER is set and --auth is not provided,
     the Click option should resolve auth_header from the env var."""
-    tools_path = _write_minimal_tools(tmp_path)
+    _write_minimal_tools(tmp_path)
 
     # Inspect the Click command's params to verify envvar is configured
-    captured: dict[str, object] = {}
-    cli = _make_cli_with_capture(captured)
+    cli = _make_cli_with_capture()
 
     # Find the serve command and check its --auth option
     serve_cmd = cli.commands.get("serve")
@@ -84,8 +82,7 @@ def test_explicit_auth_overrides_env_var(tmp_path: Path) -> None:
     """
     tools_path = _write_minimal_tools(tmp_path)
 
-    captured: dict[str, object] = {}
-    cli = _make_cli_with_capture(captured)
+    cli = _make_cli_with_capture()
 
     runner = CliRunner()
     # Both env var and explicit --auth provided; Click gives --auth priority
