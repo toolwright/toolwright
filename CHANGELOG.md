@@ -2,6 +2,36 @@
 
 All notable changes to Toolwright are documented here.
 
+## [1.0.0a2] - 2026-03-09
+
+### Added
+
+**CONNECT Pillar**
+- `toolwright wrap` command — govern any existing MCP server as a transparent overlay
+- Smart pre-flight API probing during `toolwright mint` with structured output
+- Request body envelope wrapper detection and automatic execution-time application
+- `--scope` and `--no-tool-limit` options for `toolwright serve` with tool count guardrails
+- Tool group data model, grouping algorithm, and compile pipeline integration
+
+**GOVERN Pillar**
+- Bundled API recipes with loader and CLI (`toolwright recipes`)
+- Rule template loader with per-host authentication and `--recipe` wiring
+
+**CORRECT Pillar**
+- Glob-based rule targeting via `target_name_patterns` and `match` field
+- `required_tool_patterns` for glob-based prerequisite enforcement
+
+### Fixed
+- Budget consumed only on final ALLOW decision, not intermediate checks
+- Read-only HTTP methods capped at medium risk classification
+- Removed incorrect `deny_admin` rule auto-generation from policy engine
+
+### Changed
+- Rewrote README for clarity, conversion, and concision
+- Added MIT LICENSE file
+- Added PyPI trusted publisher CI workflow
+- Cleaned internal specs and working files from version control
+
 ## [1.0.0a1] - 2026-02-26
 
 ### Added
