@@ -2,6 +2,12 @@
 
 All notable changes to Toolwright are documented here.
 
+## [1.0.0a3] - 2026-03-09
+
+### Fixed
+- `toolwright wrap` now writes status messages to stderr instead of stdout, preventing corruption of the JSON-RPC stream
+- Fixed `SyntaxError` in `startup_card.py` caused by unescaped backslash in string literal
+
 ## [1.0.0a2] - 2026-03-09
 
 ### Added
