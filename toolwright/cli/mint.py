@@ -97,14 +97,15 @@ def build_scope_warning(
     )
 
     # Build --scope examples from group data
+    has_groups = False
     if groups_index is not None:
         from toolwright.models.groups import ToolGroupIndex
 
         if isinstance(groups_index, ToolGroupIndex) and groups_index.groups:
+            has_groups = True
             top = sorted(
                 groups_index.groups, key=lambda g: len(g.tools), reverse=True
             )
-            # Show top 2 and top 3 combos as example commands
             if len(top) >= 2:
                 combo2_names = ",".join(g.name for g in top[:2])
                 combo2_count = sum(len(g.tools) for g in top[:2])
@@ -131,16 +132,12 @@ def build_scope_warning(
                     f"    # {len(g.tools)} tools"
                 )
 
-            lines.append("")
-            lines.append(f"  See all groups: toolwright groups list --toolpack <path-to-toolpack.yaml>")
-        else:
-            lines.append("")
-            lines.append("  Use --scope when serving to narrow to useful tool groups.")
-            lines.append(f"  See all groups: toolwright groups list --toolpack <path-to-toolpack.yaml>")
-    else:
+    if not has_groups:
         lines.append("")
         lines.append("  Use --scope when serving to narrow to useful tool groups.")
-        lines.append(f"  See all groups: toolwright groups list --toolpack <path-to-toolpack.yaml>")
+
+    lines.append("")
+    lines.append("  See all groups: toolwright groups list --toolpack <path-to-toolpack.yaml>")
 
     return "\n".join(lines)
 
