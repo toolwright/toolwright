@@ -492,20 +492,34 @@ def run_approve_check(
         click.echo(f"OK: {message}")
         sys.exit(0)
     else:
-        click.echo(f"FAIL: {message}")
+        from collections import Counter
+
+        from toolwright.utils.text import pluralize, user_facing_path
 
         pending = manager.get_pending(toolset=toolset)
+
         if pending:
+            total = len(pending)
+            click.echo(f"FAIL: {pluralize(total, 'tool')} pending approval")
+
+            method_counts = Counter(t.method for t in pending)
+            for method, count in sorted(method_counts.items(), key=lambda x: -x[1]):
+                click.echo(f"  {method.lower()}: {pluralize(count, 'tool')}")
+
             if verbose:
                 click.echo("\nPending tools:")
                 for tool in pending:
                     click.echo(f"  - {tool.name} [{tool.risk_tier}] {tool.method} {tool.path}")
 
-            pending_names = ", ".join(t.name for t in pending[:5])
-            if len(pending) > 5:
-                pending_names += f" (and {len(pending) - 5} more)"
-            click.echo("\nApprove with:")
-            click.echo(f"  toolwright gate allow --all --lockfile {manager.lockfile_path}")
+            click.echo("\nApprove all:")
+            if verbose:
+                click.echo(
+                    f"  toolwright gate allow --all --lockfile {user_facing_path(manager.lockfile_path)}"
+                )
+            else:
+                click.echo("  toolwright gate allow --all")
+        else:
+            click.echo(f"FAIL: {message}")
 
         sys.exit(1)
 

@@ -218,11 +218,23 @@ def run_create(
 
     effective_hosts = sorted(set(session.allowed_hosts or allowed_hosts))
     toolpack_id = generate_toolpack_slug(allowed_hosts=effective_hosts, root=root)
+    # Compute the base slug (without collision suffix) for warning detection
+    base_slug = generate_toolpack_slug(allowed_hosts=effective_hosts, root=None)
     if name:
         # Use name as slug base
         import re
         slug = re.sub(r"[^a-z0-9-]", "-", name.lower()).strip("-")
+        base_slug = slug or base_slug
         toolpack_id = slug or toolpack_id
+
+    # Detect collision: if the slug was bumped (e.g. github -> github-2), warn the user
+    if toolpack_id != base_slug:
+        click.echo(
+            click.style("\u26a0", fg="yellow")
+            + f" Toolpack '{base_slug}' already exists. Creating '{toolpack_id}'.\n"
+            + f"  To overwrite, delete the existing one first: toolwright delete {base_slug}",
+            err=True,
+        )
 
     toolpack_dir = root / "toolpacks" / toolpack_id
     artifact_dir = toolpack_dir / "artifact"

@@ -273,7 +273,9 @@ def compile_capture_session(
             shape_index.save(shape_baselines_path)
             artifacts_created.append(("Shape Baselines", shape_baselines_path))
             if verbose:
-                click.echo(f"  Shape baselines: {len(shape_index.baselines)} tools")
+                from toolwright.utils.text import pluralize
+
+                click.echo(f"  Shape baselines: {pluralize(len(shape_index.baselines), 'tool')}")
 
     # Scope inference: emit scopes.suggested.yaml
     if filtered_endpoints:

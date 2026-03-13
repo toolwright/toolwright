@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import Path
 from typing import Any
@@ -32,10 +33,10 @@ def _infer_state_root(toolpack_dir: Path) -> Path:
     if toolpack_dir.parent.name == "toolpacks":
         grandparent = toolpack_dir.parent.parent  # e.g. .toolwright
         if grandparent.name == ".toolwright":
-            return grandparent.resolve()
+            return Path(os.path.abspath(grandparent))
 
     # Fallback: toolpack-local .toolwright
-    return (toolpack_dir / ".toolwright").resolve()
+    return Path(os.path.abspath(toolpack_dir / ".toolwright"))
 
 
 def build_mcp_config_payload(
@@ -71,7 +72,7 @@ def build_mcp_config_payload(
             }
         }
 
-    toolpack_abs = toolpack_path.resolve()
+    toolpack_abs = Path(os.path.abspath(toolpack_path))
     toolpack_root = toolpack_abs.parent
     state_root = _infer_state_root(toolpack_root)
     command = command_override or _resolve_toolwright_command()

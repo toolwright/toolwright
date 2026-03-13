@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -53,12 +54,11 @@ def run_init(
     click.echo()
     if detection.api_specs:
         spec = detection.api_specs[0]
-        click.echo(f"  Import spec:         toolwright capture import {spec} --input-format openapi -a <api-host>")
-        click.echo("     You have an OpenAPI spec — import it directly.")
+        click.echo(f"  Create from spec:    toolwright create --spec {spec}")
+        click.echo("     You have an OpenAPI spec — create tools directly.")
     else:
-        click.echo("  Browser capture:     toolwright mint <start-url> -a <api-host>")
-        click.echo("  Import HAR:          toolwright capture import <file.har> -a <api-host>")
-        click.echo("  Import OpenAPI:      toolwright capture import <spec> --input-format openapi -a <api-host>")
+        click.echo("  Create from recipe:  toolwright create <recipe>       # e.g. toolwright create github")
+        click.echo("  Create from spec:    toolwright create --spec <path>  # from an OpenAPI spec")
     click.echo()
     click.echo("  Then: toolwright gate allow --all   (approve tools)")
     click.echo("        toolwright serve --toolpack <path>   (start MCP server)")
@@ -83,7 +83,7 @@ def run_mcp_config(
 def _build_mcp_client_config(toolpack_path: Path, client: str) -> dict[str, object]:
     """Build MCP client config for different clients."""
     tp_dir = toolpack_path.parent if toolpack_path.is_file() else toolpack_path
-    tp_file = str(toolpack_path.resolve())
+    tp_file = os.path.abspath(str(toolpack_path))
 
     # Try to find tools and policy paths
     tools_path = _find_artifact(tp_dir, "tools.json")
@@ -123,5 +123,5 @@ def _find_artifact(tp_dir: Path, filename: str) -> Path | None:
     # Check direct and under artifact/
     for candidate in [tp_dir / filename, tp_dir / "artifact" / filename]:
         if candidate.exists():
-            return candidate.resolve()
+            return Path(os.path.abspath(candidate))
     return None

@@ -71,8 +71,8 @@ def resolve_toolpack_path(
     # 5. Nothing found
     raise click.UsageError(
         "No toolpack found. Create one with:\n"
-        "  toolwright mint <url> -a <api-host>\n"
-        "  toolwright capture import <spec> -a <api-host>"
+        "  toolwright create <recipe>          # e.g. toolwright create github\n"
+        "  toolwright create --spec <path>     # from an OpenAPI spec"
     )
 
 

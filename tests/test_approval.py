@@ -722,7 +722,7 @@ class TestApprovalCLI:
         )
 
         assert result.exit_code == 1
-        assert "Pending approval" in result.output
+        assert "pending approval" in result.output.lower()
 
     def test_check_passes_when_all_approved(self, tmp_path: Path) -> None:
         """Test that check passes when all tools approved with snapshot present."""
@@ -762,7 +762,7 @@ class TestApprovalCLI:
             ["gate", "check", "--lockfile", str(lockfile_path), "--toolset", "readonly"],
         )
         assert pending_check.exit_code == 1
-        assert "Pending approval in 'readonly'" in pending_check.output
+        assert "pending approval" in pending_check.output.lower()
 
         approve_result = runner.invoke(
             cli,

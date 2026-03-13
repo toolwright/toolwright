@@ -33,9 +33,8 @@ def test_init_next_steps_show_all_entry_paths(tmp_path: Path) -> None:
     assert result.exit_code == 0
     output = result.output.lower()
     # All 3 entry paths must be visible
-    assert "toolwright mint" in output
-    assert "toolwright capture import" in output
-    assert "openapi" in output
+    assert "toolwright create" in output
+    assert "toolwright create --spec" in output
     # Follow-up commands shown directly
     assert "gate allow" in output
     assert "serve" in output

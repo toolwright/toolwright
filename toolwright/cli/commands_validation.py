@@ -268,7 +268,7 @@ Examples:
             candidates = find_toolpacks(root)
             if not candidates:
                 raise click.ClickException(
-                    "No toolpacks found. Run 'toolwright create' or 'toolwright mint' first."
+                    "No toolpacks found. Run 'toolwright create' first."
                 )
             toolpack = str(candidates[0])
 

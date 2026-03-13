@@ -46,7 +46,7 @@ def doctor_flow(
         candidates = find_toolpacks(root)
         if not candidates:
             con.print("[error]No toolpacks found.[/error]")
-            con.print("Run 'toolwright mint' or 'toolwright capture import' first.")
+            con.print("Run 'toolwright create' first.")
             return
         if len(candidates) == 1:
             toolpack_path = str(candidates[0])

@@ -69,7 +69,7 @@ def _render_health_bar(statuses: list[Any], con: Any) -> None:
     from toolwright.ui.views.status import _status_icon
 
     if not statuses:
-        con.print("  [muted]No toolpacks found. Run [command]toolwright mint[/command] to capture an API.[/muted]")
+        con.print("  [muted]No toolpacks found. Run [command]toolwright create[/command] to get started.[/muted]")
         return
 
     groups: dict[str, list[Any]] = defaultdict(list)

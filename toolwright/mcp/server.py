@@ -988,9 +988,11 @@ def run_mcp_server(
         if groups_index is None:
             import click as _click
 
+            from toolwright.utils.text import pluralize
+
             _click.echo(
                 "Warning: No tool groups found. Run 'toolwright compile' to generate groups.\n"
-                f"Serving all {len(server.actions)} tools.",
+                f"Serving all {pluralize(len(server.actions), 'tool')}.",
                 err=True,
             )
         else:

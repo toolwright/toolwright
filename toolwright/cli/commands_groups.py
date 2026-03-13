@@ -6,6 +6,8 @@ from pathlib import Path
 
 import click
 
+from toolwright.utils.text import pluralize
+
 
 def register_groups_commands(*, cli: click.Group) -> None:
     """Register the groups command group on the provided CLI group."""
@@ -44,17 +46,17 @@ def register_groups_commands(*, cli: click.Group) -> None:
             return
 
         total_tools = sum(len(g.tools) for g in index.groups) + len(index.ungrouped)
-        click.echo(f"\nGroups ({len(index.groups)} groups, {total_tools} tools total):\n")
+        click.echo(f"\nGroups ({len(index.groups)} groups, {pluralize(total_tools, 'tool')} total):\n")
 
         # Find max name length for alignment
         max_name = max(len(g.name) for g in index.groups)
         for group in index.groups:
-            count_str = f"{len(group.tools)} tools"
+            count_str = pluralize(len(group.tools), "tool")
             desc = group.description or ""
             click.echo(f"  {group.name:<{max_name + 2}} {count_str:>10}   {desc}")
 
         if index.ungrouped:
-            click.echo(f"\n  Ungrouped: {len(index.ungrouped)} tools")
+            click.echo(f"\n  Ungrouped: {pluralize(len(index.ungrouped), 'tool')}")
 
         click.echo("\nServe a subset: toolwright serve --scope <group1>,<group2>")
 
@@ -113,7 +115,7 @@ def register_groups_commands(*, cli: click.Group) -> None:
                     "path": action.get("path", "/"),
                 }
 
-        click.echo(f"\nGroup: {group.name} ({len(group.tools)} tools)")
+        click.echo(f"\nGroup: {group.name} ({pluralize(len(group.tools), 'tool')})")
         click.echo(f"Path prefix: {group.path_prefix}\n")
 
         for tool_name in group.tools:

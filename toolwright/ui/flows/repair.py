@@ -31,7 +31,7 @@ from toolwright.ui.views.tables import doctor_checklist, preflight_checklist
 # ---------------------------------------------------------------------------
 
 _FIX_MAP: list[tuple[str, str, list[str]]] = [
-    ("tools.json", "missing", ["toolwright mint <url> -a <host>  # re-capture API surface"]),
+    ("tools.json", "missing", ["toolwright create <recipe>  # re-create toolpack from recipe or spec"]),
     ("toolsets.yaml", "missing", ["toolwright gate sync --toolpack <path>"]),
     ("policy.yaml", "missing", ["toolwright gate sync --toolpack <path>"]),
     ("baseline.json", "missing", ["toolwright gate snapshot --lockfile <path>"]),
@@ -40,7 +40,7 @@ _FIX_MAP: list[tuple[str, str, list[str]]] = [
     ("evidence hash", "mismatch", ["toolwright verify --toolpack <path>"]),
     ("mcp dependency", "not installed", ['pip install "toolwright[mcp]"']),
     ("docker", "not available", ["Install Docker, or re-run with --runtime local"]),
-    ("container:", "missing", ["toolwright mint <url> --runtime container --runtime-build"]),
+    ("container:", "missing", ["toolwright create <recipe> --runtime container --runtime-build"]),
 ]
 
 _SEVERITY_STYLES: dict[str, str] = {
@@ -118,7 +118,7 @@ def repair_flow(
     if toolpack_path is None:
         candidates = find_toolpacks(root)
         if not candidates:
-            con.print("[error]No toolpacks found. Run toolwright mint to capture an API first.[/error]")
+            con.print("[error]No toolpacks found. Run toolwright create to get started.[/error]")
             return
         if len(candidates) == 1:
             toolpack_path = str(candidates[0])

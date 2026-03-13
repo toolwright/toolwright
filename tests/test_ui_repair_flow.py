@@ -127,7 +127,7 @@ class TestRepairFlowSuggestedFixes:
             repair_flow(toolpack_path="/some/toolpack.yaml", root=Path(".toolwright"))
 
         output = mock_console.file.getvalue()  # type: ignore[attr-defined]
-        assert "toolwright mint" in output
+        assert "toolwright create" in output
 
     def test_suggests_docker_for_missing_docker(self, mock_console: Console) -> None:
         from toolwright.ui.flows.repair import repair_flow

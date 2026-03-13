@@ -64,7 +64,7 @@ class TestRenderHealthBar:
         _render_health_bar([], mock_console)
         output = mock_console.file.getvalue()  # type: ignore[attr-defined]
         assert "No toolpacks found" in output
-        assert "toolwright mint" in output
+        assert "toolwright create" in output
 
     def test_shows_toolpack_name(self, mock_console: Console) -> None:
         from toolwright.ui.flows.quickstart import _render_health_bar

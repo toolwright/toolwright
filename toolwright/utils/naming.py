@@ -198,6 +198,7 @@ def _singularize(word: str) -> str:
         "indices": "index",
         "vertices": "vertex",
         "matrices": "matrix",
+        "analyses": "analysis",
     }
 
     if word_lower in irregulars:
@@ -206,11 +207,46 @@ def _singularize(word: str) -> str:
     # Common patterns
     if word_lower.endswith("ies") and len(word_lower) > 3:
         return word[:-3] + "y"
-    if word_lower.endswith("es") and len(word_lower) > 3 and (
-        word_lower[-3] in "sxz" or word_lower[-4:-2] in ("ch", "sh")
-    ):
-        # Words ending in -ses, -xes, -zes, -ches, -shes
-        return word[:-2]
+
+    # Words ending in -ses, -xes, -zes, -ches, -shes
+    # Need to distinguish true "-es" plurals (bus->buses, church->churches)
+    # from words ending in silent 'e' that just add 's' (cache->caches,
+    # release->releases, enterprise->enterprises, database->databases).
+    if word_lower.endswith("es") and len(word_lower) > 3:
+        stem = word_lower[:-2]
+
+        if word_lower[-3] == "s":
+            # -ses: true -es plurals have stems ending in -ss or -us
+            # (class->classes, bus->buses, status->statuses, focus->focuses)
+            # Silent-e words just strip 's': case->cases, release->releases
+            if stem.endswith("ss") or stem.endswith("us"):
+                return word[:-2]
+            # Otherwise it's a silent-e word (database, enterprise, license, etc.)
+            return word[:-1]
+
+        if word_lower[-3] == "x":
+            # -xes: almost always a true -es plural (box->boxes, tax->taxes)
+            return word[:-2]
+
+        if word_lower[-3] == "z":
+            # -zes: true -es plurals have stems ending in -zz (buzz->buzzes)
+            # Silent-e words: freeze->freezes, graze->grazes
+            if stem.endswith("zz"):
+                return word[:-2]
+            return word[:-1]
+
+        if word_lower[-4:-2] == "ch":
+            # -ches: true -es plurals have a consonant before "ch"
+            # (branch->branches, church->churches, match->matches)
+            # Silent-e words have a vowel before "ch" (cache->caches)
+            if len(word_lower) >= 6 and word_lower[-5] in "aeiou":
+                return word[:-1]
+            return word[:-2]
+
+        if word_lower[-4:-2] == "sh":
+            # -shes: almost always a true -es plural (dish->dishes, crash->crashes)
+            return word[:-2]
+
     if word_lower.endswith("s") and not word_lower.endswith("ss"):
         return word[:-1]
 

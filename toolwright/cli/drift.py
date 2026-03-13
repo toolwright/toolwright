@@ -254,7 +254,9 @@ def run_shape_drift(
 
     # List mode: show available tools
     if not tool:
-        click.echo(f"\nShape baselines ({len(index.baselines)} tools):\n")
+        from toolwright.utils.text import pluralize
+
+        click.echo(f"\nShape baselines ({pluralize(len(index.baselines), 'tool')}):\n")
         for name, bl in sorted(index.baselines.items()):
             fields = len(bl.shape.fields)
             samples = bl.shape.sample_count

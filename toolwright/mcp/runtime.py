@@ -386,7 +386,7 @@ def run_mcp_serve(
         if not _actions:
             click.echo(
                 "Error: Toolpack has 0 tools. "
-                "Run 'toolwright mint' first to capture API traffic.",
+                "Run 'toolwright create' first to generate tools.",
                 err=True,
             )
             sys.exit(1)
