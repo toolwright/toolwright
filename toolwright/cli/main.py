@@ -202,7 +202,7 @@ def _show_help_all(
 )
 @click.pass_context
 def cli(ctx: click.Context, verbose: bool, root: Path, no_interactive: bool) -> None:
-    """Governed AI tool runtime with fail-closed enforcement and bounded self-healing."""
+    """The immune system for AI tools — governed runtime with fail-closed enforcement and self-healing."""
     from toolwright.ui.policy import should_interact
 
     ctx.ensure_object(dict)
