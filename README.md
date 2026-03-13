@@ -6,29 +6,19 @@ Your MCP tools have no governance. Credentials leak into model context.
 Tool changes go live with no approval. APIs drift and agents break silently.
 Nothing self-heals.
 
-![toolwright create github](demos/outputs/hero.gif)
+![toolwright demo — governance in 1 second](demos/outputs/demo.gif)
 
-```
-$ toolwright create github
-
-  Fetching GitHub API spec...                      done (2.1s)
-  Parsing 1093 endpoints...                        done (0.4s)
-  Compiling 1062 governed tools...                 done (1.8s)
-  Signing lockfile with Ed25519...                 done (0.1s)
-
-  Tools: 1062 compiled | 778 auto-approved | 284 flagged for review
-```
-
-**One second. Full lifecycle governance.**
+**One command. Full lifecycle governance.**
 
 ```bash
 pip install toolwright
+toolwright create github   # 1062 governed tools in under 15 seconds
 ```
 
 [![PyPI version](https://img.shields.io/pypi/v/toolwright.svg)](https://pypi.org/project/toolwright/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776ab.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-2924%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-2926%20passing-brightgreen.svg)]()
 
 ---
 

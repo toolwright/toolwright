@@ -11,6 +11,7 @@ Set Theme "Molokai"
 Set TypingSpeed 50ms
 Set Padding 20
 Set Shell "bash"
+Set Framerate 24
 
 # Activate venv with clean prompt (hidden)
 Hide
