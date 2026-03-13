@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import json
 import re
-import shutil
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -13,31 +11,39 @@ import yaml
 
 
 def _resolve_toolwright_command() -> str:
-    """Return an absolute ``toolwright`` command path when possible.
+    """Return the short ``toolwright`` command name.
 
-    Claude Desktop often does not inherit a shell PATH (especially virtualenv PATH),
-    so emitting an absolute path improves "paste-and-go" reliability.
+    Users install toolwright via ``pip install toolwright`` which places
+    ``toolwright`` on PATH.  Emitting an absolute path (especially a
+    virtualenv path) makes the config non-portable and confusing.
     """
-    argv0 = Path(sys.argv[0])
-    if argv0.name in {"toolwright", "tw"}:
-        if argv0.exists():
-            return str(argv0.resolve())
-
-        discovered_self = shutil.which(argv0.name)
-        if discovered_self:
-            return discovered_self
-
-    # Prefer `toolwright` on PATH.
-    for name in ("toolwright", "tw"):
-        discovered = shutil.which(name)
-        if discovered:
-            return discovered
-
     return "toolwright"
 
 
+def _infer_state_root(toolpack_dir: Path) -> Path:
+    """Infer the .toolwright state root from a toolpack directory.
+
+    Standard layout: ``<project>/.toolwright/toolpacks/<name>/toolpack.yaml``
+    In that case the state root is ``<project>/.toolwright``.
+
+    Fallback: create a ``.toolwright`` directory inside the toolpack dir.
+    """
+    # Standard layout: .toolwright/toolpacks/<name>/
+    if toolpack_dir.parent.name == "toolpacks":
+        grandparent = toolpack_dir.parent.parent  # e.g. .toolwright
+        if grandparent.name == ".toolwright":
+            return grandparent.resolve()
+
+    # Fallback: toolpack-local .toolwright
+    return (toolpack_dir / ".toolwright").resolve()
+
+
 def build_mcp_config_payload(
-    *, toolpack_path: Path, server_name: str, portable: bool = False
+    *,
+    toolpack_path: Path,
+    server_name: str,
+    portable: bool = False,
+    command_override: str | None = None,
 ) -> dict[str, Any]:
     """Build a config payload for MCP clients.
 
@@ -46,12 +52,14 @@ def build_mcp_config_payload(
         server_name: Server name for the MCP config
         portable: If True, emit relative paths suitable for bundles
             that will be extracted to a different location.
+        command_override: If set, use this as the command instead of
+            the default ``toolwright``.
     """
     if portable:
         return {
             "mcpServers": {
                 server_name: {
-                    "command": "toolwright",
+                    "command": command_override or "toolwright",
                     "args": [
                         "--root",
                         ".toolwright",
@@ -65,13 +73,13 @@ def build_mcp_config_payload(
 
     toolpack_abs = toolpack_path.resolve()
     toolpack_root = toolpack_abs.parent
-    # Use a toolpack-local root so Claude Desktop can start the server regardless of its cwd.
-    state_root = (toolpack_root / ".toolwright").resolve()
+    state_root = _infer_state_root(toolpack_root)
+    command = command_override or _resolve_toolwright_command()
 
     return {
         "mcpServers": {
             server_name: {
-                "command": _resolve_toolwright_command(),
+                "command": command,
                 "args": [
                     "--root",
                     str(state_root),

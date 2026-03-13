@@ -19,6 +19,7 @@ from toolwright.cli.mint import (
     apply_default_rules,
     auto_approve_lockfile,
     build_mcp_integration_output,
+    build_scope_warning,
     format_example_tool,
 )
 from toolwright.core.capture.openapi_parser import OpenAPIParser
@@ -30,6 +31,16 @@ from toolwright.core.toolpack import (
     write_toolpack,
 )
 from toolwright.utils.schema_version import resolve_generated_at
+
+
+def _cleanup_temp_spec(spec_path: Path) -> None:
+    """Remove a temp spec file if it lives in the system temp directory."""
+    try:
+        temp_dir = Path(tempfile.gettempdir()).resolve()
+        if spec_path.resolve().parent == temp_dir:
+            spec_path.unlink(missing_ok=True)
+    except OSError:
+        pass
 
 
 def _fetch_or_cache_spec(
@@ -153,6 +164,9 @@ def run_create(
 
     parser = OpenAPIParser(allowed_hosts=allowed_hosts)
     session = parser.parse_file(spec_path, name=name or api_name)
+
+    # Clean up temp spec file (created by _fetch_or_cache_spec for URL fetches)
+    _cleanup_temp_spec(spec_path)
 
     if not session.exchanges:
         raise click.ClickException(
@@ -321,6 +335,18 @@ def run_create(
 
     if rules_result and rules_result.rule_count > 0:
         click.echo(f"  Rules: {rules_result.template_name} ({rules_result.rule_count} rules)")
+
+    # Scope warning for large toolpacks
+    from toolwright.core.compile.grouper import load_groups_index
+
+    groups_index = load_groups_index(copied_groups if copied_groups.exists() else None)
+    scope_warning = build_scope_warning(
+        tool_count=len(actions),
+        groups_index=groups_index,
+        toolpack_id=toolpack_id,
+    )
+    if scope_warning:
+        click.echo(scope_warning)
 
     # Example tool
     if actions:
