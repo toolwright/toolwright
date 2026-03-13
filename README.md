@@ -2,12 +2,9 @@
 
 **The immune system for AI tools.**
 
-Capture any API — or wrap an existing MCP server — and get a governed tool supply chain: credentials isolated from model context, signed approvals, fail-closed runtime, drift detection, and bounded self-healing.
-
-[![PyPI version](https://img.shields.io/pypi/v/toolwright.svg)](https://pypi.org/project/toolwright/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776ab.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-2927%20passing-brightgreen.svg)]()
+Your MCP tools have no governance. Credentials leak into model context.
+Tool changes go live with no approval. APIs drift and agents break silently.
+Nothing self-heals.
 
 ![toolwright create github](demos/outputs/hero.gif)
 
@@ -22,110 +19,114 @@ $ toolwright create github
   Tools: 1062 compiled | 778 auto-approved | 284 flagged for review
 ```
 
-**One command. 1062 governed tools. Under 15 seconds.**
-
----
-
-### One command replaces
-
-| Manual setup | Toolwright |
-|---|---|
-| Write MCP server from scratch | `toolwright create github` |
-| Manage API credentials in config files | Credentials injected at runtime, never in model context |
-| No approval before tools run | Ed25519-signed lockfile gates every change |
-| No monitoring for API changes | Continuous drift detection + auto-repair |
-| No circuit breakers | Kill/quarantine misbehaving tools instantly |
-| No audit trail | Every decision logged with reason codes |
-
----
-
-<table>
-<tr>
-<td width="50%">
-
-**Without governance**
-
-```
-# Token hardcoded in tool config
-{"auth": "Bearer ghp_s3cr3t..."}
-
-# Model sees the token in context
-# No approval before tool runs
-# API changes → silent agent failure
-# No audit trail
-```
-
-</td>
-<td width="50%">
-
-**With Toolwright**
-
-```bash
-toolwright create github
-export TOOLWRIGHT_AUTH_API_GITHUB_COM="Bearer ..."
-toolwright serve
-
-# Token injected at runtime, never in context
-# Signed lockfile gates every change
-# Drift detected before agents break
-# Every decision audited
-```
-
-</td>
-</tr>
-</table>
-
----
-
-## Why this matters
-
-Every AI agent needs tools. But the way tools connect to APIs today is broken:
-
-- **Credentials leak into model context** — API keys land in tool definitions, logs, and prompts where the model can see and misuse them
-- **Tool changes happen silently** — new capabilities and changed schemas go live with no human review
-- **APIs drift and agents break** — upstream changes cause silent failures with no alerting or recovery
-
-Generation is the on-ramp. **Governance is the moat.**
-
-| Concern | Typical AI tools | With Toolwright |
-|---|---|---|
-| Credentials | In config, visible to model | Injected at runtime, never in context |
-| New tools | Available immediately | Gated behind signed lockfile |
-| API changes | Silent breakage | Drift detected, repair proposed |
-| Failures | Retry or crash | Circuit breakers, quarantine, rollback |
-| Audit trail | None | Every decision logged with reason codes |
-| Recovery | Manual rebuild | Bounded self-healing with snapshots |
-
-## Install
+**One second. Full lifecycle governance.**
 
 ```bash
 pip install toolwright
 ```
 
-`tw` works as shorthand. Add extras only when you need them:
-- browser capture: `pip install "toolwright[playwright]"`
-- dashboard UI: `pip install "toolwright[tui]"`
+[![PyPI version](https://img.shields.io/pypi/v/toolwright.svg)](https://pypi.org/project/toolwright/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776ab.svg)](https://www.python.org/downloads/)
+[![Tests](https://img.shields.io/badge/tests-2924%20passing-brightgreen.svg)]()
 
-## Get started in 60 seconds
+---
+
+## What toolwright does
+
+Five pillars. One supply chain. Every command runnable.
+
+### 🔌 CONNECT — Capture any API into governed tools
 
 ```bash
-# Create governed tools from GitHub's API
-toolwright create github
-
-# Set your token (never enters model context)
-export TOOLWRIGHT_AUTH_API_GITHUB_COM="Bearer ghp_yourToken"
-
-# Get the config snippet for Claude Desktop
-toolwright config
-
-# Paste into Claude Desktop config → restart → done.
+toolwright create github                           # from a recipe
+toolwright create --spec ./openapi.yaml            # from any OpenAPI spec
+toolwright mint https://app.example.com -a api.example.com  # from a live web app
+toolwright wrap npx -y @modelcontextprotocol/server-github  # wrap existing MCP
 ```
 
-That's it. GitHub tools — risk-classified, with behavioral rules applied. Your agent can now list repos, create issues, and manage pull requests, all under governance.
+### 🔒 GOVERN — Signed approvals gate every change
 
-> **Start narrow.** The GitHub recipe produces 1062 tools. Serve a focused subset: `toolwright serve --scope repos,issues`
+```bash
+toolwright gate allow --all              # interactive review
+toolwright gate check                    # verify lockfile integrity
+toolwright gate block delete_user        # block a specific tool
+```
 
-### See governance in action
+Ed25519-signed lockfile. New tools, changed schemas, expanded capabilities — all gated behind explicit approval. No silent privilege escalation.
+
+### 📏 CORRECT — Behavioral rules constrain invocations
+
+```bash
+toolwright rules template apply crud-safety   # require read before delete
+toolwright rules template apply rate-limit    # rate limit tool calls
+```
+
+Six composable rule types: `precondition`, `postcondition`, `sequencing`, `rate_limit`, `context_required`, `parameter_constraint`. Applied at invocation time, enforced by the runtime.
+
+### ⚡ KILL — Circuit breakers block broken tools instantly
+
+```bash
+toolwright kill search_api --reason "upstream 500s"
+toolwright quarantine                    # list all quarantined tools
+toolwright enable search_api             # bring it back
+```
+
+Three-state circuit breaker (CLOSED → OPEN → HALF_OPEN → CLOSED). After 5 consecutive failures, agents can't call it. After recovery, 3 successes required to fully restore.
+
+### 🩺 HEAL — Drift detection and bounded self-repair
+
+```bash
+toolwright drift                              # one-shot check
+toolwright serve --watch --auto-heal safe      # continuous monitoring
+toolwright repair plan                        # terraform-style repair plan
+```
+
+A k8s-style reconciliation loop probes tool endpoints on risk-tier intervals. Safe changes auto-merge. Risky changes escalate for approval. Snapshots enable instant rollback.
+
+---
+
+## Tools that heal themselves
+
+APIs change. Toolwright detects the change, classifies the risk, and either fixes it or tells you exactly what to do.
+
+A k8s-style reconciliation loop continuously probes your tool endpoints. When a response shape changes, toolwright diffs it against the compiled baseline:
+
+- **SAFE** changes (new fields, safe type widenings) → auto-merge into the baseline
+- **APPROVAL_REQUIRED** changes (nullability shifts, removed optional fields) → logged for review
+- **MANUAL** changes (removed required fields, incompatible type changes) → repair guidance surfaced
+
+If a tool starts failing, the circuit breaker trips after 5 consecutive failures, blocking agents from calling a broken endpoint. After recovery, it enters half-open mode and requires 3 successes before fully restoring.
+
+```bash
+toolwright serve --toolpack my-api/toolpack.yaml --watch
+# Probes tool endpoints on risk-tier intervals (critical: 2min, low: 30min)
+# Auto-heals SAFE drift, logs APPROVAL_REQUIRED, guides MANUAL
+
+toolwright watch status
+# Tool                          Status       Healthy  Unhealthy  Last Probe
+# get_products                  HEALTHY      12       0          2026-03-13T10:30:00Z
+# create_order                  DEGRADED     8        2          2026-03-13T10:28:00Z
+
+toolwright repair plan
+# Repair Plan (3 patches)
+#   SAFE: 1  APPROVAL REQUIRED: 1  MANUAL: 1
+#
+# --- SAFE (1) ---
+#   New optional response field: category
+#     $ toolwright verify --mode contracts
+
+toolwright kill create_order --reason "upstream 500s"
+toolwright quarantine
+# 1 tool(s) in quarantine:
+#   create_order  [open]  reason=upstream 500s
+```
+
+Every probe, drift, and repair decision is logged to `.toolwright/state/reconcile.log.jsonl` — a full audit trail of what changed and why.
+
+---
+
+## How fast?
 
 ```
 $ toolwright demo
@@ -139,19 +140,10 @@ $ toolwright demo
   Detecting drift (endpoint removed)...            ✓  clean
   Tripping circuit breaker...                      ✓  clean
 
-  ┌─ What just happened ─────────────────────────────────────┐
-  │                                                          │
-  │  In under 1 second, toolwright:                          │
-  │    • Compiled an API into 8 governed tools               │
-  │    • Blocked an unapproved tool (fail-closed)            │
-  │    • Detected an upstream API change (drift)             │
-  │    • Tripped a circuit breaker (auto-quarantine)         │
-  │                                                          │
-  │  This is what governance looks like.                     │
-  │  Get started: toolwright create github                   │
-  │                                                          │
-  └──────────────────────────────────────────────────────────┘
+  Full lifecycle governance in under 1 second.
 ```
+
+---
 
 ## Works with anything you have
 
@@ -165,6 +157,8 @@ $ toolwright demo
 | An MCP server | `toolwright wrap npx -y @modelcontextprotocol/server-github` |
 
 All paths produce the same governed artifacts: tools, policy, lockfile, baselines, and verification contracts.
+
+---
 
 ## How the supply chain works
 
@@ -189,9 +183,9 @@ All paths produce the same governed artifacts: tools, policy, lockfile, baseline
 4. **Serve** — Expose tools via MCP with auth injection, policy enforcement, and circuit breakers
 5. **Heal** — Detect drift, verify behavior, and auto-repair within safety bounds
 
-## Core capabilities
+---
 
-### Credentials never touch model context
+## Credentials never touch model context
 
 Auth is resolved at runtime via environment variables — per-host, isolated. Tool definitions, logs, evidence bundles, and agent prompts are all credential-free.
 
@@ -201,38 +195,26 @@ export TOOLWRIGHT_AUTH_API_STRIPE_COM="Bearer sk_..."
 # Toolwright injects the right token for each upstream call
 ```
 
-### Every change is signed before it runs
+---
 
-Ed25519 signatures on a lockfile. New tools, changed schemas, expanded capabilities — all gated behind explicit approval. No silent privilege escalation.
-
-```bash
-toolwright gate allow --all              # interactive review
-toolwright gate check                    # verify lockfile integrity
-toolwright gate block delete_user        # block a specific tool
-```
-
-### Fail-closed by default
-
-Default deny. Explicit allowlists only. Network safety is hardcoded: SSRF prevention, private CIDR filtering, redirect validation, and response size limits.
-
-### Drift detection and bounded self-healing
-
-Continuous health probing catches upstream changes before your agent breaks. Safe patches auto-apply. Risky ones escalate for approval. Snapshots enable instant rollback.
+## Get started in 60 seconds
 
 ```bash
-toolwright drift                              # one-shot check
-toolwright serve --watch --auto-heal safe      # continuous monitoring
+# Create governed tools from GitHub's API
+toolwright create github
+
+# Set your token (never enters model context)
+export TOOLWRIGHT_AUTH_API_GITHUB_COM="Bearer ghp_yourToken"
+
+# Get the config snippet for Claude Desktop
+toolwright config
+
+# Paste into Claude Desktop config → restart → done.
 ```
 
-### Behavioral rules and circuit breakers
+> **Start narrow.** The GitHub recipe produces 1062 tools. Serve a focused subset: `toolwright serve --scope repos,issues`
 
-Composable constraints at invocation time. Kill misbehaving tools instantly.
-
-```bash
-toolwright rules template apply crud-safety   # require read before delete
-toolwright kill search_api --reason "500s"    # circuit breaker kill switch
-toolwright enable search_api                  # bring it back
-```
+---
 
 ## Already have an MCP server? Wrap it.
 
@@ -243,6 +225,8 @@ toolwright wrap --url https://mcp.sentry.dev/mcp --header "Authorization: Bearer
 
 `wrap` discovers an upstream server's tools and applies the same approval, rules, circuit breaker, and fail-closed enforcement. No tool recreation — just governance.
 
+---
+
 ## Serving options
 
 ```bash
@@ -252,6 +236,8 @@ toolwright serve --scope repos,issues               # serve specific groups
 toolwright serve --max-risk low                     # cap risk tier exposure
 toolwright serve --watch --auto-heal safe           # continuous healing
 ```
+
+---
 
 ## Documentation
 
@@ -271,6 +257,8 @@ pip install "toolwright[playwright]"      # + browser capture (for mint command)
 pip install "toolwright[tui]"             # + full-screen dashboard
 pip install "toolwright[all]"             # everything
 ```
+
+`tw` works as shorthand for `toolwright`.
 
 ## License
 
