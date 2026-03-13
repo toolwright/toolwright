@@ -759,9 +759,16 @@ class ToolwrightMCPServer:
                     # credential leaking to a different domain.
                     if next_host != target_host:
                         redirect_headers = dict(kwargs.get("headers", {}))
+                        # Strip well-known auth headers
                         for hdr in ("Authorization", "authorization",
                                     "X-Api-Key", "x-api-key"):
                             redirect_headers.pop(hdr, None)
+                        # Also strip any custom auth header configured for the
+                        # original host (e.g. X-Custom-Token).
+                        custom_hdr = self._resolve_auth_header_name(action_host)
+                        if custom_hdr.lower() not in ("authorization",):
+                            redirect_headers.pop(custom_hdr, None)
+                            redirect_headers.pop(custom_hdr.lower(), None)
                         kwargs = {**kwargs, "headers": redirect_headers}
                     current_url = next_url
                     continue

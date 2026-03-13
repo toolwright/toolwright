@@ -146,8 +146,14 @@ def run_create(
 
     # Need either api_name or spec
     if not api_name and not spec:
+        from toolwright.recipes.loader import list_recipes
+
+        available = list_recipes()
+        names = [r["name"] for r in available]
+        recipes_line = f"  Available recipes: {', '.join(names)}\n" if names else ""
         raise click.ClickException(
             "Provide an API name or --spec.\n"
+            f"{recipes_line}"
             "  Example: toolwright create github\n"
             "  Example: toolwright create --spec ./openapi.json"
         )
