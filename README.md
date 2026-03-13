@@ -17,7 +17,7 @@ toolwright create github   # 1062 governed tools in under 15 seconds
 [![PyPI version](https://img.shields.io/pypi/v/toolwright.svg)](https://pypi.org/project/toolwright/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776ab.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-2926%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-2928%20passing-brightgreen.svg)]()
 
 ---
 
