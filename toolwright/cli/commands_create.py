@@ -101,6 +101,11 @@ def _resolve_spec_path(
         spec_path = Path(spec)
         if spec_path.exists():
             return spec_path
+        # If it looks like a local file path (not a URL), give a clear error
+        if not spec.startswith(("http://", "https://")) and (
+            "/" in spec or "\\" in spec or spec.endswith((".json", ".yaml", ".yml"))
+        ):
+            raise click.ClickException(f"File not found: {spec}")
         # Treat as URL
         return _fetch_or_cache_spec(spec, api_name, root)
 
@@ -373,12 +378,14 @@ def run_create(
     click.echo(build_mcp_integration_output(toolpack_path=toolpack_file))
 
     # Section 4: Next Steps
+    step = 1
     click.echo("  Next steps:")
     if recipe_data and recipe_data.get("hosts"):
-        click.echo("    1. Set your auth token (see above)")
-    click.echo("    2. Run: toolwright config --toolpack " + str(toolpack_file))
-    click.echo("    3. Paste config into Claude Desktop and restart")
-    click.echo("    4. Ask Claude about your API!")
+        click.echo(f"    {step}. Set your auth token (see above)")
+        step += 1
+    click.echo(f"    {step}. Run: toolwright config --toolpack " + str(toolpack_file))
+    click.echo(f"    {step + 1}. Paste config into Claude Desktop and restart")
+    click.echo(f"    {step + 2}. Ask Claude about your API!")
 
 
 def register_create_commands(*, cli: click.Group, run_with_lock: Any) -> None:
