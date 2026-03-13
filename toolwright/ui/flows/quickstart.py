@@ -322,7 +322,7 @@ def wizard_flow(*, root: Path, verbose: bool = False) -> None:
 
 
 def _first_run_flow(*, root: Path, verbose: bool) -> None:
-    """First-time user experience: welcome, detect, guide."""
+    """First-time user experience: welcome, demo, detect, guide."""
     from toolwright.ui.views.branding import render_rich_header
 
     con = err_console
@@ -330,8 +330,18 @@ def _first_run_flow(*, root: Path, verbose: bool) -> None:
 
     render_rich_header(console=con)
 
-    con.print("  [heading]Welcome to Toolwright[/heading]")
-    con.print("  [muted]Turn any web API into a governed, agent-ready MCP server.[/muted]")
+    con.print("  [heading]Welcome to Toolwright[/heading] — the immune system for AI tools.")
+    con.print()
+
+    # Auto-run demo to show governance in action
+    try:
+        from toolwright.cli.demo import run_demo
+
+        run_demo(output_root=None, verbose=verbose, quiet=False)
+    except Exception:
+        # Demo failure shouldn't block the wizard
+        pass
+
     con.print()
 
     # Auto-detect project context

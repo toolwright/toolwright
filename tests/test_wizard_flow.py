@@ -259,11 +259,39 @@ class TestWizardFirstRun:
             patch("toolwright.ui.flows.quickstart.err_console", mock_console),
             patch("toolwright.ui.flows.quickstart.select_one", return_value="exit"),
             patch("toolwright.ui.views.branding.err_console", mock_console),
+            patch("toolwright.cli.demo.run_demo") as mock_demo,
         ):
             wizard_flow(root=Path("/nonexistent/.toolwright"))
 
         output = mock_console.file.getvalue()  # type: ignore[attr-defined]
         assert "Welcome" in output or "toolwright" in output.lower()
+
+    def test_first_run_auto_runs_demo(self, mock_console: Console) -> None:
+        """First-run experience should auto-run demo to show governance."""
+        from toolwright.ui.flows.quickstart import wizard_flow
+
+        with (
+            patch("toolwright.ui.flows.quickstart.err_console", mock_console),
+            patch("toolwright.ui.flows.quickstart.select_one", return_value="exit"),
+            patch("toolwright.ui.views.branding.err_console", mock_console),
+            patch("toolwright.cli.demo.run_demo") as mock_demo,
+        ):
+            wizard_flow(root=Path("/nonexistent/.toolwright"))
+
+        mock_demo.assert_called_once()
+
+    def test_first_run_continues_if_demo_fails(self, mock_console: Console) -> None:
+        """First-run should continue even if demo crashes."""
+        from toolwright.ui.flows.quickstart import wizard_flow
+
+        with (
+            patch("toolwright.ui.flows.quickstart.err_console", mock_console),
+            patch("toolwright.ui.flows.quickstart.select_one", return_value="exit"),
+            patch("toolwright.ui.views.branding.err_console", mock_console),
+            patch("toolwright.cli.demo.run_demo", side_effect=RuntimeError("boom")),
+        ):
+            # Should not raise
+            wizard_flow(root=Path("/nonexistent/.toolwright"))
 
     def test_first_run_shows_project_detection(self, mock_console: Console, tmp_path: Path) -> None:
         from toolwright.ui.flows.quickstart import wizard_flow
