@@ -265,7 +265,7 @@ def register_build_commands(
     @click.option(
         "--recipe", "-r",
         default=None,
-        help="Use a bundled API recipe (e.g., shopify, github). Sets hosts, headers, auth.",
+        help="Use a bundled API recipe (e.g., github, stripe). Sets hosts, headers, auth.",
     )
     @click.option(
         "--auto-approve/--no-auto-approve",
@@ -311,7 +311,7 @@ def register_build_commands(
           toolwright mint https://example.com -a api.example.com --print-mcp-config
           toolwright mint https://app.example.com -a api.example.com --auth-profile myapp
           toolwright mint https://app.example.com --webmcp -a api.example.com
-          toolwright mint https://example.myshopify.com --recipe shopify
+          toolwright mint https://api.github.com --recipe github
         """
         from toolwright.cli.mint import run_mint
         from toolwright.utils.headers import parse_extra_headers

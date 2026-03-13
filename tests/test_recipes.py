@@ -6,14 +6,15 @@ from toolwright.recipes.loader import list_recipes, load_recipe
 
 
 def test_list_recipes_returns_bundled():
-    """list_recipes should return at least 5 bundled recipes."""
+    """list_recipes should return the bundled recipes that work end-to-end."""
     recipes = list_recipes()
     names = {r["name"] for r in recipes}
     assert "github" in names
-    assert "shopify" in names
-    assert "notion" in names
     assert "stripe" in names
-    assert "slack" in names
+    # Only recipes with working openapi_spec_url are shipped
+    assert "shopify" not in names
+    assert "notion" not in names
+    assert "slack" not in names
 
 
 def test_load_recipe_returns_parsed_yaml():
@@ -33,14 +34,10 @@ def test_load_recipe_unknown_raises():
         load_recipe("nonexistent")
 
 
-def test_shopify_recipe_has_custom_auth_header():
-    """Shopify recipe should specify X-Shopify-Access-Token."""
-    recipe = load_recipe("shopify")
-    host = recipe["hosts"][0]
-    assert host["auth_header_name"] == "X-Shopify-Access-Token"
+def test_removed_recipes_raise_value_error():
+    """Removed recipes (shopify, notion, slack) should raise ValueError."""
+    import pytest
 
-
-def test_notion_recipe_has_extra_headers():
-    """Notion recipe should specify Notion-Version header."""
-    recipe = load_recipe("notion")
-    assert "Notion-Version" in recipe.get("extra_headers", {})
+    for name in ("shopify", "notion", "slack"):
+        with pytest.raises(ValueError, match="Unknown recipe"):
+            load_recipe(name)

@@ -501,11 +501,11 @@ Recipes pre-fill mint settings for known APIs:
 
 ```bash
 toolwright recipes list
-toolwright recipes show shopify
-toolwright mint --recipe shopify https://yourstore.myshopify.com
+toolwright recipes show github
+toolwright mint --recipe github https://api.github.com
 ```
 
-Bundled recipes: github, shopify, notion, stripe, slack.
+Bundled recipes: github, stripe.
 
 Each recipe sets: hosts, auth headers, extra headers, and rule template references. Post-mint, referenced templates are queued as DRAFT rules.
 

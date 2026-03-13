@@ -700,13 +700,13 @@ Block `toolwright serve` when the toolpack contains 0 tools. Prints actionable e
 
 ### CAP-UX-008: API Recipes
 
-Bundled API recipes (github, shopify, notion, stripe, slack) that pre-fill mint settings — hosts, auth headers, extra headers, rule template references, and probe hints. Recipes reduce setup friction, not governance decisions.
+Bundled API recipes (github, stripe) that pre-fill mint settings — hosts, auth headers, extra headers, rule template references, and probe hints. Recipes reduce setup friction, not governance decisions. Only recipes with working OpenAPI spec URLs are shipped.
 
 - `toolwright/recipes/*.yaml` -> Recipe definitions
 - `toolwright/recipes/loader.py` -> `list_recipes()`, `load_recipe()`
 - `toolwright/cli/commands_recipes.py` -> `recipes list|show`
 - `toolwright/cli/main.py` -> `mint --recipe <name>`
-- CLI: `toolwright recipes list`, `toolwright recipes show shopify`, `toolwright mint --recipe shopify`
+- CLI: `toolwright recipes list`, `toolwright recipes show github`, `toolwright mint --recipe github`
 
 ### CAP-UX-009: Guided Ship Lifecycle
 
