@@ -9,8 +9,7 @@ Capture any API — or wrap an existing MCP server — and get a governed tool s
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776ab.svg)](https://www.python.org/downloads/)
 [![Tests](https://img.shields.io/badge/tests-2927%20passing-brightgreen.svg)]()
 
-<!-- GIF: toolwright create github (replace with real recording) -->
-<!-- ![toolwright create github](demos/outputs/hero.gif) -->
+![toolwright create github](demos/outputs/hero.gif)
 
 ```
 $ toolwright create github

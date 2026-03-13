@@ -6,15 +6,23 @@ Output demos/outputs/quickstart.webm
 Set FontSize 16
 Set Width 900
 Set Height 600
-Set Theme "Monokai"
+Set Theme "Molokai"
 Set TypingSpeed 50ms
 Set Padding 20
+Set Shell "bash"
+
+# Activate venv with clean prompt (hidden)
+Hide
+Type `export VIRTUAL_ENV_DISABLE_PROMPT=1 && source .venv/bin/activate && export PS1="$ " && clear`
+Enter
+Sleep 1s
+Show
 
 # Step 1: Create tools
 Type "toolwright create github"
 Sleep 500ms
 Enter
-Sleep 18s
+Sleep 20s
 
 # Step 2: Check status
 Type "toolwright status"
