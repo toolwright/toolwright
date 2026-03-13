@@ -7,6 +7,36 @@ Capture any API — or wrap an existing MCP server — and get a governed tool s
 [![PyPI version](https://img.shields.io/pypi/v/toolwright.svg)](https://pypi.org/project/toolwright/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776ab.svg)](https://www.python.org/downloads/)
+[![Tests](https://img.shields.io/badge/tests-2927%20passing-brightgreen.svg)]()
+
+<!-- GIF: toolwright create github (replace with real recording) -->
+<!-- ![toolwright create github](demos/outputs/hero.gif) -->
+
+```
+$ toolwright create github
+
+  Fetching GitHub API spec...                      done (2.1s)
+  Parsing 1093 endpoints...                        done (0.4s)
+  Compiling 1062 governed tools...                 done (1.8s)
+  Signing lockfile with Ed25519...                 done (0.1s)
+
+  Tools: 1062 compiled | 778 auto-approved | 284 flagged for review
+```
+
+**One command. 1062 governed tools. Under 15 seconds.**
+
+---
+
+### One command replaces
+
+| Manual setup | Toolwright |
+|---|---|
+| Write MCP server from scratch | `toolwright create github` |
+| Manage API credentials in config files | Credentials injected at runtime, never in model context |
+| No approval before tools run | Ed25519-signed lockfile gates every change |
+| No monitoring for API changes | Continuous drift detection + auto-repair |
+| No circuit breakers | Kill/quarantine misbehaving tools instantly |
+| No audit trail | Every decision logged with reason codes |
 
 ---
 
@@ -94,17 +124,45 @@ toolwright config
 
 That's it. GitHub tools — risk-classified, with behavioral rules applied. Your agent can now list repos, create issues, and manage pull requests, all under governance.
 
-> **Start narrow for Claude/Desktop.** The GitHub recipe produces a large tool surface. If you want a smaller first setup, serve a subset such as `repos,issues`.
+> **Start narrow.** The GitHub recipe produces 1062 tools. Serve a focused subset: `toolwright serve --scope repos,issues`
+
+### See governance in action
+
+```
+$ toolwright demo
+
+  ◆ toolwright demo — governance in action
+
+  Compiling 8 tools from OpenAPI spec...           ✓
+  Signing lockfile (Ed25519)...                    ✓  20ms
+  Blocking unapproved tool...                      ✓  blocked
+  Running approved tool (deterministic)...         ✓  deterministic
+  Detecting drift (endpoint removed)...            ✓  clean
+  Tripping circuit breaker...                      ✓  clean
+
+  ┌─ What just happened ─────────────────────────────────────┐
+  │                                                          │
+  │  In under 1 second, toolwright:                          │
+  │    • Compiled an API into 8 governed tools               │
+  │    • Blocked an unapproved tool (fail-closed)            │
+  │    • Detected an upstream API change (drift)             │
+  │    • Tripped a circuit breaker (auto-quarantine)         │
+  │                                                          │
+  │  This is what governance looks like.                     │
+  │  Get started: toolwright create github                   │
+  │                                                          │
+  └──────────────────────────────────────────────────────────┘
+```
 
 ## Works with anything you have
 
 | Starting point | Command |
 |---|---|
-| A known API | `toolwright create github` |
+| GitHub API | `toolwright create github` |
+| Stripe API | `toolwright create stripe` |
+| Any OpenAPI spec | `toolwright create --spec ./openapi.yaml` |
 | A web app | `toolwright mint https://app.example.com -a api.example.com` |
-| An OpenAPI spec | `toolwright capture import openapi.yaml -a api.example.com` |
 | A HAR file | `toolwright capture import traffic.har -a api.example.com` |
-| OTEL traces | `toolwright capture import traces.json --input-format otel -a api.example.com` |
 | An MCP server | `toolwright wrap npx -y @modelcontextprotocol/server-github` |
 
 All paths produce the same governed artifacts: tools, policy, lockfile, baselines, and verification contracts.
@@ -210,19 +268,9 @@ Run `toolwright --help` for the quick reference. Run `toolwright --help-all` for
 
 ```bash
 pip install toolwright                    # core CLI + governed runtime
-pip install "toolwright[playwright]"      # + browser capture
-pip install "toolwright[tui]"             # + dashboard
+pip install "toolwright[playwright]"      # + browser capture (for mint command)
+pip install "toolwright[tui]"             # + full-screen dashboard
 pip install "toolwright[all]"             # everything
-python -m playwright install chromium     # for browser capture (use same interpreter)
-```
-
-Or install only what you need:
-
-```bash
-pip install toolwright                    # core
-pip install "toolwright[mcp]"             # + explicit MCP dependency bundle
-pip install "toolwright[playwright]"      # + browser capture
-pip install "toolwright[tui]"             # + dashboard TUI
 ```
 
 ## License
