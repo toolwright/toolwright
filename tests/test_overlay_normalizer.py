@@ -2,8 +2,6 @@
 
 import json
 
-import pytest
-
 
 class TestNormalizeMcpResult:
     """Test normalize_mcp_result converts CallToolResult to pipeline envelope."""

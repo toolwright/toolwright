@@ -3,15 +3,13 @@
 from __future__ import annotations
 
 import asyncio
-import json
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
 from toolwright.core.health.checker import HealthResult
 from toolwright.core.reconcile.loop import ReconcileLoop
-from toolwright.models.reconcile import ReconcileState, ToolStatus, WatchConfig
+from toolwright.models.reconcile import WatchConfig
 
 
 class TestReconcileLoopIntegrationWithServer:
@@ -86,8 +84,9 @@ class TestRunMcpServerWithWatch:
 
     def test_run_mcp_server_accepts_watch_params(self):
         """run_mcp_server should accept watch and watch_config params."""
-        from toolwright.mcp.server import run_mcp_server
         import inspect
+
+        from toolwright.mcp.server import run_mcp_server
 
         sig = inspect.signature(run_mcp_server)
         assert "watch" in sig.parameters
@@ -95,8 +94,9 @@ class TestRunMcpServerWithWatch:
 
     def test_run_mcp_serve_accepts_watch_params(self):
         """run_mcp_serve should accept watch and watch_config params."""
-        from toolwright.cli.mcp import run_mcp_serve
         import inspect
+
+        from toolwright.cli.mcp import run_mcp_serve
 
         sig = inspect.signature(run_mcp_serve)
         assert "watch" in sig.parameters
@@ -141,8 +141,9 @@ class TestServeCommandWatchOptions:
 
     def test_serve_command_has_watch_option(self):
         """The serve command should have --watch and --watch-config options."""
-        from toolwright.cli.main import cli
         from click.testing import CliRunner
+
+        from toolwright.cli.main import cli
 
         runner = CliRunner()
         result = runner.invoke(cli, ["serve", "--help"])
@@ -155,8 +156,9 @@ class TestServeAutoHealFlag:
 
     def test_auto_heal_in_help(self):
         """serve --help should show --auto-heal option."""
-        from toolwright.cli.main import cli
         from click.testing import CliRunner
+
+        from toolwright.cli.main import cli
 
         runner = CliRunner()
         result = runner.invoke(cli, ["serve", "--help"])
@@ -164,8 +166,9 @@ class TestServeAutoHealFlag:
 
     def test_auto_heal_without_watch_errors(self):
         """Using --auto-heal without --watch should exit with error code 2."""
-        from toolwright.cli.main import cli
         from click.testing import CliRunner
+
+        from toolwright.cli.main import cli
 
         runner = CliRunner()
         result = runner.invoke(cli, ["serve", "--auto-heal", "safe"])
@@ -174,8 +177,9 @@ class TestServeAutoHealFlag:
 
     def test_auto_heal_choices_shown(self):
         """Help text should show off/safe/all choices for --auto-heal."""
-        from toolwright.cli.main import cli
         from click.testing import CliRunner
+
+        from toolwright.cli.main import cli
 
         runner = CliRunner()
         result = runner.invoke(cli, ["serve", "--help"])

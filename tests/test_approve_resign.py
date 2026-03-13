@@ -7,12 +7,12 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
+from tests.helpers import write_demo_toolpack
 from toolwright.cli.main import cli
 from toolwright.core.approval import LockfileManager
 from toolwright.core.approval.signing import ApprovalSigner
 from toolwright.core.enforce import ConfirmationStore, DecisionEngine
 from toolwright.models.decision import DecisionContext
-from tests.helpers import write_demo_toolpack
 
 
 def test_approve_resign_rewrites_invalid_signatures(tmp_path: Path) -> None:

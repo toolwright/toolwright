@@ -6,8 +6,6 @@ import os
 import tempfile
 from pathlib import Path
 
-import pytest
-
 
 class TestPidAlive:
     """Cross-platform PID liveness check."""
@@ -67,8 +65,9 @@ class TestConfigPathExpansion:
 
     def test_expandvars_in_config_path(self) -> None:
         """Verify os.path.expandvars is used for Windows paths."""
-        import toolwright.ui.flows.config as config_mod
         import inspect
+
+        import toolwright.ui.flows.config as config_mod
 
         source = inspect.getsource(config_mod)
         assert "expandvars" in source, (

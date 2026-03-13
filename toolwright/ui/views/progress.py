@@ -27,6 +27,7 @@ from rich.progress import (
     MofNCompleteColumn,
     Progress,
     SpinnerColumn,
+    TaskID,
     TextColumn,
     TimeElapsedColumn,
 )
@@ -52,7 +53,7 @@ class ToolwrightProgress:
         self._console = console
         self._current_step = 0
         self._progress: Progress | None = None
-        self._task_id: int | None = None  # Rich task ID (int)
+        self._task_id: TaskID | None = None
 
     def _build_progress(self) -> Progress:
         """Build the appropriate Rich Progress bar."""
@@ -82,8 +83,7 @@ class ToolwrightProgress:
         total = len(self._steps) if self._steps else None
         self._progress.start()
         desc = self._step_description()
-        task = self._progress.add_task(desc, total=total)
-        self._task_id = int(task)
+        self._task_id = self._progress.add_task(desc, total=total)
 
     def stop(self) -> None:
         """Stop the progress display cleanly."""

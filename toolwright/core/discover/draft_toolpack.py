@@ -6,6 +6,7 @@ import json
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -30,11 +31,11 @@ class DraftToolpackCreator:
         actions = self._build_actions(session)
 
         # Write tools.json
-        tools_data = {"schema_version": "1.0", "actions": actions}
+        tools_data: dict[str, Any] = {"schema_version": "1.0", "actions": actions}
         (draft_dir / "tools.json").write_text(json.dumps(tools_data, indent=2))
 
         # Write toolpack.yaml
-        toolpack_data = {
+        toolpack_data: dict[str, Any] = {
             "draft": True,
             "draft_id": draft_id,
             "label": label,
@@ -45,7 +46,7 @@ class DraftToolpackCreator:
         (draft_dir / "toolpack.yaml").write_text(yaml.dump(toolpack_data, default_flow_style=False))
 
         # Write manifest.json
-        manifest = {
+        manifest: dict[str, Any] = {
             "draft_id": draft_id,
             "label": label,
             "host": host,
@@ -57,12 +58,12 @@ class DraftToolpackCreator:
 
         return draft_id
 
-    def list_drafts(self) -> list[dict]:
+    def list_drafts(self) -> list[dict[str, Any]]:
         """List all draft toolpacks with metadata."""
         if not self._drafts_root.is_dir():
             return []
 
-        drafts = []
+        drafts: list[dict[str, Any]] = []
         for entry in self._drafts_root.iterdir():
             if not entry.is_dir():
                 continue
@@ -93,9 +94,9 @@ class DraftToolpackCreator:
         return f"draft_{timestamp}_{random_part}"
 
     @staticmethod
-    def _build_actions(session: CaptureSession) -> list[dict]:
+    def _build_actions(session: CaptureSession) -> list[dict[str, Any]]:
         seen: set[tuple[str, str]] = set()
-        actions: list[dict] = []
+        actions: list[dict[str, Any]] = []
 
         for ex in session.exchanges:
             key = (ex.method.value, ex.path)

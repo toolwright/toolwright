@@ -6,12 +6,9 @@ maximum size via the TOOLWRIGHT_MAX_RESPONSE_BYTES setting.
 
 from __future__ import annotations
 
-import os
-
 import pytest
 
 from toolwright.models.decision import ReasonCode
-
 
 # ---------------------------------------------------------------------------
 # Tests: ReasonCode for oversized responses

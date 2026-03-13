@@ -1,8 +1,6 @@
 """Tests for overlay mode data models."""
 
-from pathlib import Path
 
-import pytest
 
 
 class TestTargetType:

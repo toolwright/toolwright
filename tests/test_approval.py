@@ -8,9 +8,9 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.helpers import write_demo_toolpack
 from toolwright.core.approval import ApprovalStatus, LockfileManager, ToolApproval
 from toolwright.core.approval.snapshot import materialize_snapshot
-from tests.helpers import write_demo_toolpack
 
 
 class TestToolApproval:

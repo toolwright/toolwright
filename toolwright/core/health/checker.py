@@ -11,6 +11,7 @@ import asyncio
 import re
 import time
 from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -78,7 +79,7 @@ class HealthChecker:
 
     # -- Public API --------------------------------------------------------
 
-    async def check_tool(self, action: dict) -> HealthResult:
+    async def check_tool(self, action: dict[str, Any]) -> HealthResult:
         """Probe a single tool's endpoint.
 
         Args:
@@ -124,7 +125,10 @@ class HealthChecker:
             response_time_ms=response_time_ms,
         )
 
-    async def check_all(self, actions: list[dict]) -> list[HealthResult]:
+    async def check_all(
+        self,
+        actions: list[dict[str, Any]],
+    ) -> list[HealthResult]:
         """Probe multiple endpoints concurrently with rate limiting.
 
         Args:
@@ -138,7 +142,7 @@ class HealthChecker:
 
         semaphore = asyncio.Semaphore(self.max_concurrent)
 
-        async def bounded_check(action: dict) -> HealthResult:
+        async def bounded_check(action: dict[str, Any]) -> HealthResult:
             async with semaphore:
                 return await self.check_tool(action)
 
@@ -185,7 +189,7 @@ class HealthChecker:
             return "HEAD"
         return "OPTIONS"
 
-    def _build_probe_url(self, action: dict) -> str:
+    def _build_probe_url(self, action: dict[str, Any]) -> str:
         """Build URL for probe, replacing path params with placeholder."""
         host = action.get("host", "localhost")
         path = action.get("path", "/")

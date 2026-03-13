@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from toolwright.ui.views.next_steps import (
     NextStepsInput,
     NextStepsOutput,

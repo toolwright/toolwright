@@ -149,7 +149,7 @@ class RequestPipeline:
         input_schema = action.get("input_schema")
         if input_schema and isinstance(input_schema, dict):
             try:
-                import jsonschema
+                import jsonschema  # type: ignore[import-untyped]
 
                 jsonschema.validate(instance=ctx.call_args, schema=input_schema)
             except jsonschema.ValidationError as ve:
@@ -295,6 +295,8 @@ class RequestPipeline:
         effective_args: dict[str, Any],
         name: str,
     ) -> PipelineResult | None:
+        assert self.rule_engine is not None
+        assert self.session_history is not None
         rule_eval = self.rule_engine.evaluate(
             tool_id, method, host, effective_args, self.session_history
         )
@@ -319,6 +321,7 @@ class RequestPipeline:
     def _check_circuit_breaker(
         self, tool_id: str, name: str
     ) -> PipelineResult | None:
+        assert self.circuit_breaker is not None
         cb_allowed, cb_reason = self.circuit_breaker.should_allow(tool_id)
         if not cb_allowed:
             self._emit_trace(

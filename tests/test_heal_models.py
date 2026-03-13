@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import json
 
-import pytest
-
 
 class TestFieldType:
     def test_all_eight_values_exist(self):

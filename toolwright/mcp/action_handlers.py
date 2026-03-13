@@ -12,7 +12,6 @@ All POST action handlers follow the critical pattern:
 
 from __future__ import annotations
 
-import json
 import logging
 import time
 from typing import Any
@@ -141,6 +140,7 @@ async def handle_gate_allow(request: Request) -> JSONResponse:
         resolved, _ = await ctx.event_store.resolve_work_item(
             item_id, WorkItemStatus.APPROVED, resolved_by="console", reason="Approved via console"
         )
+        assert resolved is not None
 
         _publish_resolution_event(
             ctx.event_store, "tool_approved", "success",
@@ -184,6 +184,7 @@ async def handle_gate_block(request: Request) -> JSONResponse:
     resolved, _ = await ctx.event_store.resolve_work_item(
         item_id, WorkItemStatus.DENIED, resolved_by="console", reason="Blocked via console"
     )
+    assert resolved is not None
 
     _publish_resolution_event(
         ctx.event_store, "tool_blocked", "warn",
@@ -226,6 +227,7 @@ async def handle_confirm_grant(request: Request) -> JSONResponse:
     resolved, _ = await ctx.event_store.resolve_work_item(
         work_item_id, WorkItemStatus.APPROVED, resolved_by="console", reason="Confirmed via console"
     )
+    assert resolved is not None
 
     tool_id = item.evidence.get("tool_id", item.subject_label)
     _publish_resolution_event(
@@ -266,6 +268,7 @@ async def handle_confirm_deny(request: Request) -> JSONResponse:
     resolved, _ = await ctx.event_store.resolve_work_item(
         work_item_id, WorkItemStatus.DENIED, resolved_by="console", reason="Denied via console"
     )
+    assert resolved is not None
 
     tool_id = item.evidence.get("tool_id", item.subject_label)
     _publish_resolution_event(
@@ -306,6 +309,7 @@ async def handle_kill_tool(request: Request) -> JSONResponse:
     resolved, _ = await ctx.event_store.resolve_work_item(
         work_item_id, WorkItemStatus.DISMISSED, resolved_by="console", reason="Killed via console"
     )
+    assert resolved is not None
 
     _publish_resolution_event(
         ctx.event_store, "breaker_killed", "error",
@@ -345,6 +349,7 @@ async def handle_enable_tool(request: Request) -> JSONResponse:
     resolved, _ = await ctx.event_store.resolve_work_item(
         work_item_id, WorkItemStatus.APPROVED, resolved_by="console", reason="Re-enabled via console"
     )
+    assert resolved is not None
 
     _publish_resolution_event(
         ctx.event_store, "breaker_enabled", "success",
@@ -386,6 +391,7 @@ async def handle_rule_activate(request: Request) -> JSONResponse:
     resolved, _ = await ctx.event_store.resolve_work_item(
         work_item_id, WorkItemStatus.APPLIED, resolved_by="console", reason="Rule activated via console"
     )
+    assert resolved is not None
 
     _publish_resolution_event(
         ctx.event_store, "rule_activated", "success",
@@ -427,6 +433,7 @@ async def handle_rule_dismiss(request: Request) -> JSONResponse:
     resolved, _ = await ctx.event_store.resolve_work_item(
         work_item_id, WorkItemStatus.DISMISSED, resolved_by="console", reason="Rule dismissed via console"
     )
+    assert resolved is not None
 
     _publish_resolution_event(
         ctx.event_store, "rule_dismissed", "warn",
@@ -459,6 +466,7 @@ async def handle_repair_apply(request: Request) -> JSONResponse:
     resolved, _ = await ctx.event_store.resolve_work_item(
         work_item_id, WorkItemStatus.APPLIED, resolved_by="console", reason="Repair applied via console"
     )
+    assert resolved is not None
 
     _publish_resolution_event(
         ctx.event_store, "repair_applied", "success",
@@ -490,6 +498,7 @@ async def handle_repair_dismiss(request: Request) -> JSONResponse:
     resolved, _ = await ctx.event_store.resolve_work_item(
         work_item_id, WorkItemStatus.DISMISSED, resolved_by="console", reason="Repair dismissed via console"
     )
+    assert resolved is not None
 
     _publish_resolution_event(
         ctx.event_store, "repair_dismissed", "warn",
@@ -530,6 +539,6 @@ async def handle_get_work_item(request: Request) -> JSONResponse:
 # ---------------------------------------------------------------------------
 
 
-async def handle_status_counts(request: Request) -> JSONResponse:
+async def handle_status_counts(_request: Request) -> JSONResponse:
     ctx = _get_ctx()
     return JSONResponse(ctx.event_store.work_item_counts())

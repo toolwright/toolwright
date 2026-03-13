@@ -7,6 +7,7 @@ whether an API endpoint's response shape has changed.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -22,7 +23,7 @@ class ProbeTemplate:
     query_params: dict[str, str] = field(default_factory=dict)
     headers: dict[str, str] = field(default_factory=dict)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "method": self.method,
             "path": self.path,
@@ -31,10 +32,10 @@ class ProbeTemplate:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> ProbeTemplate:
+    def from_dict(cls, data: dict[str, Any]) -> ProbeTemplate:
         return cls(
             method=data["method"],
             path=data["path"],
-            query_params=data.get("query_params", {}),
-            headers=data.get("headers", {}),
+            query_params=dict(data.get("query_params", {})),
+            headers=dict(data.get("headers", {})),
         )

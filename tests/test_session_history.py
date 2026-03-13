@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import time
-
 from toolwright.core.correct.session import SessionHistory
 
 

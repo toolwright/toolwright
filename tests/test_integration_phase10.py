@@ -5,8 +5,6 @@ from __future__ import annotations
 import tarfile
 from pathlib import Path
 
-import pytest
-
 from tests.helpers import write_demo_toolpack
 
 # ---------------------------------------------------------------------------

@@ -23,7 +23,12 @@ from typing import Any, TextIO
 
 from toolwright.core.approval.lockfile import ToolApproval
 from toolwright.ui.console import err_console, get_symbols
-from toolwright.ui.discovery import find_lockfiles, find_toolpacks
+from toolwright.ui.discovery import (
+    find_lockfiles,
+    find_toolpacks,
+    lockfile_labels,
+    toolpack_labels,
+)
 from toolwright.ui.echo import echo_plan, echo_summary
 from toolwright.ui.ops import load_lockfile_tools
 from toolwright.ui.prompts import confirm, input_text, select_one
@@ -219,10 +224,11 @@ def _stage_capture(
         ):
             if len(existing) == 1:
                 tp = str(existing[0])
-                con.print(f"  {sym.ok} Using: [bold]{tp}[/bold]")
+                con.print(f"  {sym.ok} Using: [bold]{toolpack_labels(existing, root=root)[0]}[/bold]")
                 return tp
             return select_one(
                 [str(p) for p in existing],
+                labels=toolpack_labels(existing, root=root),
                 prompt="Select toolpack",
                 console=con,
                 input_stream=input_stream,
@@ -313,6 +319,7 @@ def _stage_review(
     if len(lockfiles) > 1:
         lockfile_path = select_one(
             [str(p) for p in lockfiles],
+            labels=lockfile_labels(lockfiles, root=root),
             prompt="Select lockfile to review",
             console=con,
             input_stream=input_stream,

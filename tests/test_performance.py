@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
-from uuid import uuid4
 
 import pytest
 
@@ -16,9 +15,9 @@ from toolwright.core.correct.session import SessionHistory
 from toolwright.core.kill.breaker import CircuitBreakerRegistry
 from toolwright.models.rule import (
     BehavioralRule,
+    ParameterConfig,
     PrerequisiteConfig,
     ProhibitionConfig,
-    ParameterConfig,
     RuleKind,
     SessionRateConfig,
 )

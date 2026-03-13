@@ -152,7 +152,7 @@ check "pending lockfile exists" test -f "$PENDING_LOCK"
 log "Step 3: Gate — approve all tools"
 
 GATE_OUTPUT=$(TOOLWRIGHT_NON_INTERACTIVE=1 toolwright --no-interactive --root "$WORKDIR" \
-  gate allow --all --lockfile "$PENDING_LOCK" 2>&1)
+  gate allow --all --yes --lockfile "$PENDING_LOCK" 2>&1)
 echo "  $GATE_OUTPUT"
 
 APPROVED_LOCK="$TOOLPACK_DIR/lockfile/toolwright.lock.yaml"

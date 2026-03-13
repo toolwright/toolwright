@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from toolwright.models.endpoint import AuthType, Endpoint
 from tests.helpers import write_demo_artifacts, write_demo_toolpack
+from toolwright.models.endpoint import AuthType, Endpoint
 
 
 @pytest.fixture

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import Any
 
 import click
 import yaml
@@ -45,9 +46,10 @@ def resolve_toolpack_path(
     resolved_root = root if root is not None else DEFAULT_ROOT
     config_path = resolved_root / "config.yaml"
     if config_path.exists():
-        cfg = yaml.safe_load(config_path.read_text()) or {}
+        cfg_raw = yaml.safe_load(config_path.read_text()) or {}
+        cfg: dict[str, Any] = cfg_raw if isinstance(cfg_raw, dict) else {}
         default = cfg.get("default_toolpack")
-        if default:
+        if isinstance(default, str) and default:
             p = resolved_root / "toolpacks" / default / "toolpack.yaml"
             if p.exists():
                 return p

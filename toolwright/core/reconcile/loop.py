@@ -51,7 +51,7 @@ class ReconcileLoop:
         self,
         *,
         project_root: str,
-        actions: list[dict],
+        actions: list[dict[str, Any]],
         risk_tiers: dict[str, str],
         config: WatchConfig | None = None,
         checker: HealthChecker | None = None,
@@ -72,12 +72,12 @@ class ReconcileLoop:
         self._differ = DriftDiffer()
 
         # Build a lookup: tool_id -> action dict (for host extraction)
-        self._action_by_tool: dict[str, dict] = {
+        self._action_by_tool: dict[str, dict[str, Any]] = {
             a.get("name", ""): a for a in actions
         }
 
         self._state = self._load_state()
-        self._task: asyncio.Task | None = None
+        self._task: asyncio.Task[None] | None = None
         self._stop_event = asyncio.Event()
 
     # -- Public API --------------------------------------------------------

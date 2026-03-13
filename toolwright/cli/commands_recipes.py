@@ -9,12 +9,12 @@ def register_recipes_commands(*, cli: click.Group) -> None:
     """Register the recipes command group."""
 
     @cli.group()
-    def recipes():
+    def recipes() -> None:
         """Browse and use bundled API recipes."""
         pass
 
     @recipes.command("list")
-    def recipes_list():
+    def recipes_list() -> None:
         """List available API recipes."""
         from toolwright.recipes.loader import list_recipes
 
@@ -24,7 +24,7 @@ def register_recipes_commands(*, cli: click.Group) -> None:
 
     @recipes.command("show")
     @click.argument("name")
-    def recipes_show(name: str):
+    def recipes_show(name: str) -> None:
         """Show details of an API recipe."""
         from toolwright.recipes.loader import load_recipe
 

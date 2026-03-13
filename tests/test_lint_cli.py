@@ -8,8 +8,8 @@ from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
-from toolwright.cli.main import cli
 from tests.helpers import write_demo_toolpack
+from toolwright.cli.main import cli
 
 
 def _write_json(path: Path, payload: dict) -> None:  # noqa: ANN001

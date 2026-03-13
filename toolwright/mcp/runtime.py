@@ -411,18 +411,33 @@ def run_mcp_serve(
     except (json.JSONDecodeError, OSError):
         pass
     _tool_actions = _tools_manifest.get("actions", [])
+    _total_compiled = len(_tool_actions)
+
+    # Pre-filter by scope for accurate startup card counts
+    _display_actions = _tool_actions
+    if scope:
+        _groups_file = resolved_tools_path.parent / "groups.json"
+        if _groups_file.exists():
+            try:
+                from toolwright.core.compile.grouper import ToolGroupIndex, filter_by_scope
+
+                _groups_data = json.loads(_groups_file.read_text())
+                _groups_index = ToolGroupIndex.from_dict(_groups_data)
+                _display_actions = filter_by_scope(_tool_actions, scope, _groups_index)
+            except (json.JSONDecodeError, OSError, ValueError, ImportError):
+                pass  # Fall back to showing all tools
 
     _tool_categories: dict[str, int] = {}
     _risk_counts: dict[str, int] = {}
-    for _action in _tool_actions:
+    for _action in _display_actions:
         method = _action.get("method", "GET").upper()
         cat = "read" if method == "GET" else "write" if method in ("POST", "PUT", "PATCH") else "admin"
         _tool_categories[cat] = _tool_categories.get(cat, 0) + 1
         tier = _action.get("risk_tier", "low")
         _risk_counts[tier] = _risk_counts.get(tier, 0) + 1
 
-    _total_tokens = len(_tool_actions) * 500  # rough estimate
-    _tokens_per = 500 if _tool_actions else 0
+    _total_tokens = len(_display_actions) * 500  # rough estimate
+    _tokens_per = 500 if _display_actions else 0
 
     # Build governance dict
     _governance: dict[str, str | None] = {
@@ -459,6 +474,7 @@ def run_mcp_serve(
         tokens_per_tool=_tokens_per,
         auto_heal=auto_heal_override if watch else None,
         scope_info=scope,
+        total_compiled=_total_compiled if scope else None,
         governance=_governance,
     )
     click.echo(card, err=True)

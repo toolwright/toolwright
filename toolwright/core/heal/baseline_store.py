@@ -30,6 +30,7 @@ import shutil
 import time
 import uuid
 from pathlib import Path
+from typing import Any
 
 from toolwright.models.heal import InferredSchema, ResponseSample
 
@@ -236,12 +237,14 @@ class BaselineStore:
         meta_path = tool_dir / "variant_meta.json"
 
         # Load existing
-        meta: dict = {"variants": []}
+        meta: dict[str, Any] = {"variants": []}
         if meta_path.exists():
             with contextlib.suppress(json.JSONDecodeError):
-                meta = json.loads(meta_path.read_text())
+                loaded = json.loads(meta_path.read_text())
+                if isinstance(loaded, dict):
+                    meta = loaded
 
-        variants: list[dict] = meta.get("variants", [])
+        variants: list[dict[str, Any]] = list(meta.get("variants", []))
 
         # Remove existing entry for this key
         variants = [v for v in variants if v["key"] != variant_key]

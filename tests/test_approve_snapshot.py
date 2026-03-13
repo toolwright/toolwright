@@ -7,11 +7,11 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
+from tests.helpers import load_yaml, write_demo_toolpack
 from toolwright.cli.main import cli
 from toolwright.core.approval import LockfileManager
 from toolwright.core.enforce import ConfirmationStore, DecisionEngine
 from toolwright.models.decision import DecisionContext
-from tests.helpers import load_yaml, write_demo_toolpack
 
 
 def test_approve_materializes_snapshot(tmp_path: Path) -> None:

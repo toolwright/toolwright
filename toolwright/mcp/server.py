@@ -755,6 +755,14 @@ class ToolwrightMCPServer:
                         )
                     self._validate_host_allowlist(next_host, action_host)
                     validate_network_target(next_host, self.allow_private_networks)
+                    # Strip auth headers on cross-host redirects to prevent
+                    # credential leaking to a different domain.
+                    if next_host != target_host:
+                        redirect_headers = dict(kwargs.get("headers", {}))
+                        for hdr in ("Authorization", "authorization",
+                                    "X-Api-Key", "x-api-key"):
+                            redirect_headers.pop(hdr, None)
+                        kwargs = {**kwargs, "headers": redirect_headers}
                     current_url = next_url
                     continue
 

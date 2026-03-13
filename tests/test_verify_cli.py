@@ -7,9 +7,9 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
+from tests.helpers import write_demo_toolpack
 from toolwright.cli.main import cli
 from toolwright.cli.verify import _score_candidate
-from tests.helpers import write_demo_toolpack
 
 
 def test_verify_provenance_generates_report(tmp_path: Path) -> None:

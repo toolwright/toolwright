@@ -10,3 +10,11 @@ from toolwright.ui.views.tables import (  # noqa: F401
     risk_summary_panel,
     tool_approval_table,
 )
+
+__all__ = [
+    "doctor_checklist",
+    "preflight_checklist",
+    "risk_grouped_summary",
+    "risk_summary_panel",
+    "tool_approval_table",
+]

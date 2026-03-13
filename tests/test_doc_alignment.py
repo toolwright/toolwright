@@ -9,12 +9,6 @@ Covers:
 
 from __future__ import annotations
 
-import os
-
-import click.testing
-import pytest
-
-
 # ── #10: mint defaults to interactive (non-headless) ──────────────
 
 

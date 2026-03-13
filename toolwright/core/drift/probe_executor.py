@@ -84,12 +84,15 @@ async def execute_probe(
         headers["Authorization"] = auth_header
 
     # Execute request
-    owns_client = client is None
-    if owns_client:
-        client = httpx.AsyncClient(timeout=timeout)
+    if client is None:
+        owns_client = True
+        http_client: httpx.AsyncClient = httpx.AsyncClient(timeout=timeout)
+    else:
+        owns_client = False
+        http_client = client
 
     try:
-        response = await client.request(
+        response = await http_client.request(
             "GET",
             url,
             headers=headers,
@@ -102,7 +105,7 @@ async def execute_probe(
         return ProbeResult(ok=False, error=f"HTTP error: {exc}")
     finally:
         if owns_client:
-            await client.aclose()
+            await http_client.aclose()
 
     # Check status
     if response.status_code != 200:

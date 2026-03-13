@@ -66,7 +66,7 @@ def run_prove_smoke(
     """Run a small prove-smoke matrix."""
     requested = [item.strip() for item in scenarios.split(",") if item.strip()]
     if not requested:
-        click.echo("Error: --scenarios requires at least one scenario", err=True)
+        click.echo("Error: --smoke-scenarios requires at least one scenario", err=True)
         return 1
 
     workdir = _prepare_out_dir(out_dir=out_dir, keep=keep, prefix="toolwright-prove-smoke-")

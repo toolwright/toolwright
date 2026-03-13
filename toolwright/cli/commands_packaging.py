@@ -43,19 +43,31 @@ Examples:
         show_default=True,
         help="Output format for config snippet",
     )
+    @click.option(
+        "--command",
+        "command_override",
+        default=None,
+        help="Override the toolwright command path (default: 'toolwright')",
+    )
     @click.pass_context
     def config(
         ctx: click.Context,
         toolpack: str | None,
         name: str | None,
         output_format: str,
+        command_override: str | None,
     ) -> None:
         """Print a ready-to-paste MCP client config snippet (Claude, Cursor, Codex)."""
         from toolwright.cli.config import run_config
         from toolwright.utils.resolve import resolve_toolpack_path
 
         resolved = str(resolve_toolpack_path(explicit=toolpack, root=cli_root(ctx)))
-        run_config(toolpack_path=resolved, fmt=output_format, name_override=name)
+        run_config(
+            toolpack_path=resolved,
+            fmt=output_format,
+            name_override=name,
+            command_override=command_override,
+        )
 
     @cli.command()
     @click.argument("toolpack_path", type=click.Path(exists=True))

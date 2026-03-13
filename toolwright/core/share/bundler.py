@@ -18,6 +18,7 @@ import tarfile
 import time
 from io import BytesIO
 from pathlib import Path
+from typing import Any
 
 # Patterns that must never be included in bundles
 _EXCLUDED_PATTERNS = frozenset({
@@ -111,7 +112,7 @@ def _compute_content_hash(toolpack_dir: Path, files: list[Path]) -> str:
     return hasher.hexdigest()
 
 
-def _sign_content(content_hash: str) -> dict:
+def _sign_content(content_hash: str) -> dict[str, str]:
     """Create a signature record for the content hash.
 
     Uses a simple HMAC-SHA256 signature for portability.
@@ -126,7 +127,11 @@ def _sign_content(content_hash: str) -> dict:
     }
 
 
-def _add_json_to_tar(tf: tarfile.TarFile, name: str, data: dict) -> None:
+def _add_json_to_tar(
+    tf: tarfile.TarFile,
+    name: str,
+    data: dict[str, Any],
+) -> None:
     """Add a JSON object as a file in the tar archive."""
     content = json.dumps(data, indent=2).encode()
     info = tarfile.TarInfo(name=name)

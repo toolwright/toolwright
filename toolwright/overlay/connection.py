@@ -83,7 +83,7 @@ class WrappedConnection:
         if self._session is None:
             raise RuntimeError("Connection not connected")
         result = await self._session.list_tools()
-        return result.tools
+        return list(result.tools)
 
     async def call_tool(self, name: str, arguments: dict[str, Any]) -> Any:
         """Call a tool on the upstream server, bounded by semaphore."""

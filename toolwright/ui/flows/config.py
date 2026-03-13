@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from toolwright.ui.console import err_console
-from toolwright.ui.discovery import find_toolpacks
+from toolwright.ui.discovery import find_toolpacks, toolpack_labels
 from toolwright.ui.echo import echo_plan, echo_summary
 from toolwright.ui.prompts import select_one
 
@@ -60,6 +60,7 @@ def config_flow(
         else:
             toolpack_path = select_one(
                 [str(p) for p in candidates],
+                labels=toolpack_labels(candidates, root=root),
                 prompt="Select toolpack",
                 console=con,
             )

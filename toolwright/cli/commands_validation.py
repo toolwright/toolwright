@@ -242,9 +242,9 @@ Examples:
     @cli.command(hidden=True)
     @click.option(
         "--toolpack",
-        required=True,
+        required=False,
         type=click.Path(exists=True),
-        help="Path to toolpack.yaml",
+        help="Path to toolpack.yaml (auto-detected if omitted).",
     )
     @click.option(
         "--runtime",
@@ -254,11 +254,23 @@ Examples:
         help="Runtime to validate",
     )
     @click.pass_context
-    def doctor(ctx: click.Context, toolpack: str, runtime: str) -> None:
+    def doctor(ctx: click.Context, toolpack: str | None, runtime: str) -> None:
         """Validate toolpack readiness for execution."""
         from click.core import ParameterSource
 
         from toolwright.cli.doctor import run_doctor
+
+        # Auto-discover toolpack if not specified
+        if toolpack is None:
+            from toolwright.ui.discovery import find_toolpacks
+
+            root = Path(ctx.obj.get("root", ".toolwright"))
+            candidates = find_toolpacks(root)
+            if not candidates:
+                raise click.ClickException(
+                    "No toolpacks found. Run 'toolwright create' or 'toolwright mint' first."
+                )
+            toolpack = str(candidates[0])
 
         runtime_source = ctx.get_parameter_source("runtime")
         require_local_mcp = (

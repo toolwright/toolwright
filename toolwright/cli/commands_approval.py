@@ -4,13 +4,21 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
+from typing import TypedDict
 
 import click
 
 from toolwright.utils.state import resolve_root
 
 
-def _resolve_gate_paths(toolpack_path: str) -> dict[str, str | None]:
+class GatePaths(TypedDict):
+    tools: str
+    policy: str | None
+    toolsets: str | None
+    lockfile: str
+
+
+def _resolve_gate_paths(toolpack_path: str) -> GatePaths:
     """Resolve gate paths (tools, lockfile, policy, toolsets) from a toolpack.yaml."""
     import sys
 
@@ -158,11 +166,11 @@ def register_approval_commands(
                 resolve_toolpack_path(root=ctx.obj.get("root"))
 
         if toolpack:
-            resolved = _resolve_gate_paths(toolpack)
-            tools = resolved["tools"]  # type: ignore[assignment]
-            policy = policy or resolved["policy"]
-            toolsets = toolsets or resolved["toolsets"]
-            lockfile = lockfile or resolved["lockfile"]
+            gate_paths = _resolve_gate_paths(toolpack)
+            tools = gate_paths["tools"]
+            policy = policy or gate_paths["policy"]
+            toolsets = toolsets or gate_paths["toolsets"]
+            lockfile = lockfile or gate_paths["lockfile"]
 
         if prune_removed and not yes:
             click.echo("This will remove approval records for tools no longer in the manifest.")
@@ -172,11 +180,12 @@ def register_approval_commands(
 
         from toolwright.cli.approve import run_approve_sync
 
+        assert tools is not None
         run_with_lock(
             ctx,
             "gate sync",
             lambda: run_approve_sync(
-                tools_path=tools,  # type: ignore[arg-type]
+                tools_path=tools,
                 policy_path=policy,
                 toolsets_path=toolsets,
                 lockfile_path=lockfile,
@@ -236,10 +245,16 @@ def register_approval_commands(
 
                 try:
                     tp = load_toolpack(resolved_toolpack)
-                    resolved = resolve_toolpack_paths(toolpack=tp, toolpack_path=resolved_toolpack)
-                    groups_path = resolved.groups_path
+                    resolved_paths = resolve_toolpack_paths(
+                        toolpack=tp,
+                        toolpack_path=resolved_toolpack,
+                    )
+                    groups_path = resolved_paths.groups_path
                     if not lockfile:
-                        lockfile = str(resolved.approved_lockfile_path or resolved.pending_lockfile_path)
+                        lockfile = str(
+                            resolved_paths.approved_lockfile_path
+                            or resolved_paths.pending_lockfile_path
+                        )
                 except Exception:
                     pass
 
@@ -304,8 +319,8 @@ def register_approval_commands(
         if not toolpack and not lockfile:
             toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
-            resolved = _resolve_gate_paths(toolpack)
-            lockfile = resolved["lockfile"]
+            gate_paths = _resolve_gate_paths(toolpack)
+            lockfile = gate_paths["lockfile"]
 
         from toolwright.cli.approve import run_approve_list
 

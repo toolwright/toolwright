@@ -17,7 +17,6 @@ from toolwright.core.drift.probe_template import (
 )
 from toolwright.models.probe_template import ProbeTemplate
 
-
 # ---------------------------------------------------------------------------
 # Query parameter sanitization
 # ---------------------------------------------------------------------------
@@ -357,10 +356,8 @@ class TestCanonicalTemplateDeterministic:
         )
 
         templates = [t1, t2]
-        score_fn = lambda t: (
-            len(t.query_params),
-            json.dumps(sorted(t.query_params.items())),
-        )
+        def score_fn(t):
+            return len(t.query_params), json.dumps(sorted(t.query_params.items()))
 
         result1 = max(templates, key=score_fn)
         result2 = max(templates, key=score_fn)

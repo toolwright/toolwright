@@ -2,12 +2,9 @@
 
 from __future__ import annotations
 
-import pytest
-
 from toolwright.core.health.checker import FailureClass, HealthResult
-from toolwright.models.drift import DriftReport, DriftType
+from toolwright.models.drift import DriftReport
 from toolwright.models.endpoint import AuthType, Endpoint, Parameter, ParameterLocation
-
 
 # ---------------------------------------------------------------------------
 # Helpers

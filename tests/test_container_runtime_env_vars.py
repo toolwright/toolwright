@@ -8,10 +8,10 @@ from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
+from tests.helpers import write_demo_toolpack
 from toolwright.cli.main import cli
 from toolwright.core.runtime.container import emit_container_runtime
 from toolwright.core.toolpack import ToolpackContainerRuntime
-from tests.helpers import write_demo_toolpack
 
 
 def test_toolpack_container_default_env_allowlist_uses_toolwright_prefix() -> None:

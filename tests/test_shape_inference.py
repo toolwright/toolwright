@@ -11,12 +11,10 @@ import logging
 from toolwright.core.drift.shape_inference import (
     MAX_ARRAY_ITEMS_PER_SAMPLE,
     MAX_WALK_DEPTH,
-    InferenceMetadata,
     infer_shape,
     merge_observation,
 )
 from toolwright.models.shape import ShapeModel
-
 
 # ---------------------------------------------------------------------------
 # infer_shape — structural inference

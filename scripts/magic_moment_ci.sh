@@ -247,7 +247,7 @@ BLOCKED_PAYLOAD="$(gateway_execute "$TOOLS_BASE" "$TOOLSETS_BASE" "$POLICY_BASE"
 assert_reason "$BLOCKED_PAYLOAD" "denied_not_approved"
 
 log "4) Approve via lockfile"
-"$AF_BIN" gate allow --all --lockfile toolwright.lock.yaml --by "ci@toolwright"
+"$AF_BIN" gate allow --all --yes --lockfile toolwright.lock.yaml --by "ci@toolwright"
 
 # Build minimal toolpack structure for snapshot
 TOOLPACK_DIR="$WORKDIR/.toolwright/toolpack_ci"
@@ -367,7 +367,7 @@ cp "$TOOLSETS_DRIFT" "$TOOLPACK_DIR/artifact/toolsets.yaml"
 cp "$POLICY_DRIFT" "$TOOLPACK_DIR/artifact/policy.yaml"
 cp toolwright.lock.yaml "$TOOLPACK_DIR/lockfile/toolwright.lock.yaml"
 
-"$AF_BIN" gate allow --all --lockfile "$TOOLPACK_DIR/lockfile/toolwright.lock.yaml" --by "ci@toolwright"
+"$AF_BIN" gate allow --all --yes --lockfile "$TOOLPACK_DIR/lockfile/toolwright.lock.yaml" --by "ci@toolwright"
 "$AF_BIN" gate snapshot --lockfile "$TOOLPACK_DIR/lockfile/toolwright.lock.yaml"
 "$AF_BIN" gate check --lockfile "$TOOLPACK_DIR/lockfile/toolwright.lock.yaml"
 

@@ -11,7 +11,6 @@ can trigger and complete the confirmation flow:
 from __future__ import annotations
 
 import json
-import signal
 import subprocess
 import threading
 from pathlib import Path

@@ -14,12 +14,19 @@ from toolwright.models.rule import BehavioralRule, RuleStatus
 _TEMPLATES_DIR = Path(__file__).parent / "templates"
 
 
+def _load_yaml_dict(path: Path) -> dict[str, Any]:
+    with open(path, encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+    if not isinstance(data, dict):
+        raise ValueError(f"Rule template must contain a mapping: {path}")
+    return dict(data)
+
+
 def list_templates() -> list[dict[str, Any]]:
     """Return metadata for all bundled templates."""
-    results = []
+    results: list[dict[str, Any]] = []
     for path in sorted(_TEMPLATES_DIR.glob("*.yaml")):
-        with open(path) as f:
-            data = yaml.safe_load(f)
+        data = _load_yaml_dict(path)
         results.append({
             "name": data["name"],
             "description": data.get("description", ""),
@@ -37,8 +44,7 @@ def load_template(name: str) -> dict[str, Any]:
             f"Unknown rule template: {name}. "
             f"Available: {', '.join(available)}"
         )
-    with open(path) as f:
-        return yaml.safe_load(f)
+    return _load_yaml_dict(path)
 
 
 def apply_template(

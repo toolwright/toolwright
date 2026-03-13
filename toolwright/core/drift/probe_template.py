@@ -260,13 +260,11 @@ def _looks_like_token(value: str) -> bool:
     if len(value) > 64 and re.match(r"^[A-Za-z0-9+/=-]+$", value):
         return True
     # UUIDs
-    if re.match(
+    return re.match(
         r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
         value,
         re.I,
-    ):
-        return True
-    return False
+    ) is not None
 
 
 def _looks_like_secret_value(value: str) -> bool:
@@ -281,6 +279,4 @@ def _looks_like_secret_value(value: str) -> bool:
         if all(re.match(r"^[A-Za-z0-9_-]+=*$", p) for p in parts if p):
             return True
     # Long base64-ish strings (likely tokens/keys)
-    if len(value) > 64 and re.match(r"^[A-Za-z0-9+/=-]+$", value):
-        return True
-    return False
+    return len(value) > 64 and re.match(r"^[A-Za-z0-9+/=-]+$", value) is not None

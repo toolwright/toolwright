@@ -16,8 +16,9 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from toolwright.core.approval import ApprovalStatus, LockfileManager
 from toolwright.core.audit import AuditLogger, MemoryAuditBackend
@@ -34,6 +35,11 @@ from toolwright.mcp._compat import (
 from toolwright.utils.schema_version import resolve_schema_version
 
 logger = logging.getLogger(__name__)
+
+MetaResponse = list[
+    types.TextContent | types.ImageContent | types.EmbeddedResource
+]
+MetaHandler = Callable[[], Awaitable[MetaResponse]]
 
 
 class ToolwrightMetaMCPServer:
@@ -452,11 +458,11 @@ class ToolwrightMetaMCPServer:
 
     async def _handle_call_tool(
         self, name: str, arguments: dict[str, Any] | None
-    ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+    ) -> MetaResponse:
         """Dispatch a meta tool call."""
         arguments = arguments or {}
 
-        dispatch: dict[str, Any] = {
+        dispatch: dict[str, MetaHandler] = {
             "toolwright_list_actions": lambda: self._list_actions(arguments),
             "toolwright_check_policy": lambda: self._check_policy(arguments),
             "toolwright_get_approval_status": lambda: self._get_approval_status(arguments),
@@ -1111,23 +1117,42 @@ class ToolwrightMetaMCPServer:
 
         from uuid import uuid4
 
-        from toolwright.models.rule import BehavioralRule, RuleKind, RuleStatus
+        from toolwright.models.rule import (
+            ApprovalConfig,
+            BehavioralRule,
+            ParameterConfig,
+            PrerequisiteConfig,
+            ProhibitionConfig,
+            RuleConfig,
+            RuleKind,
+            RuleStatus,
+            SequenceConfig,
+            SessionRateConfig,
+        )
 
         target = arguments.get("target_tool_id", "")
         description = arguments.get("description", "")
 
         # Build config based on kind
-        config: dict[str, Any] = {}
+        config: RuleConfig
         if kind == "prerequisite":
-            config["required_tool_ids"] = arguments.get("required_tool_ids", [])
+            config = PrerequisiteConfig(
+                required_tool_ids=arguments.get("required_tool_ids", [])
+            )
         elif kind == "prohibition":
-            config["always"] = True
+            config = ProhibitionConfig(always=True)
         elif kind == "parameter":
-            config["param_name"] = arguments.get("param_name", "")
+            config = ParameterConfig(
+                param_name=arguments.get("param_name", "")
+            )
         elif kind == "sequence":
-            config["required_order"] = arguments.get("required_order", [])
+            config = SequenceConfig(
+                required_order=arguments.get("required_order", [])
+            )
         elif kind == "rate":
-            config["max_calls"] = arguments.get("max_calls", 10)
+            config = SessionRateConfig(max_calls=arguments.get("max_calls", 10))
+        else:
+            config = ApprovalConfig(approval_message="Approval required.")
 
         rule = BehavioralRule(
             rule_id=str(uuid4()),
@@ -1243,6 +1268,7 @@ class ToolwrightMetaMCPServer:
         from toolwright.models.rule import (
             _KIND_TO_CONFIG,
             BehavioralRule,
+            RuleConfig,
             RuleKind,
             RuleStatus,
         )
@@ -1257,7 +1283,7 @@ class ToolwrightMetaMCPServer:
                     type="text",
                     text=f"Error: Unknown rule kind: {kind}",
                 )]
-            parsed_config = config_cls.model_validate(config)
+            parsed_config = cast(RuleConfig, config_cls.model_validate(config))
         except Exception as e:
             return [types.TextContent(
                 type="text",

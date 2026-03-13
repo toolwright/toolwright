@@ -1,6 +1,5 @@
 """Tests for source locator - finding editable source for HEAL."""
 
-import pytest
 
 
 class TestSourceLocator:

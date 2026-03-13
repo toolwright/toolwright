@@ -202,7 +202,7 @@ def _show_help_all(
 )
 @click.pass_context
 def cli(ctx: click.Context, verbose: bool, root: Path, no_interactive: bool) -> None:
-    """Trusted MCP supply chain for AI tools with fail-closed runtime and bounded self-healing."""
+    """Governed AI tool runtime with fail-closed enforcement and bounded self-healing."""
     from toolwright.ui.policy import should_interact
 
     ctx.ensure_object(dict)

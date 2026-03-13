@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from toolwright.core.heal.sample_factory import create_response_sample
 from toolwright.models.heal import ResponseSample
 
@@ -172,6 +174,3 @@ class TestInferSchema:
 
         with pytest.raises(ValueError, match="at least one sample"):
             infer_schema("t", "t:default", [])
-
-
-import pytest

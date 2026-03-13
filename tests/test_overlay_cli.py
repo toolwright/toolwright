@@ -2,8 +2,6 @@
 
 from click.testing import CliRunner
 
-import pytest
-
 
 class TestWrapCommandParsing:
     def test_wrap_help(self):

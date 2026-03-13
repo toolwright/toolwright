@@ -89,22 +89,18 @@ def register_build_commands(
 
         For 'import': SOURCE is the path to a HAR, OTEL, or OpenAPI file.
         For 'record': SOURCE is the starting URL for browser capture.
+        Record mode supports interactive, timed headless, and scripted automation.
 
         \b
         Examples:
           # Import a HAR file
           toolwright capture import traffic.har -a api.example.com
-
           # Import an OpenAPI spec
           toolwright capture import openapi.yaml -a api.example.com
-
           # Import OpenTelemetry traces
           toolwright capture import traces.json --input-format otel -a api.example.com
-
           # Record traffic interactively with Playwright
           toolwright capture record https://example.com -a api.example.com
-
-        Record mode supports interactive, timed headless, and scripted automation.
         """
         if not allowed_hosts:
             click.echo(

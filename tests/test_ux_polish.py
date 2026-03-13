@@ -18,8 +18,8 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from toolwright.cli.main import cli
 from tests.helpers import write_demo_toolpack
+from toolwright.cli.main import cli
 
 # --- 1. init next steps should tell user mint prints the exact commands ---
 
@@ -347,11 +347,10 @@ def test_serve_pending_lockfile_no_stack_trace(tmp_path: Path) -> None:
 def test_serve_mismatched_lockfile_no_stack_trace(tmp_path: Path) -> None:
     """serve with lockfile synced against different tools.json should not stack trace (F-007)."""
     toolpack_file = write_demo_toolpack(tmp_path)
-    tp_dir = toolpack_file.parent
 
     # Create a lockfile synced against DIFFERENT tools (wrong tool names)
     import json
-    import yaml
+
 
     different_tools = {
         "version": "1.0.0",

@@ -8,16 +8,34 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 import click
 
 from toolwright.core.correct.engine import RuleEngine
-from toolwright.models.rule import BehavioralRule, RuleKind, RuleStatus
+from toolwright.models.rule import (
+    ApprovalConfig,
+    BehavioralRule,
+    ParameterConfig,
+    PrerequisiteConfig,
+    ProhibitionConfig,
+    RuleConfig,
+    RuleKind,
+    RuleStatus,
+    SequenceConfig,
+    SessionRateConfig,
+)
 
 
 def _default_rules_path() -> str:
-    return str(Path(".toolwright") / "rules.json")
+    """Auto-discover rules from toolpack directory, falling back to global."""
+    root = Path(".toolwright")
+    # Check for rules.json inside any toolpack directory
+    toolpack_rules = sorted(root.glob("toolpacks/*/rules.json"))
+    if toolpack_rules:
+        return str(toolpack_rules[0])
+    return str(root / "rules.json")
 
 
 def register_rules_commands(*, cli: click.Group) -> None:
@@ -98,7 +116,7 @@ def register_rules_commands(*, cli: click.Group) -> None:
         all_rules = engine.list_rules()
 
         if kind:
-            all_rules = [r for r in all_rules if r.kind == kind]
+            all_rules = [r for r in all_rules if r.kind.value == kind]
 
         if not all_rules:
             click.echo("No rules configured.")
@@ -300,25 +318,25 @@ def _build_config(
     allowed_values: str | None,
     blocked_values: str | None,
     pattern: str | None,
-) -> dict:
-    """Build the config dict based on rule kind and CLI options."""
+) -> RuleConfig:
+    """Build the config model based on rule kind and CLI options."""
     if kind == RuleKind.PREREQUISITE:
-        return {"required_tool_ids": requires or []}
-    elif kind == RuleKind.PROHIBITION:
-        return {"always": True}
-    elif kind == RuleKind.PARAMETER:
-        config: dict = {"param_name": param_name or ""}
+        return PrerequisiteConfig(required_tool_ids=requires or [])
+    if kind == RuleKind.PROHIBITION:
+        return ProhibitionConfig(always=True)
+    if kind == RuleKind.PARAMETER:
+        config: dict[str, Any] = {"param_name": param_name or ""}
         if allowed_values:
             config["allowed_values"] = [v.strip() for v in allowed_values.split(",")]
         if blocked_values:
             config["blocked_values"] = [v.strip() for v in blocked_values.split(",")]
         if pattern:
             config["pattern"] = pattern
-        return config
-    elif kind == RuleKind.RATE:
-        return {"max_calls": max_calls or 10, "per_tool": True}
-    elif kind == RuleKind.SEQUENCE:
-        return {"required_order": requires or []}
-    elif kind == RuleKind.APPROVAL:
-        return {"approval_message": "Approval required."}
-    return {}
+        return ParameterConfig(**config)
+    if kind == RuleKind.RATE:
+        return SessionRateConfig(max_calls=max_calls or 10, per_tool=True)
+    if kind == RuleKind.SEQUENCE:
+        return SequenceConfig(required_order=requires or [])
+    if kind == RuleKind.APPROVAL:
+        return ApprovalConfig(approval_message="Approval required.")
+    raise ValueError(f"Unsupported rule kind: {kind}")

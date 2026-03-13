@@ -9,10 +9,7 @@ from __future__ import annotations
 import time
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from toolwright.models.reconcile import (
-    EventKind,
     ReconcileState,
     ToolReconcileState,
     ToolStatus,
@@ -44,7 +41,7 @@ class TestRepairRetryBudget:
     def _make_loop(self, tool_state: ToolReconcileState):
         """Create a ReconcileLoop with minimal mocks for repair testing."""
         from toolwright.core.reconcile.loop import ReconcileLoop
-        from toolwright.models.reconcile import AutoHealPolicy, ReconcileState, WatchConfig
+        from toolwright.models.reconcile import AutoHealPolicy, WatchConfig
 
         state = ReconcileState(tools={tool_state.tool_id: tool_state})
         config = WatchConfig(auto_heal=AutoHealPolicy.ALL)
@@ -73,7 +70,7 @@ class TestRepairRetryBudget:
 
         with patch("toolwright.core.reconcile.loop.RepairApplier") as MockApplier:
             MockApplier.return_value.apply_plan.return_value = mock_result
-            from toolwright.models.drift import DriftReport, DriftItem, DriftType, DriftSeverity
+            from toolwright.models.drift import DriftItem, DriftReport, DriftSeverity, DriftType
             drift = DriftReport(
                 id="dr1", total_drifts=1, breaking_count=0, risk_count=0,
                 drifts=[DriftItem(id="d1", type=DriftType.ADDITIVE, severity=DriftSeverity.WARNING, title="t", description="d")],
@@ -100,7 +97,7 @@ class TestRepairRetryBudget:
 
         with patch("toolwright.core.reconcile.loop.RepairApplier") as MockApplier:
             MockApplier.return_value.apply_plan.return_value = mock_result
-            from toolwright.models.drift import DriftReport, DriftItem, DriftType, DriftSeverity
+            from toolwright.models.drift import DriftItem, DriftReport, DriftSeverity, DriftType
             drift = DriftReport(
                 id="dr1", total_drifts=1, breaking_count=0, risk_count=0,
                 drifts=[DriftItem(id="d1", type=DriftType.ADDITIVE, severity=DriftSeverity.WARNING, title="t", description="d")],
@@ -129,7 +126,7 @@ class TestRepairRetryBudget:
 
         with patch("toolwright.core.reconcile.loop.RepairApplier") as MockApplier:
             MockApplier.return_value.apply_plan.return_value = mock_result
-            from toolwright.models.drift import DriftReport, DriftItem, DriftType, DriftSeverity
+            from toolwright.models.drift import DriftItem, DriftReport, DriftSeverity, DriftType
             drift = DriftReport(
                 id="dr1", total_drifts=1, breaking_count=0, risk_count=0,
                 drifts=[DriftItem(id="d1", type=DriftType.ADDITIVE, severity=DriftSeverity.WARNING, title="t", description="d")],
@@ -149,7 +146,7 @@ class TestRepairRetryBudget:
         loop = self._make_loop(ts)
 
         with patch("toolwright.core.reconcile.loop.RepairApplier") as MockApplier:
-            from toolwright.models.drift import DriftReport, DriftItem, DriftType, DriftSeverity
+            from toolwright.models.drift import DriftItem, DriftReport, DriftSeverity, DriftType
             drift = DriftReport(
                 id="dr1", total_drifts=1, breaking_count=0, risk_count=0,
                 drifts=[DriftItem(id="d1", type=DriftType.ADDITIVE, severity=DriftSeverity.WARNING, title="t", description="d")],
@@ -176,7 +173,7 @@ class TestRepairRetryBudget:
 
         with patch("toolwright.core.reconcile.loop.RepairApplier") as MockApplier:
             MockApplier.return_value.apply_plan.return_value = mock_result
-            from toolwright.models.drift import DriftReport, DriftItem, DriftType, DriftSeverity
+            from toolwright.models.drift import DriftItem, DriftReport, DriftSeverity, DriftType
             drift = DriftReport(
                 id="dr1", total_drifts=1, breaking_count=0, risk_count=0,
                 drifts=[DriftItem(id="d1", type=DriftType.ADDITIVE, severity=DriftSeverity.WARNING, title="t", description="d")],
@@ -211,7 +208,7 @@ class TestRepairRetryBudget:
             caplog.at_level(logging.WARNING),
         ):
             MockApplier.return_value.apply_plan.return_value = mock_result
-            from toolwright.models.drift import DriftReport, DriftItem, DriftType, DriftSeverity
+            from toolwright.models.drift import DriftItem, DriftReport, DriftSeverity, DriftType
             drift = DriftReport(
                 id="dr1", total_drifts=1, breaking_count=0, risk_count=0,
                 drifts=[DriftItem(id="d1", type=DriftType.ADDITIVE, severity=DriftSeverity.WARNING, title="t", description="d")],

@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from toolwright.ui.console import err_console, get_symbols
-from toolwright.ui.discovery import find_lockfiles, find_toolpacks
+from toolwright.ui.discovery import find_lockfiles, find_toolpacks, toolpack_labels
 from toolwright.ui.ops import (
     run_doctor_checks,
     run_repair_preflight,
@@ -122,10 +122,11 @@ def repair_flow(
             return
         if len(candidates) == 1:
             toolpack_path = str(candidates[0])
-            con.print(f"  Found toolpack: [bold]{toolpack_path}[/bold]")
+            con.print(f"  Found toolpack: [bold]{toolpack_labels(candidates, root=root)[0]}[/bold]")
         else:
             toolpack_path = select_one(
                 [str(p) for p in candidates],
+                labels=toolpack_labels(candidates, root=root),
                 prompt="Select toolpack to diagnose",
                 console=con,
                 input_stream=input_stream,

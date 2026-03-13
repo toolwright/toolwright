@@ -15,15 +15,17 @@ class TestFormatActionHint:
 
     def test_basic_hint(self) -> None:
         result = _format_action_hint({"a": "approve", "b": "block"})
-        assert "[a]" in result
-        assert "[b]" in result
-        assert "pprove" in result
-        assert "lock" in result
+        plain = result.plain
+        assert "[a]" in plain
+        assert "[b]" in plain
+        assert "pprove" in plain
+        assert "lock" in plain
 
     def test_key_not_matching_label(self) -> None:
         result = _format_action_hint({"y": "why"})
-        assert "[y]" in result
-        assert "why" in result
+        plain = result.plain
+        assert "[y]" in plain
+        assert "why" in plain
 
 
 class TestPromptAction:
@@ -94,6 +96,19 @@ class TestPromptAction:
         )
         output = out.getvalue()
         assert "Choose action" in output
+
+    def test_prints_shortcuts_without_dropping_first_letters(self) -> None:
+        out = io.StringIO()
+        stream = io.StringIO("a\n")
+        prompt_action(
+            {"a": "approve all", "r": "review individually", "s": "skip all"},
+            input_stream=stream,
+            console=Console(file=out, force_terminal=False),
+        )
+        output = out.getvalue()
+        assert "[a]pprove all" in output
+        assert "[r]eview individually" in output
+        assert "[s]kip all" in output
 
     def test_takes_first_char_of_input(self) -> None:
         stream = io.StringIO("approve\n")

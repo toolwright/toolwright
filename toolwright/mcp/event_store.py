@@ -12,14 +12,15 @@ Provides:
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import os
 import threading
 import time
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from toolwright.models.work_item import (
     WorkItem,
@@ -37,10 +38,10 @@ class ConsoleEvent:
     event_type: str
     severity: str  # "info", "warn", "error", "success"
     summary: str
-    detail: Optional[dict[str, Any]] = None
-    tool_id: Optional[str] = None
-    session_id: Optional[str] = None
-    work_item_id: Optional[str] = None
+    detail: dict[str, Any] | None = None
+    tool_id: str | None = None
+    session_id: str | None = None
+    work_item_id: str | None = None
 
 
 class EventStore:
@@ -105,20 +106,16 @@ class EventStore:
             "session_id": event.session_id,
             "work_item_id": event.work_item_id,
         }
-        try:
+        with contextlib.suppress(Exception):
             self._log_handle.write(json.dumps(record) + "\n")
-        except Exception:
-            pass  # Best-effort audit
 
         # Ring buffer
         self._ring.append(event)
 
         # Notify SSE subscribers
         for queue in self._subscribers:
-            try:
+            with contextlib.suppress(asyncio.QueueFull):
                 queue.put_nowait(event)
-            except asyncio.QueueFull:
-                pass
 
     # --- Work Item Management ---
 
@@ -142,7 +139,7 @@ class EventStore:
         self._work_items[item.id] = item
         self._persist_work_item(item)
 
-    def get_work_item(self, item_id: str) -> Optional[WorkItem]:
+    def get_work_item(self, item_id: str) -> WorkItem | None:
         return self._work_items.get(item_id)
 
     async def resolve_work_item(
@@ -151,7 +148,7 @@ class EventStore:
         status: WorkItemStatus,
         resolved_by: str = "console",
         reason: str = "",
-    ) -> tuple[Optional[WorkItem], bool]:
+    ) -> tuple[WorkItem | None, bool]:
         """Transition a work item to a terminal state.
 
         Returns (work_item, is_conflict):
@@ -183,7 +180,7 @@ class EventStore:
             return item, False
 
     def open_work_items(
-        self, kind: Optional[WorkItemKind] = None
+        self, kind: WorkItemKind | None = None
     ) -> list[WorkItem]:
         items = [
             i

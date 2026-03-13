@@ -1,10 +1,10 @@
-"""Keep the hero demo screenplay aligned with the bundled demo fixture."""
+"""Keep the hero demo screenplay aligned with the current demo story."""
 
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 import yaml
 
@@ -53,15 +53,16 @@ def _run_toolwright(cwd: Path, *args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_hero_screenplay_matches_demo_fixture_governance_flow(tmp_path: Path) -> None:
+def test_hero_screenplay_matches_current_demo_story(tmp_path: Path) -> None:
     output_root = tmp_path / "demo"
     lockfile = tmp_path / "hero.lock.yaml"
     confirmation_store = tmp_path / ".toolwright" / "confirmations.db"
     confirmation_store.parent.mkdir(parents=True, exist_ok=True)
 
     screenplay_text = Path("demos/screenplays/hero.yaml").read_text()
-    assert "delete_user" in screenplay_text
-    assert "denied_not_approved" in screenplay_text
+    assert "toolwright create github --no-interactive" in screenplay_text
+    assert "Token: injected at runtime, never in context" in screenplay_text
+    assert "continues operating" in screenplay_text
 
     demo_result = _run_toolwright(tmp_path, "demo", "--generate-only", "--out", str(output_root))
     assert demo_result.returncode == 0, demo_result.stdout + demo_result.stderr

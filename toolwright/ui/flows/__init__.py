@@ -6,16 +6,13 @@ on MissingParameter.  Everything else re-raises Click's normal error.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Protocol
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     pass
 
-
-class InteractiveFlow(Protocol):
-    """Callable signature for interactive flows dispatched on missing params."""
-
-    def __call__(self, *, ctx: Any, missing_param: str | None) -> None: ...
+InteractiveFlow = Callable[..., None]
 
 
 # Populated lazily by each flow module to avoid circular imports.

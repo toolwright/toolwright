@@ -16,11 +16,10 @@ import pytest
 
 from toolwright.core.correct.engine import RuleEngine
 from toolwright.core.correct.session import SessionHistory
-from toolwright.core.health.checker import FailureClass, HealthChecker, HealthResult
-from toolwright.core.kill.breaker import BreakerState, CircuitBreakerRegistry
+from toolwright.core.health.checker import FailureClass, HealthChecker
+from toolwright.core.kill.breaker import CircuitBreakerRegistry
 from toolwright.mcp.meta_server import ToolwrightMetaMCPServer
 from toolwright.models.rule import BehavioralRule, PrerequisiteConfig, RuleKind
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -84,6 +83,7 @@ class TestCorrectPillarE2E:
 
     def test_session_recording(self, tmp_rules: Path):
         """Tool calls are recorded in session history."""
+        _ = tmp_rules
         session = SessionHistory()
         session.record("get_user", "GET", "api.example.com", {"user_id": "123"}, "ok")
 
