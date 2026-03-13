@@ -58,7 +58,7 @@ Every AI agent needs tools. But the way tools connect to APIs today is broken:
 
 Generation is the on-ramp. **Governance is the moat.**
 
-| Concern | Typical MCP server | Toolwright |
+| Concern | Typical AI tools | With Toolwright |
 |---|---|---|
 | Credentials | In config, visible to model | Injected at runtime, never in context |
 | New tools | Available immediately | Gated behind signed lockfile |
@@ -70,10 +70,12 @@ Generation is the on-ramp. **Governance is the moat.**
 ## Install
 
 ```bash
-pip install "toolwright[all]"
+pip install toolwright
 ```
 
-`tw` works as shorthand. For [selective installs](#install-options) see below.
+`tw` works as shorthand. Add extras only when you need them:
+- browser capture: `pip install "toolwright[playwright]"`
+- dashboard UI: `pip install "toolwright[tui]"`
 
 ## Get started in 60 seconds
 
@@ -92,7 +94,7 @@ toolwright config
 
 That's it. GitHub tools — risk-classified, with behavioral rules applied. Your agent can now list repos, create issues, and manage pull requests, all under governance.
 
-> **Too many tools?** Serve a subset: `toolwright serve --scope repos,issues`
+> **Start narrow for Claude/Desktop.** The GitHub recipe produces a large tool surface. If you want a smaller first setup, serve a subset such as `repos,issues`.
 
 ## Works with anything you have
 
@@ -207,7 +209,10 @@ Run `toolwright --help` for the quick reference. Run `toolwright --help-all` for
 ## Install options
 
 ```bash
-pip install "toolwright[all]"             # MCP server + browser capture + TUI
+pip install toolwright                    # core CLI + governed runtime
+pip install "toolwright[playwright]"      # + browser capture
+pip install "toolwright[tui]"             # + dashboard
+pip install "toolwright[all]"             # everything
 python -m playwright install chromium     # for browser capture (use same interpreter)
 ```
 
@@ -215,7 +220,7 @@ Or install only what you need:
 
 ```bash
 pip install toolwright                    # core
-pip install "toolwright[mcp]"             # + MCP server
+pip install "toolwright[mcp]"             # + explicit MCP dependency bundle
 pip install "toolwright[playwright]"      # + browser capture
 pip install "toolwright[tui]"             # + dashboard TUI
 ```

@@ -1,5 +1,7 @@
 # Toolwright Architecture
 
+> **Note:** This is an internal design specification. For user-facing documentation, see the [User Guide](user-guide.md).
+
 Compiler + Lockfile + Verification Contracts + Drift Gates
 Governance for agents, enforced by deterministic build artifacts
 February 2026
@@ -49,10 +51,10 @@ The previous spec centered “Full Meta” and agent-driven discovery.
 That creates the wrong v1 product shape:
 
 * It pushes you toward “agents governing themselves,” which is a security and sales killer.
-* It competes head-on with runtime gateway and governance vendors.
-* It delays the real wedge: deterministic tool supply chain plus outcome verification plus drift gates in CI.
+* It competes head-on with runtime gateway and governance vendors rather than establishing a distinct category.
+* It delays the real wedge: deterministic tool build system plus outcome verification plus drift gates in CI.
 
-This update reframes Toolwright as a **build system** that produces **standard artifacts** (toolpack, lockfile, verification contract, evidence) that runtime layers can enforce. The control plane exists, but it is **human and CI first**, and **never** a channel for agents to gain more power.
+This update reframes Toolwright as a **build system** that produces **standard artifacts** (toolpack, lockfile, verification contract, evidence) that runtime layers can enforce. The architecture is protocol-agnostic; MCP is the current primary delivery mechanism, but the governance artifacts and enforcement model apply regardless of transport. The control plane exists, but it is **human and CI first**, and **never** a channel for agents to gain more power.
 
 ---
 
@@ -84,10 +86,11 @@ By the end of vNext, Toolwright must support:
 
 5. **Runtime parity for enforcement decisions**
 
-* The same policy evaluation and scope enforcement is used by both:
+* The same policy evaluation and scope enforcement is used across all serve modes:
 
-  * MCP serve mode
-  * optional HTTP gateway/proxy mode
+  * MCP (stdio/SSE)
+  * HTTP gateway/proxy
+  * future transport integrations
 
 6. **Safe defaults**
 

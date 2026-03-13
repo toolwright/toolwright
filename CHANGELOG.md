@@ -2,6 +2,15 @@
 
 All notable changes to Toolwright are documented here.
 
+## [1.0.0a2] - 2026-03-09
+
+### Changed
+
+- Replaced obsolete legacy proof references with Toolwright-native `demo` / `demo --smoke` readiness flows.
+- Added real release-gate work toward build, test, lint, type-check, and installed-wheel smoke validation.
+- Aligned public onboarding and publishing docs with the current PyPI-first alpha surface.
+- Tightened source-distribution hygiene to avoid shipping local operational artifacts.
+
 ## [1.0.0a1] - 2026-02-26
 
 ### Added
@@ -63,6 +72,5 @@ All notable changes to Toolwright are documented here.
 
 **Cross-Cutting**
 - Rich terminal UI (TUI)
-- Workflow runner (Tide integration)
 - Status and health monitoring
 - Demo and onboarding flow

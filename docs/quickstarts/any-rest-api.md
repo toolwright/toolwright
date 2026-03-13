@@ -4,7 +4,7 @@ Give Claude access to any REST API through governed MCP tools.
 
 This guide works with any API that uses bearer token or API key authentication. You'll point Toolwright at the API's web interface, browse it to capture traffic, and get a governed MCP server.
 
-> **Guided experience:** `toolwright ship` walks you through each step interactively. This quickstart does it step-by-step so you understand what's happening.
+> **Advanced guided experience:** `toolwright ship` walks through the lifecycle interactively, but the public alpha path is still best understood step-by-step.
 
 > **Check for a recipe first:** Run `toolwright recipes list` to see if a bundled recipe exists for your API. If so, use `toolwright mint --recipe <name>` to pre-fill hosts, headers, and rules.
 
@@ -17,7 +17,7 @@ This guide works with any API that uses bearer token or API key authentication. 
 ## Step 1: Install Toolwright
 
 ```bash
-pip install "toolwright[all]"
+pip install "toolwright[playwright]"
 python -m playwright install chromium    # use the same interpreter you installed with; on some systems use python3
 ```
 
