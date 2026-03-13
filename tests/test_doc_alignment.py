@@ -3,7 +3,7 @@
 Covers:
 - #10: mint defaults to interactive (non-headless) mode
 - #11: mint duration default matches quickstart docs (120s)
-- #9: groups command is in CORE_COMMANDS for discoverability
+- #9: groups command is in OPERATIONS_COMMANDS for discoverability
 - #5: probe shows "configured" when auth env var is already set
 """
 
@@ -58,14 +58,13 @@ def test_mint_default_duration_matches_docs() -> None:
 # ── #9: groups in core commands ───────────────────────────────────
 
 
-def test_groups_in_core_commands() -> None:
-    """groups should be listed in CORE_COMMANDS — it's in the README and
-    both quickstarts but was missing from `toolwright --help`."""
-    from toolwright.cli.main import CORE_COMMANDS
+def test_groups_in_operations_commands() -> None:
+    """groups should be listed in OPERATIONS_COMMANDS — it's a discovery
+    command, not a core daily-use workflow step."""
+    from toolwright.cli.main import OPERATIONS_COMMANDS
 
-    assert "groups" in CORE_COMMANDS, (
-        "groups must be a core command. The README and both quickstarts "
-        "reference `toolwright groups list` as a key workflow step."
+    assert "groups" in OPERATIONS_COMMANDS, (
+        "groups must be an operations command for discoverability."
     )
 
 

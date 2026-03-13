@@ -7,12 +7,12 @@ import json
 import shutil
 import sys
 import tempfile
+from dataclasses import dataclass
 from importlib import resources
 from pathlib import Path
 
 import click
 
-from toolwright.branding import CLI_PRIMARY_COMMAND
 from toolwright.cli.approve import sync_lockfile
 from toolwright.cli.compile import compile_capture_session
 from toolwright.core.capture.har_parser import HARParser
@@ -27,8 +27,21 @@ from toolwright.core.toolpack import (
 from toolwright.storage import Storage
 
 
-def run_demo(*, output_root: str | None, verbose: bool) -> None:
-    """Generate a deterministic offline demo toolpack from bundled fixture data."""
+@dataclass(frozen=True)
+class DemoResult:
+    """Data produced by the demo compilation step."""
+
+    tool_count: int
+    root: Path
+    toolpack_file: Path
+
+
+def run_demo(*, output_root: str | None, verbose: bool, quiet: bool = False) -> DemoResult:
+    """Generate a deterministic offline demo toolpack from bundled fixture data.
+
+    When *quiet* is True, suppresses all stdout output (used by the wow flow
+    which prints its own polished output).
+    """
     root = _resolve_output_root(output_root)
 
     fixture = resources.files("toolwright.assets.demo").joinpath("sample.har")
@@ -42,7 +55,7 @@ def run_demo(*, output_root: str | None, verbose: bool) -> None:
     session = Redactor().redact_session(session)
 
     storage = Storage(base_path=root)
-    capture_path = storage.save_capture(session)
+    storage.save_capture(session)
 
     try:
         compile_result = compile_capture_session(
@@ -79,7 +92,7 @@ def run_demo(*, output_root: str | None, verbose: bool) -> None:
     copied_baseline = artifact_dir / "baseline.json"
 
     pending_lockfile = lockfile_dir / "toolwright.lock.pending.yaml"
-    sync_result = sync_lockfile(
+    sync_lockfile(
         tools_path=str(copied_tools),
         policy_path=str(copied_policy),
         toolsets_path=str(copied_toolsets),
@@ -122,48 +135,29 @@ def run_demo(*, output_root: str | None, verbose: bool) -> None:
         key=lambda a: (a.get("method", ""), a.get("path", "")),
     )
 
+    tool_count = len(actions)
+    result = DemoResult(tool_count=tool_count, root=root, toolpack_file=toolpack_file)
+
+    if not quiet:
+        _print_standalone_output(tool_count=tool_count, actions=actions)
+
+    return result
+
+
+def _print_standalone_output(*, tool_count: int, actions: list[dict]) -> None:  # type: ignore[type-arg]
+    """Print output for --offline / --generate-only mode (no wow flow)."""
     click.echo()
-    click.echo("=" * 60)
-    click.echo("Demo complete")
-    click.echo("=" * 60)
-    click.echo()
-    click.echo(f"{len(actions)} tools compiled from bundled API fixture:")
+    click.echo(f"  Compiled {tool_count} tools from bundled API fixture.")
     click.echo()
     for action in actions:
         m = action.get("method", "?")
         p = action.get("path", "?")
         n = action.get("name", "?")
-        click.echo(f"  {m:6s} {p:30s}  {n}")
+        click.echo(f"    {m:6s} {p:30s}  {n}")
     click.echo()
-    click.echo(f"Toolpack:     {toolpack_file}")
-    click.echo(f"Pending lock: {pending_lockfile}")
-    click.echo(f"Baseline:     {copied_baseline}")
-    click.echo(f"Pending:      {sync_result.pending_count} tools awaiting approval")
+    click.echo("  Get started with a real API:")
+    click.echo("    toolwright create github")
     click.echo()
-    click.echo("  (Demo artifacts are in a temp directory — run toolwright mint")
-    click.echo("   in your own project for persistent paths)")
-    click.echo()
-    click.echo("What just happened:")
-    click.echo(f"  1. Analyzed {len(actions)} API endpoints from sample traffic")
-    click.echo("  2. Generated type-safe tools with security classifications")
-    click.echo("  3. Created approval workflow (tools need review before agents can use them)")
-    click.echo()
-    click.echo("Next steps:")
-    click.echo()
-    click.echo("  # Approve all tools:")
-    click.echo(f"  {CLI_PRIMARY_COMMAND} gate allow --all --lockfile {pending_lockfile}")
-    click.echo()
-    click.echo("  # Start governed MCP server:")
-    click.echo(f"  {CLI_PRIMARY_COMMAND} serve --toolpack {toolpack_file}")
-    click.echo()
-    click.echo("  # Check for API drift against baseline:")
-    click.echo(
-        f"  {CLI_PRIMARY_COMMAND} drift --baseline {copied_baseline} --capture-path {capture_path}"
-    )
-
-    from toolwright.cli.mint import build_mcp_integration_output
-
-    click.echo(build_mcp_integration_output(toolpack_path=toolpack_file))
 
 
 def _resolve_output_root(output_root: str | None) -> Path:

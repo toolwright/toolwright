@@ -177,11 +177,11 @@ def test_bundle_success_on_stdout(tmp_path: Path) -> None:
 # --- 6. config should be a core command ---
 
 
-def test_config_in_core_commands() -> None:
-    """config should be listed in CORE_COMMANDS for discoverability."""
-    from toolwright.cli.main import CORE_COMMANDS
+def test_config_in_operations_commands() -> None:
+    """config should be listed in OPERATIONS_COMMANDS (setup step, not daily use)."""
+    from toolwright.cli.main import OPERATIONS_COMMANDS
 
-    assert "config" in CORE_COMMANDS
+    assert "config" in OPERATIONS_COMMANDS
 
 
 # --- 7. auth.py should not catch ImportError on asyncio (stdlib) ---
@@ -254,7 +254,7 @@ def test_verify_baseline_check_mode_no_deprecation_warning(tmp_path: Path) -> No
 
 def test_help_core_commands_in_workflow_order() -> None:
     """Core commands in --help should follow user workflow order:
-    create -> mint -> serve -> gate -> ... -> config."""
+    create -> serve -> gate -> status -> drift -> repair."""
     runner = CliRunner()
     result = runner.invoke(cli, ["--help"])
 
@@ -267,15 +267,17 @@ def test_help_core_commands_in_workflow_order() -> None:
 
     # Find positions within the quick start section only
     create_pos = core_section.find("\n  create ")
-    mint_pos = core_section.find("\n  mint ")
     serve_pos = core_section.find("\n  serve ")
     gate_pos = core_section.find("\n  gate ")
-    config_pos = core_section.find("\n  config ")
+    status_pos = core_section.find("\n  status ")
+    drift_pos = core_section.find("\n  drift ")
+    repair_pos = core_section.find("\n  repair ")
 
-    assert create_pos < mint_pos, "create should appear before mint in help"
-    assert mint_pos < serve_pos, "mint should appear before serve in help"
+    assert create_pos < serve_pos, "create should appear before serve in help"
     assert serve_pos < gate_pos, "serve should appear before gate in help"
-    assert gate_pos < config_pos, "gate should appear before config in help"
+    assert gate_pos < status_pos, "gate should appear before status in help"
+    assert status_pos < drift_pos, "status should appear before drift in help"
+    assert drift_pos < repair_pos, "drift should appear before repair in help"
 
 
 def test_help_has_operations_section() -> None:
@@ -424,3 +426,40 @@ def test_diff_without_baseline_gives_actionable_error(tmp_path: Path) -> None:
     assert "--baseline" in output, (
         f"Error should mention '--baseline' option. Got: {result.output!r}"
     )
+
+
+# --- Quick Start should contain exactly 6 core commands ---
+
+
+def test_quick_start_has_exactly_six_core_commands() -> None:
+    """Quick Start section should show exactly: create, serve, gate, status, drift, repair."""
+    from toolwright.cli.main import CORE_COMMANDS
+
+    expected = ["create", "serve", "gate", "status", "drift", "repair"]
+    assert CORE_COMMANDS == expected, (
+        f"CORE_COMMANDS should be {expected}, got {CORE_COMMANDS}"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--help"])
+    assert result.exit_code == 0
+    output = result.output
+
+    # Extract the Quick Start section only
+    qs_start = output.find("Quick Start:")
+    assert qs_start != -1
+    ops_start = output.find("Operations:", qs_start)
+    assert ops_start != -1
+    qs_section = output[qs_start:ops_start]
+
+    # All 6 expected commands must be present
+    for cmd in expected:
+        assert f"  {cmd} " in qs_section or f"  {cmd}\n" in qs_section, (
+            f"'{cmd}' should be in Quick Start section"
+        )
+
+    # These should NOT be in Quick Start (moved to Operations)
+    for cmd in ["mint", "rules", "groups", "config"]:
+        assert f"  {cmd} " not in qs_section, (
+            f"'{cmd}' should NOT be in Quick Start section"
+        )

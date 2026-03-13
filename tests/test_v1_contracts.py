@@ -21,13 +21,15 @@ def test_cli_surfaces_core_commands() -> None:
     assert top_help.exit_code == 0
     # Quick Start commands
     assert "create" in top_help.stdout
-    assert "mint" in top_help.stdout
-    assert "gate" in top_help.stdout
     assert "serve" in top_help.stdout
-    assert "config" in top_help.stdout
-    # Operations commands
-    assert "diff" in top_help.stdout
+    assert "gate" in top_help.stdout
+    assert "status" in top_help.stdout
     assert "drift" in top_help.stdout
+    assert "repair" in top_help.stdout
+    # Operations commands
+    assert "mint" in top_help.stdout
+    assert "config" in top_help.stdout
+    assert "diff" in top_help.stdout
     assert "verify" in top_help.stdout
 
 
@@ -39,12 +41,14 @@ def test_default_help_hides_advanced_commands_but_help_all_shows_them() -> None:
     default_lines = default_help.stdout.splitlines()
     # Quick Start commands should be visible
     assert any(line.strip().startswith("create") for line in default_lines)
-    assert any(line.strip().startswith("mint") for line in default_lines)
-    assert any(line.strip().startswith("gate") for line in default_lines)
     assert any(line.strip().startswith("serve") for line in default_lines)
-    assert any(line.strip().startswith("config") for line in default_lines)
-    # Operations commands should be visible
+    assert any(line.strip().startswith("gate") for line in default_lines)
+    assert any(line.strip().startswith("status") for line in default_lines)
     assert any(line.strip().startswith("drift") for line in default_lines)
+    assert any(line.strip().startswith("repair") for line in default_lines)
+    # Operations commands should be visible
+    assert any(line.strip().startswith("mint") for line in default_lines)
+    assert any(line.strip().startswith("config") for line in default_lines)
     assert any(line.strip().startswith("verify") for line in default_lines)
     # Advanced commands should be hidden
     assert not any(line.strip().startswith("compile") for line in default_lines)

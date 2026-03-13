@@ -64,9 +64,11 @@ ADVANCED_COMMANDS = {
 
 # Operations commands shown after core in default help.
 OPERATIONS_COMMANDS = [
-    "drift",
+    "mint",
+    "config",
+    "rules",
+    "groups",
     "diff",
-    "repair",
     "verify",
     "health",
     "auth",
@@ -81,13 +83,11 @@ OPERATIONS_COMMANDS = [
 # Core commands shown prominently in default help, in workflow order.
 CORE_COMMANDS = [
     "create",
-    "mint",
     "serve",
     "gate",
     "status",
-    "rules",
-    "groups",
-    "config",
+    "drift",
+    "repair",
 ]
 
 

@@ -16,12 +16,14 @@ def test_top_help_includes_core_commands() -> None:
     assert result.exit_code == 0
     # Quick Start (core) commands
     assert "create" in result.stdout
-    assert "mint" in result.stdout
-    assert "gate" in result.stdout
     assert "serve" in result.stdout
-    assert "config" in result.stdout
-    # Operations commands
+    assert "gate" in result.stdout
+    assert "status" in result.stdout
     assert "drift" in result.stdout
+    assert "repair" in result.stdout
+    # Operations commands
+    assert "mint" in result.stdout
+    assert "config" in result.stdout
     assert "verify" in result.stdout
 
 

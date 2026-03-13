@@ -112,8 +112,14 @@ def _resolve_spec_path(
     if recipe_data and recipe_data.get("openapi_spec_url"):
         return _fetch_or_cache_spec(recipe_data["openapi_spec_url"], api_name, root)
 
+    recipe_name = recipe_data.get("name", "this API") if recipe_data else "this API"
     raise click.ClickException(
-        "No OpenAPI spec available. Use --spec <path-or-url> or choose a recipe with an OpenAPI spec URL."
+        f"The {recipe_name} recipe does not include a public OpenAPI spec.\n"
+        f"  Options:\n"
+        f"    toolwright create {recipe_name} --spec <path-or-url>   # provide your own spec\n"
+        f"    toolwright mint https://{recipe_name}.com               # capture from browser traffic\n"
+        f"\n"
+        f"  Recipes with built-in specs: github, stripe"
     )
 
 

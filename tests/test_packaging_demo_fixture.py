@@ -109,7 +109,7 @@ def test_demo_smoke_runs_from_installed_wheel(tmp_path: Path) -> None:
     )
 
     assert result.stderr == ""
-    assert "Demo complete" in result.stdout
+    assert "governance in action" in result.stdout
     assert (output_root / "captures").exists()
     assert (output_root / "artifacts").exists()
     assert (output_root / "toolpacks").exists()
