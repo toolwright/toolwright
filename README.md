@@ -4,7 +4,6 @@
 
 Your MCP tools have no governance. Credentials leak into model context.
 Tool changes go live with no approval. APIs drift and agents break silently.
-Nothing self-heals.
 
 ![toolwright demo — governance in 1 second](demos/outputs/demo.gif)
 
