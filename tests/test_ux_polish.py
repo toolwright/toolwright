@@ -133,7 +133,7 @@ def test_doctor_success_on_stdout(tmp_path: Path) -> None:
 
     assert result.exit_code == 0
     # Success should be on stdout (not exclusively stderr)
-    assert "Doctor check passed" in result.stdout
+    assert "All checks passed" in result.stdout
 
 
 def test_doctor_errors_still_on_stderr(tmp_path: Path) -> None:
