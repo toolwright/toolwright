@@ -1,68 +1,61 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-*.egg-info/
-dist/
-build/
-*.egg
-.eggs/
-
-# Virtual environments
-.venv/
-venv/
-ENV/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.mypy_cache/
-
-# Toolwright state
-.toolwright/
-
-# Environment
-.env
-.env.local
-
-# Jupyter
-.ipynb_checkpoints/
-demos/screenplays/.terminal_demo_studio_runs/
 
 # Development artifacts
-CLAUDE.md
-findings.md
-progress.md
-task_plan.md
-dogfood/
-toolwright-dogfood-playbook.md
-
+# Environment
+# IDE
 # Internal working files (not user-facing)
+# Jupyter
+# OS
+# Python
+# Testing
+# Toolwright state
+# Virtual environments
+*$py.class
+*.egg
+*.egg-info/
+*.py[cod]
+*.so
+*.swo
+*.swp
+*~
+.DS_Store
+.coverage
+.eggs/
+.env
+.env.local
+.idea/
+.ipynb_checkpoints/
+.mypy_cache/
+.pytest_cache/
+.toolwright/
+.venv/
+.vscode/
 AUDIT_REPORT.md
+CLAUDE.md
+ENV/
+Thumbs.db
+__pycache__/
+blog/
+build/
 cli-surface.md
+demos/screenplays/.terminal_demo_studio_runs/
+dist/
+docs/*-spec.md
+docs/archive/
+docs/dogfood-findings.md
+docs/plans/
+docs/specs/
+dogfood-checkpoint.md
+dogfood/
+findings.md
+findings_viral_dev_tools.md
+htmlcov/
 mint-output.txt
 outputscript.sh
+progress.md
 quickstart-actual-output.md
 server.json
-blog/
-docs/archive/
-docs/plans/
-docs/dogfood-findings.md
-docs/specs/
-docs/*-spec.md
+task_plan.md
 tests/e2e/results/findings.md
-dogfood-checkpoint.md
+toolwright-dogfood-playbook.md
 toolwright-spec.md
+venv/

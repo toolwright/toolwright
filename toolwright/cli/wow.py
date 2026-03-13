@@ -363,10 +363,6 @@ def _print_polished_output(
     total_label = "under 1 second" if total_s < 1.0 else f"{total_s:.1f} seconds"
     width = 58
 
-    border_top = f"  \u250c\u2500 What just happened \u2500{'\\u2500' * (width - 21)}\u2510"
-    border_bot = f"  \u2514{'\\u2500' * width}\u2518"
-
-    # Build properly
     border_top = "  \u250c\u2500 What just happened " + "\u2500" * (width - 21) + "\u2510"
     border_bot = "  \u2514" + "\u2500" * width + "\u2518"
 
