@@ -129,6 +129,18 @@ def warn_missing_auth(
     return warnings
 
 
+def load_dotenv_auth(root: Path) -> dict[str, str]:
+    """Load auth tokens from .toolwright/.env under the given root.
+
+    Returns a dict of KEY=VALUE pairs, or empty dict if file is missing.
+    """
+    from toolwright.utils.dotenv import DotenvFile
+
+    env_path = root / ".toolwright" / ".env"
+    d = DotenvFile(env_path)
+    return d.load()
+
+
 def run_mcp_serve(
     tools_path: str | None,
     toolpack_path: str | None,
