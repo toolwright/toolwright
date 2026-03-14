@@ -124,6 +124,9 @@ def register_kill_commands(*, cli: click.Group) -> None:
         Examples:
           toolwright breaker-status search
         """
+        if not tool_id or not tool_id.strip():
+            raise click.ClickException("Tool ID must not be empty.")
+
         from toolwright.core.kill.breaker import CircuitBreakerRegistry
 
         reg = CircuitBreakerRegistry(state_path=Path(breaker_state))
