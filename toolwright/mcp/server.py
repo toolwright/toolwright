@@ -190,7 +190,7 @@ class ToolwrightMCPServer:
             )
             if not sig_passed:
                 logger.warning(
-                    "Lockfile signature verification failed at startup: %s. "
+                    "Lockfile signature verification failed at startup: %s "
                     "Per-request signature verification is still enforced.",
                     sig_message,
                 )

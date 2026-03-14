@@ -20,14 +20,7 @@ def register_repair_commands(*, cli: click.Group) -> None:
     @cli.group(invoke_without_command=True)
     @click.pass_context
     def repair(ctx: click.Context) -> None:
-        """Diagnose, plan, and apply fixes for a governed toolpack.
-
-        \b
-        Subcommands:
-          diagnose  Diagnose issues from audit logs, drift, and verify reports
-          plan      Show the current repair plan (Terraform-style)
-          apply     Apply patches from the repair plan
-        """
+        """Diagnose, plan, and apply fixes for a governed toolpack."""
         if ctx.invoked_subcommand is None:
             click.echo(ctx.get_help())
 

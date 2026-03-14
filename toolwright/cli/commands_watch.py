@@ -15,13 +15,7 @@ def register_watch_commands(*, cli: click.Group) -> None:
 
     @cli.group()
     def watch() -> None:
-        """Monitor reconciliation loop health and events.
-
-        \b
-        Subcommands:
-          status  Show per-tool health and reconcile loop stats
-          log     Show recent reconciliation events
-        """
+        """Monitor reconciliation loop health and events."""
 
     @watch.command()
     @click.option(

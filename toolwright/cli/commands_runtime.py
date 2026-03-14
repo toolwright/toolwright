@@ -234,19 +234,10 @@ def register_runtime_commands(
 
         \b
         Examples:
-          # Resolve all paths from a toolpack
           toolwright serve --toolpack .toolwright/toolpacks/<id>/toolpack.yaml
-
-          # With explicit manifest
           toolwright serve --tools tools.json --policy policy.yaml
-
-          # Expose a curated toolset
           toolwright serve --toolpack toolpack.yaml --toolset readonly
-
-          # With upstream API configuration
           toolwright serve --toolpack toolpack.yaml --base-url https://api.example.com
-
-          # Dry run mode (no actual API calls)
           toolwright serve --toolpack toolpack.yaml --dry-run
 
         \b

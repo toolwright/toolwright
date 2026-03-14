@@ -183,7 +183,9 @@ def run_approve_sync(
 
     # Exit code based on pending status
     if result.has_pending:
-        click.echo(f"\nWARNING: {result.pending_count} tools pending approval")
+        from toolwright.utils.text import pluralize
+
+        click.echo(f"\nWARNING: {pluralize(result.pending_count, 'tool')} pending approval")
         sys.exit(1)
     else:
         click.echo("\nOK: All tools approved")
@@ -450,7 +452,7 @@ def run_approve_reject(
     manager.save()
 
     if rejected:
-        click.echo(f"Rejected: {', '.join(rejected)}")
+        click.echo(f"Blocked: {', '.join(rejected)}")
 
     if not_found:
         click.echo(f"Not found: {', '.join(not_found)}", err=True)
@@ -484,6 +486,9 @@ def run_approve_snapshot(
         root_path=Path(root_path),
         snapshot_dir_override=Path(snapshot_dir) if snapshot_dir else None,
     )
+
+    if not verbose:
+        click.echo("Baseline snapshot created.")
 
 
 def run_approve_check(

@@ -333,9 +333,9 @@ def drift_status(events_path: str, limit: int) -> None:
 
     \b
     Examples:
-      toolwright drift status
-      toolwright drift status --events-path /path/to/drift_events.jsonl
-      toolwright drift status -n 50
+      toolwright drift-status
+      toolwright drift-status --events-path /path/to/drift_events.jsonl
+      toolwright drift-status -n 50
     """
     events_file = Path(events_path)
 

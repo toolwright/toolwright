@@ -698,7 +698,7 @@ class TestApprovalCLI:
         )
 
         assert result.exit_code == 0
-        assert "Rejected: create_user" in result.output
+        assert "Blocked: create_user" in result.output
 
     def test_check_fails_on_pending(self, setup_env: tuple[Path, Path]) -> None:
         """Test that check fails when tools are pending."""

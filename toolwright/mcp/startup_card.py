@@ -56,7 +56,7 @@ def render_startup_card(
     for tier in ("low", "medium", "high", "critical"):
         count = risk_counts.get(tier, 0)
         if count:
-            label = tier[:4] if tier != "critical" else "crit"
+            label = tier[:3] if tier != "critical" else "crit"
             risk_parts.append(f"{count} {label}")
     if risk_parts:
         lines.append(f"  Risk:     {' \u00b7 '.join(risk_parts)}")
