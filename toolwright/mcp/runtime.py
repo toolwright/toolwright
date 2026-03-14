@@ -5,13 +5,13 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
-import re
 import sys
 from pathlib import Path
 from typing import Any
 
 import click
 
+from toolwright.utils.auth import host_to_env_var
 from toolwright.utils.deps import require_mcp_dependency
 
 TOOL_COUNT_WARN_THRESHOLD = 30
@@ -120,8 +120,7 @@ def warn_missing_auth(
     hosts = manifest.get("allowed_hosts", [])
     warnings: list[str] = []
     for host in hosts:
-        normalized = re.sub(r"[^A-Za-z0-9]", "_", host).upper()
-        env_key = f"TOOLWRIGHT_AUTH_{normalized}"
+        env_key = host_to_env_var(host)
         if not os.environ.get(env_key):
             warnings.append(
                 f"No auth configured for {host}. "
