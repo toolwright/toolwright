@@ -705,6 +705,16 @@ class LockfileManager:
         approved = [t for t in self.lockfile.tools.values() if t.status == ApprovalStatus.APPROVED]
         return sorted(approved, key=lambda t: (t.name, t.method, t.path))
 
+    def get_rejected(self) -> list[ToolApproval]:
+        """Get all rejected tools."""
+        if self.lockfile is None:
+            self.load()
+
+        assert self.lockfile is not None
+
+        rejected = [t for t in self.lockfile.tools.values() if t.status == ApprovalStatus.REJECTED]
+        return sorted(rejected, key=lambda t: (t.name, t.method, t.path))
+
     def has_pending(self, toolset: str | None = None) -> bool:
         """Check if there are pending approvals.
 

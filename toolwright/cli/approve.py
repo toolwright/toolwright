@@ -347,7 +347,9 @@ def run_approve_tool(
                 tool.approval_key_id = signer.key_id
                 count += 1
         manager.save()
-        click.echo(f"Approved {count} tools")
+        from toolwright.utils.text import pluralize
+
+        click.echo(f"Approved {pluralize(count, 'tool')}")
         click.echo(f"Lockfile: {manager.lockfile_path}")
         snapshot_ok = _maybe_materialize_snapshot(manager, root_path=Path(root_path))
         if not snapshot_ok and count > 0:

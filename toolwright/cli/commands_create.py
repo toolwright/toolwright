@@ -91,6 +91,9 @@ def _resolve_spec_path(
         spec_path = Path(spec)
         if spec_path.exists():
             return spec_path
+        # If it looks like a file path (not a URL), give a clear error
+        if not spec.startswith(("http://", "https://")):
+            raise click.ClickException(f"OpenAPI spec file not found: {spec}")
         # Treat as URL
         return _fetch_or_cache_spec(spec, api_name, root)
 

@@ -261,7 +261,9 @@ def gate_review_flow(
                 lockfile_path=lockfile_path,
                 root_path=str(root),
             )
-            con.print(f"\n  [success]{sym.ok} Approved {len(result.approved_ids)} tools.[/success]")
+            from toolwright.utils.text import pluralize
+
+            con.print(f"\n  [success]{sym.ok} Approved {pluralize(len(result.approved_ids), 'tool')}.[/success]")
             if result.promoted:
                 con.print(f"  [seal]{sym.ok} Lockfile promoted to approved.[/seal]")
         except Exception as exc:

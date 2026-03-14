@@ -240,12 +240,14 @@ class EndpointAggregator:
             else:
                 # Fall back to inference from observed values
                 param_type = self._infer_param_type(values)
+            # Use non-empty example values; empty strings are noise
+            example_val = next((v for v in values if v), None)
             parameters.append(
                 Parameter(
                     name=param_name,
                     location=ParameterLocation.QUERY,
                     param_type=param_type,
-                    example=next(iter(values), None),
+                    example=example_val,
                     json_schema=schema_meta if schema_meta else None,
                 )
             )
