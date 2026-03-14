@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import yaml
 
-from toolwright.recipes.loader import load_recipe, list_recipes
+from toolwright.recipes.loader import list_recipes, load_recipe
 
 
 class TestRecipeAuthGuideLoading:
@@ -36,11 +36,15 @@ class TestRecipeAuthGuideLoading:
     def test_recipe_without_auth_guide_loads(self, tmp_path: Path) -> None:
         """A recipe without auth_guide should still load (backward compat)."""
         recipe_file = tmp_path / "test.yaml"
-        recipe_file.write_text(yaml.dump({
-            "name": "test",
-            "description": "Test recipe",
-            "hosts": [{"pattern": "test.example.com"}],
-        }))
+        recipe_file.write_text(
+            yaml.dump(
+                {
+                    "name": "test",
+                    "description": "Test recipe",
+                    "hosts": [{"pattern": "test.example.com"}],
+                }
+            )
+        )
 
         with patch("toolwright.recipes.loader._RECIPES_DIR", tmp_path):
             recipe = load_recipe("test")

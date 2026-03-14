@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-import os
 import stat
 from pathlib import Path
-
-import pytest
 
 from toolwright.utils.dotenv import DotenvFile
 
@@ -194,9 +191,7 @@ class TestLoadDotenvAuth:
 
         dotenv_dir = tmp_path / ".toolwright"
         dotenv_dir.mkdir()
-        (dotenv_dir / ".env").write_text(
-            'TOOLWRIGHT_AUTH_API_STRIPE_COM=Bearer sk_test_123\n'
-        )
+        (dotenv_dir / ".env").write_text("TOOLWRIGHT_AUTH_API_STRIPE_COM=Bearer sk_test_123\n")
 
         result = load_dotenv_auth(tmp_path)
         assert result == {"TOOLWRIGHT_AUTH_API_STRIPE_COM": "Bearer sk_test_123"}
