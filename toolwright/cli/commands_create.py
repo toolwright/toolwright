@@ -121,6 +121,32 @@ def run_create(
 
     recipe_data: dict[str, Any] | None = None
 
+    # URL detection: if api_name looks like a URL, fetch spec from it
+    url_spec_path: Path | None = None
+    if api_name and (api_name.startswith("http://") or api_name.startswith("https://")):
+        from toolwright.core.capture.url_fetcher import SpecFetchError, fetch_spec_from_url
+
+        click.echo(f"  Fetching spec from {api_name}...")
+        try:
+            spec_dict, source_url = fetch_spec_from_url(api_name)
+        except SpecFetchError as exc:
+            raise click.ClickException(str(exc)) from exc
+
+        content = json.dumps(spec_dict)
+        tmp = tempfile.NamedTemporaryFile(suffix=".json", delete=False, mode="w")
+        tmp.write(content)
+        tmp.close()
+        url_spec_path = Path(tmp.name)
+
+        # Auto-derive name from URL hostname if not provided
+        if not name:
+            from urllib.parse import urlparse as _urlparse
+
+            parsed_url = _urlparse(source_url)
+            name = parsed_url.netloc.split(".")[0] if parsed_url.netloc else "api"
+
+        api_name = None  # Clear so recipe lookup is skipped
+
     # Resolve recipe if api_name provided
     if api_name:
         from toolwright.recipes.loader import list_recipes, load_recipe
@@ -137,8 +163,8 @@ def run_create(
                 f"  Or use: toolwright create --spec <path-or-url>"
             ) from exc
 
-    # Need either api_name or spec
-    if not api_name and not spec:
+    # Need either api_name or spec or URL-fetched spec
+    if not api_name and not spec and not url_spec_path:
         raise click.ClickException(
             "Provide an API name or --spec.\n"
             "  Example: toolwright create github\n"
@@ -146,8 +172,11 @@ def run_create(
         )
 
     # Resolve spec
-    click.echo("  Fetching OpenAPI spec...")
-    spec_path = _resolve_spec_path(api_name, spec, recipe_data, root)
+    if url_spec_path:
+        spec_path = url_spec_path
+    else:
+        click.echo("  Fetching OpenAPI spec...")
+        spec_path = _resolve_spec_path(api_name, spec, recipe_data, root)
 
     # Parse spec
     click.echo("  Parsing spec...")

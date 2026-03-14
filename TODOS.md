@@ -1,0 +1,219 @@
+# TODOS
+
+> Deferred work items from CEO reviews and plan sessions. Each item includes context so anyone picking it up understands the motivation.
+
+---
+
+## Auth UX Overhaul (from CEO Review 2026-03-13)
+
+**Context**: Analyzed gstack's cookie import system for inspiration. Concluded: adopt the UX philosophy (frictionless, guided auth) but not the technology (platform-specific cookie decryption). The goal is to make auth setup feel invisible without sacrificing security or cross-platform support.
+
+### TODO-AUTH-001: `.toolwright/.env` file loader
+- **Priority**: P1 | **Effort**: S
+- **What**: Load auth tokens from `.toolwright/.env` at `toolwright serve` startup. Slot into auth resolution priority chain between shell env vars and global fallback.
+- **Why**: Eliminates the need to `export TOOLWRIGHT_AUTH_*` in every shell session. Project-local, persistent, gitignored.
+- **Details**:
+  - Parse format: `KEY=VALUE`, split on first `=` only, skip `#` comments and blank lines, handle `\r\n`
+  - File permissions: 0600 on write
+  - Auto-add `.toolwright/.env` to `.gitignore` if missing
+  - Error on load if file exists but isn't gitignored (safety gate)
+  - New file: `toolwright/utils/dotenv.py`
+- **Depends on**: Nothing
+
+### TODO-AUTH-002: Recipe `auth_guide` schema
+- **Priority**: P1 | **Effort**: S
+- **What**: Add `auth_guide` section to recipe YAML schema with fields: `host`, `scheme`, `create_url`, `scopes_hint`, `instructions`.
+- **Why**: Powers the auth wizard with service-specific guidance (e.g., "go to github.com/settings/tokens/new, select repo scope").
+- **Details**:
+  - Update `github.yaml`: create_url = https://github.com/settings/tokens/new, scopes_hint = "repo, issues, pull_requests"
+  - Update `stripe.yaml`: create_url = https://dashboard.stripe.com/apikeys, scopes_hint = "test mode key starts with sk_test_"
+  - Recipe loader should surface `auth_guide` in the loaded recipe model
+- **Depends on**: Nothing
+
+### TODO-AUTH-003: `toolwright auth setup` interactive wizard
+- **Priority**: P1 | **Effort**: M
+- **What**: Interactive TUI flow that walks users through configuring auth for each host in their toolpack. Masked token input, probe verification, .env file output.
+- **Why**: This is the core deliverable. Replaces "copy-paste export commands" with a guided, frictionless experience inspired by gstack's cookie picker UX.
+- **Details**:
+  - Resolve toolpack → get `allowed_hosts` + `auth_requirements`
+  - For each host: check env var → if set, probe and show status → if missing, show recipe auth_guide → prompt for token (masked via getpass) → probe → offer to save to `.toolwright/.env`
+  - Auto-add `.toolwright/.env` to `.gitignore`
+  - New file: `toolwright/cli/auth_setup.py`
+  - Register as `toolwright auth setup` subcommand
+- **Depends on**: TODO-AUTH-001, TODO-AUTH-002
+
+### TODO-AUTH-004: Auto-prompt auth setup on `toolwright serve`
+- **Priority**: P1 | **Effort**: S
+- **What**: When `toolwright serve` detects missing auth in an interactive terminal, offer `Run auth setup? [Y/n]` instead of just printing warnings.
+- **Why**: Catches the user at the exact moment of friction. They're about to serve tools and auth is missing — guide them through it right there.
+- **Details**:
+  - Only prompt in interactive terminals (`sys.stdin.isatty()`)
+  - If non-interactive, keep current warning-only behavior
+  - Modify `warn_missing_auth()` in `runtime.py` or add a wrapper
+- **Depends on**: TODO-AUTH-003
+
+### TODO-AUTH-005: DRY up `_host_to_env_var()`
+- **Priority**: P2 | **Effort**: XS
+- **What**: Extract `_host_to_env_var()` from `commands_auth.py` and the inline duplicate in `runtime.py` into `toolwright/utils/auth.py`.
+- **Why**: Currently duplicated. Adding a third call site (auth setup) would make this a maintenance risk. One source of truth.
+- **Details**:
+  - New file: `toolwright/utils/auth.py` with `host_to_env_var(host: str) -> str`
+  - Update imports in `commands_auth.py` and `runtime.py`
+- **Depends on**: Nothing (do first as prep)
+
+---
+
+## Transport-Agnostic Governance (from CEO Strategic Review 2026-03-13)
+
+**Context**: CEO review determined that toolwright's governance engine is already transport-agnostic in design but MCP-coupled in implementation. The market is splitting into CLI-first (10-32x cheaper, 100% reliable) and MCP-first (enterprise compliance, multi-tenant auth) camps. Rather than picking a side, toolwright should govern both. The `ToolwrightMCPServer` monolith (1000+ lines) tangles governance, execution, and MCP transport — extraction unlocks multi-transport support with minimal new code.
+
+### TODO-TRANSPORT-001: Extract GovernanceEngine from ToolwrightMCPServer
+- **Priority**: P1 | **Effort**: M
+- **What**: Split `toolwright/mcp/server.py` (1000+ lines) into three components:
+  1. `toolwright/core/governance/engine.py` — GovernanceEngine (lockfile enforcement, circuit breakers, rule engine, network safety, decision trace, audit logging, schema validation, confirmation flow)
+  2. `toolwright/core/governance/executor.py` — ExecutionEngine (URL building, auth injection, httpx client, response processing, size limits)
+  3. `toolwright/mcp/adapter.py` — MCPAdapter (MCP Server registration, type conversion, stdio/SSE transport)
+- **Why**: The governance engine is the core value. Coupling it to MCP limits our addressable market to MCP users only. Extraction enables CLI and REST adapters with zero governance code duplication.
+- **Details**:
+  - Promote `RequestPipeline` (`mcp/pipeline.py`) to `core/governance/pipeline.py`
+  - GovernanceEngine.evaluate(tool_name, params) → DecisionTrace
+  - ExecutionEngine.execute(tool_def, params, auth_context) → ExecutionResult
+  - MCPAdapter wraps both to implement MCP list_tools/call_tool
+  - All existing tests must pass with zero behavior change
+  - Add `transport_type` field to DecisionTrace
+- **Depends on**: Nothing
+
+### TODO-TRANSPORT-002: Build CLI Adapter
+- **Priority**: P1 | **Effort**: M
+- **What**: Allow `toolwright serve --transport cli` to expose governed tools as CLI subprocess calls. Agent sends tool name + params, adapter validates through GovernanceEngine, then invokes the target CLI tool as a subprocess.
+- **Why**: CLI-first agents (Claude Code, Devin, custom) get the same governance guarantees at 1/30th the token cost. Addresses the #1 criticism of MCP — context bloat.
+- **Details**:
+  - New file: `toolwright/cli_transport/adapter.py`
+  - Security: `subprocess.run([tool, ...args], shell=False)` — NEVER shell=True
+  - All parameters validated against tool schema before passing to subprocess
+  - CLI tool paths must come from approved manifest (prevent path traversal)
+  - Handle: tool not on PATH → clean error, subprocess timeout → clean error, non-zero exit → include stderr in response
+  - stdin=DEVNULL to prevent interactive tool hangs
+- **Depends on**: TODO-TRANSPORT-001
+
+### TODO-TRANSPORT-003: Build REST/HTTP API Adapter
+- **Priority**: P2 | **Effort**: M
+- **What**: Allow `toolwright serve --transport rest` to expose governed tools as a REST API. Endpoints: `GET /v1/tools` (list), `POST /v1/invoke/{tool_name}` (call), `GET /v1/health` (status).
+- **Why**: Enables any agent framework (not just MCP-compatible ones) to use governed tools via standard HTTP. Also enables custom integrations, webhooks, and non-Python agents.
+- **Details**:
+  - New file: `toolwright/rest_transport/adapter.py`
+  - Use httpx or lightweight ASGI (starlette) — keep dependencies minimal
+  - API key authentication for the REST endpoint itself
+  - Standard error responses (401, 403 for governance denials, 404, 429, 500)
+  - OpenAPI spec auto-generated from tool manifest
+- **Depends on**: TODO-TRANSPORT-001
+
+### TODO-TRANSPORT-004: Transport Conformance Suite
+- **Priority**: P1 | **Effort**: M
+- **What**: Test suite that runs identical governance scenarios across all transport adapters and asserts identical DecisionTrace output. The critical safety net ensuring governance parity.
+- **Why**: Without this, governance behavior could silently drift between transports. A bug in the CLI adapter that bypasses lockfile enforcement would be invisible.
+- **Details**:
+  - Scenarios: approve, deny_unapproved_tool, deny_breaker_open, deny_rule_violation, deny_network_safety, deny_lockfile_missing
+  - For each scenario × each transport: assert DecisionTrace fields match, assert audit log entry matches
+  - The hostile QA test: call approved tool via MCP (allowed), call same tool via CLI without lockfile (must be denied)
+  - New file: `tests/test_transport_conformance.py`
+- **Depends on**: TODO-TRANSPORT-001 + at least one additional adapter
+
+### TODO-TRANSPORT-005: Update positioning and docs
+- **Priority**: P1 | **Effort**: S
+- **What**: Update README, architecture docs, and CLI help to reflect transport-agnostic governance. Change "MCP tools" language to "AI tools." Add transport selection docs. Update `toolwright config` to generate configs for CLI and REST transports.
+- **Why**: The README already says "immune system for AI tools" — the transport-agnostic architecture makes that literally true. Positioning shift attracts CLI-first developers.
+- **Details**:
+  - README: Add "Any transport. Same governance." section showing MCP/CLI/REST side by side
+  - `docs/architecture.md`: Update diagram to show transport-agnostic engine
+  - `toolwright config --transport cli|rest|mcp`: Generate appropriate config snippets
+  - Update hero demo to show multi-transport governance
+- **Depends on**: TODO-TRANSPORT-001
+
+---
+
+## Transport Delight Opportunities (from CEO Strategic Review 2026-03-13)
+
+### TODO-DELIGHT-001: Auto-detect transport mode
+- **Priority**: P3 | **Effort**: M
+- **What**: `toolwright serve --transport auto` — auto-detect connecting agent's protocol (MCP handshake vs HTTP request vs CLI invocation) and serve accordingly. Like a web server handling HTTP/1.1 and HTTP/2 from the same port.
+- **Why**: Users don't have to choose or know about transports. It just works.
+- **Depends on**: TODO-TRANSPORT-001, TODO-TRANSPORT-002, TODO-TRANSPORT-003
+
+### TODO-DELIGHT-002: `toolwright wrap` for CLI tools
+- **Priority**: P2 | **Effort**: S
+- **What**: Extend `toolwright wrap` (currently MCP-only) to wrap any CLI tool with governance. Example: `toolwright wrap gh` governs GitHub CLI calls with lockfile, circuit breakers, and rules.
+- **Why**: Killer demo for CLI-first developers. Shows governance works without MCP.
+- **Depends on**: TODO-TRANSPORT-002
+
+### TODO-DELIGHT-003: Multi-transport demo panel
+- **Priority**: P3 | **Effort**: S
+- **What**: Add a "Same governance, any transport" panel to `toolwright demo` showing the same tool call through MCP, CLI, and REST — all producing identical DecisionTrace.
+- **Why**: Makes the transport-agnostic value proposition visceral in the demo.
+- **Depends on**: TODO-TRANSPORT-004
+
+### TODO-DELIGHT-004: Transport-aware `toolwright create`
+- **Priority**: P3 | **Effort**: M
+- **What**: `toolwright create --transport cli` auto-generates CLI wrapper scripts. `--transport rest` auto-generates OpenAPI spec for the governed API.
+- **Why**: Full lifecycle transport-awareness from create to serve.
+- **Depends on**: TODO-TRANSPORT-002, TODO-TRANSPORT-003
+
+### TODO-DELIGHT-005: Token budget estimator
+- **Priority**: P2 | **Effort**: S
+- **What**: `toolwright estimate-tokens` shows token consumption per transport: "MCP: ~55,000 tokens. CLI: ~800 tokens. REST: ~200 tokens." Addresses the #1 concern in the MCP debate with hard numbers.
+- **Why**: Makes the efficiency argument concrete. Marketing gold for CLI-first audience.
+- **Depends on**: Nothing (can build standalone)
+
+---
+
+## Viral Launch (from CEO Review 2026-03-13)
+
+**Context**: CEO review determined toolwright has the right product and market but zero awareness. Strategy: lead with the magic moment ("point at any API, get governed tools"), not fear ("your MCP tools have no governance"). Launch on HN Show HN + Twitter/X thread.
+
+### TODO-LAUNCH-001: HN Show HN post + first comment
+- **Priority**: P1 | **Effort**: S
+- **What**: Write the Show HN post title, body, and first comment (technical deep dive). Prepare as markdown files in `docs/launch/`.
+- **Why**: The HN launch is the single highest-leverage distribution event. The first comment sets the narrative. Prepared materials outperform improvised ones.
+- **Details**:
+  - Title: "Show HN: Toolwright – Point at any API, get governed AI tools in 10 seconds"
+  - First comment: what it does, how it works, why you built it, what's next, honest about alpha
+  - Include live demo URL or instructions that work on first try
+- **Depends on**: All P0/P1 items shipped
+
+### TODO-LAUNCH-002: Twitter/X launch thread
+- **Priority**: P1 | **Effort**: S
+- **What**: 5-7 tweet thread showing the magic moment with GIFs/screenshots. Prepared as markdown in `docs/launch/`.
+- **Why**: Twitter is where developer tool launches get amplified. The thread needs to be visual and shareable.
+- **Depends on**: TODO-LAUNCH-001 (same content, different format)
+
+### TODO-LAUNCH-003: `toolwright score` — governance maturity scanner
+- **Priority**: P2 | **Effort**: S (2-3 hours)
+- **What**: Rate any toolwright-managed project's governance maturity (0-100, letter grade A-F). Checks: has lockfile? Signatures verified? Rules defined? Circuit breakers active? Drift monitoring on?
+- **Why**: Marketing tool for post-launch engagement. "Score your MCP setup!" Screenshots well. Creates shareable content.
+- **Details**:
+  - Scoring rubric: lockfile exists (20pts), signatures verified (20pts), rules defined (15pts), circuit breakers configured (15pts), drift monitoring active (15pts), auth configured (15pts)
+  - Output: letter grade + score + breakdown + suggestions to improve
+  - New file: `toolwright/cli/score.py`
+- **Depends on**: C0 fix (signature verification must work for scoring to be meaningful)
+
+### TODO-LAUNCH-004: `toolwright why <tool>` — debugging command
+- **Priority**: P2 | **Effort**: S (1-2 hours)
+- **What**: Explain why a specific tool is blocked/quarantined/degraded. Shows the lockfile entry, rule violations, circuit breaker state.
+- **Why**: Power users navigating governance need a single command to understand tool state. Like `brew info` or `pip show`.
+- **Details**:
+  - Check lockfile status (approved/pending/blocked)
+  - Check circuit breaker state (closed/open/half_open)
+  - Check rule violations (which rules would block this tool)
+  - Check drift status (any pending drift events)
+- **Depends on**: Nothing
+
+### TODO-LAUNCH-005: GitHub Action for CI governance
+- **Priority**: P2 | **Effort**: M (half day)
+- **What**: Reusable GitHub Action that runs `toolwright gate check` and `toolwright verify` on PRs. Badge for README: "tools governed by toolwright".
+- **Why**: Distribution channel — every repo using the action advertises toolwright. Social proof through badges.
+- **Details**:
+  - `.github/actions/toolwright-verify/action.yml`
+  - Inputs: toolpack path, verification mode, Python version
+  - Outputs: pass/fail, tool count, governance score
+  - Badge: `![Governed by Toolwright](https://img.shields.io/badge/governed%20by-toolwright-blue)`
+- **Depends on**: C0 fix, stable CLI interface

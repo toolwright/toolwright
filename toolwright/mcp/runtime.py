@@ -144,6 +144,28 @@ def load_dotenv_auth(root: Path) -> dict[str, str]:
     return d.load()
 
 
+def prompt_auth_setup_if_missing(
+    *,
+    tools_path: str | Path,
+    auth_header: str | None,
+    root: Path,
+) -> None:
+    """Warn about missing auth and offer interactive setup if possible."""
+    warnings = warn_missing_auth(tools_path=tools_path, auth_header=auth_header)
+    if not warnings:
+        return
+
+    for w in warnings:
+        click.echo(f"  WARNING: {w}", err=True)
+
+    if sys.stdin.isatty():
+        click.echo(err=True)
+        if click.confirm("  Run auth setup?", default=True, err=True):
+            from toolwright.cli.auth_setup import auth_setup_flow
+
+            auth_setup_flow(root=root, no_probe=False)
+
+
 def run_mcp_serve(
     tools_path: str | None,
     toolpack_path: str | None,
@@ -407,13 +429,12 @@ def run_mcp_serve(
     except (json.JSONDecodeError, OSError):
         pass  # Let downstream code handle invalid manifests
 
-    # Warn about missing auth env vars
-    auth_warnings = warn_missing_auth(
+    # Warn about missing auth env vars (and offer interactive setup)
+    prompt_auth_setup_if_missing(
         tools_path=resolved_tools_path,
         auth_header=auth_header,
+        root=Path.cwd(),
     )
-    for warning in auth_warnings:
-        click.echo(f"  WARNING: {warning}", err=True)
 
     # Render startup card with governance layers
     from toolwright.mcp.startup_card import render_startup_card

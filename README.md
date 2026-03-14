@@ -2,22 +2,20 @@
 
 **The immune system for AI tools.**
 
-Your MCP tools have no governance. Credentials leak into model context.
-Tool changes go live with no approval. APIs drift and agents break silently.
+Point at any API. Get governed, self-healing AI tools in seconds.
 
-![toolwright demo — governance in 1 second](demos/outputs/demo.gif)
-
-**One command. Full lifecycle governance.**
+![toolwright create — governed tools in seconds](demos/outputs/hero.gif)
 
 ```bash
 pip install toolwright
-toolwright create github   # 1062 governed tools in under 15 seconds
+toolwright create github                    # from a bundled recipe
+toolwright create --spec ./openapi.json     # from any OpenAPI spec
 ```
 
 [![PyPI version](https://img.shields.io/pypi/v/toolwright.svg)](https://pypi.org/project/toolwright/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776ab.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-3081%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-3097%20passing-brightgreen.svg)](tests/)
 
 ---
 
@@ -53,16 +51,6 @@ toolwright rules template apply rate-limit    # rate limit tool calls
 
 Six composable rule types: `precondition`, `postcondition`, `sequencing`, `rate_limit`, `context_required`, `parameter_constraint`. Applied at invocation time, enforced by the runtime.
 
-### ⚡ KILL — Circuit breakers block broken tools instantly
-
-```bash
-toolwright kill search_api --reason "upstream 500s"
-toolwright quarantine                    # list all quarantined tools
-toolwright enable search_api             # bring it back
-```
-
-Three-state circuit breaker (CLOSED → OPEN → HALF_OPEN → CLOSED). After 5 consecutive failures, agents can't call it. After recovery, 3 successes required to fully restore.
-
 ### 🩺 HEAL — Drift detection and bounded self-repair
 
 ```bash
@@ -72,6 +60,16 @@ toolwright repair plan                        # terraform-style repair plan
 ```
 
 A k8s-style reconciliation loop probes tool endpoints on risk-tier intervals. Safe changes auto-merge. Risky changes escalate for approval. Snapshots enable instant rollback.
+
+### ⚡ KILL — Circuit breakers block broken tools instantly
+
+```bash
+toolwright kill search_api --reason "upstream 500s"
+toolwright quarantine                    # list all quarantined tools
+toolwright enable search_api             # bring it back
+```
+
+Three-state circuit breaker (CLOSED → OPEN → HALF_OPEN → CLOSED). After 5 consecutive failures, agents can't call it. After recovery, 3 successes required to fully restore.
 
 ---
 
@@ -141,6 +139,7 @@ $ toolwright demo
 | GitHub API | `toolwright create github` |
 | Stripe API | `toolwright create stripe` |
 | Any OpenAPI spec | `toolwright create --spec ./openapi.yaml` |
+| Any URL | `toolwright create https://api.example.com` |
 | A web app | `toolwright mint https://app.example.com -a api.example.com` |
 | A HAR file | `toolwright capture import traffic.har -a api.example.com` |
 | An MCP server | `toolwright wrap npx -y @modelcontextprotocol/server-github` |
@@ -225,6 +224,15 @@ toolwright serve --scope repos,issues               # serve specific groups
 toolwright serve --max-risk low                     # cap risk tier exposure
 toolwright serve --watch --auto-heal safe           # continuous healing
 ```
+
+---
+
+## Roadmap
+
+- Transport-agnostic governance (CLI + REST adapters alongside MCP)
+- Governance maturity scoring (`toolwright score`)
+- GitHub Action for CI governance checks
+- Public toolpack registry
 
 ---
 

@@ -44,12 +44,10 @@ def _auto_resolve_toolpack(
     Returns the resolved path as a string, or None if resolution fails
     (letting the caller handle the error case).
     """
-    if toolpack:
-        return toolpack
     try:
         from toolwright.utils.resolve import resolve_toolpack_path
 
-        return str(resolve_toolpack_path(root=root))
+        return str(resolve_toolpack_path(explicit=toolpack, root=root))
     except (FileNotFoundError, click.UsageError):
         return None
 
@@ -74,7 +72,7 @@ def register_approval_commands(
     )
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolves tools, lockfile, policy, toolsets)",
     )
     @click.option(
@@ -192,7 +190,7 @@ def register_approval_commands(
     @gate.command("status")
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolves lockfile path)",
     )
     @click.option(
@@ -304,8 +302,8 @@ def register_approval_commands(
 
             return
 
-        if not toolpack and not lockfile:
-            toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
+        if not lockfile:
+            toolpack = _auto_resolve_toolpack(toolpack, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
             resolved = _resolve_gate_paths(toolpack)
             lockfile = resolved["lockfile"]
@@ -322,7 +320,7 @@ def register_approval_commands(
     @click.argument("tool_ids", nargs=-1)
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolves lockfile path)",
     )
     @click.option(
@@ -380,8 +378,8 @@ def register_approval_commands(
           toolwright gate allow --all
           toolwright gate allow get_users --by security@example.com
         """
-        if not toolpack and not lockfile:
-            toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
+        if not lockfile:
+            toolpack = _auto_resolve_toolpack(toolpack, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
             resolved = _resolve_gate_paths(toolpack)
             lockfile = resolved["lockfile"]
@@ -426,7 +424,7 @@ def register_approval_commands(
     @click.argument("tool_ids", nargs=-1, required=True)
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolves lockfile path)",
     )
     @click.option(
@@ -454,8 +452,8 @@ def register_approval_commands(
           toolwright gate block tool1 tool2 --toolpack toolpack.yaml
           toolwright gate block tool1 tool2
         """
-        if not toolpack and not lockfile:
-            toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
+        if not lockfile:
+            toolpack = _auto_resolve_toolpack(toolpack, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
             resolved = _resolve_gate_paths(toolpack)
             lockfile = resolved["lockfile"]
@@ -476,7 +474,7 @@ def register_approval_commands(
     @gate.command("check")
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolves lockfile path)",
     )
     @click.option(
@@ -508,8 +506,8 @@ def register_approval_commands(
           toolwright gate check --toolpack toolpack.yaml
           toolwright gate check --lockfile custom.lock.yaml
         """
-        if not toolpack and not lockfile:
-            toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
+        if not lockfile:
+            toolpack = _auto_resolve_toolpack(toolpack, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
             resolved = _resolve_gate_paths(toolpack)
             lockfile = resolved["lockfile"]
@@ -525,7 +523,7 @@ def register_approval_commands(
     @gate.command("snapshot")
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolves lockfile path)",
     )
     @click.option(
@@ -553,8 +551,8 @@ def register_approval_commands(
           toolwright gate snapshot --toolpack toolpack.yaml
           toolwright gate snapshot --lockfile custom.lock.yaml
         """
-        if not toolpack and not lockfile:
-            toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
+        if not lockfile:
+            toolpack = _auto_resolve_toolpack(toolpack, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
             resolved = _resolve_gate_paths(toolpack)
             lockfile = resolved["lockfile"]
@@ -585,7 +583,7 @@ def register_approval_commands(
     @gate.command("reseal")
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolves lockfile path)",
     )
     @click.option(
@@ -608,8 +606,8 @@ def register_approval_commands(
           toolwright gate reseal --toolpack toolpack.yaml
           toolwright gate reseal --lockfile custom.lock.yaml
         """
-        if not toolpack and not lockfile:
-            toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
+        if not lockfile:
+            toolpack = _auto_resolve_toolpack(toolpack, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
             resolved = _resolve_gate_paths(toolpack)
             lockfile = resolved["lockfile"]

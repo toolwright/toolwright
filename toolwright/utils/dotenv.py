@@ -75,32 +75,24 @@ class DotenvFile:
         os.chmod(self.path, 0o600)
 
     @staticmethod
-    def ensure_gitignored(dotenv_path: Path) -> bool:
-        """Check and auto-add .env path to .gitignore. Returns True if added."""
-        # Walk up to find the repo root (where .git lives or just use parent)
-        search = dotenv_path.parent
-        gitignore_path: Path | None = None
+    def ensure_gitignored(
+        dotenv_path: Path, *, root: Path | None = None
+    ) -> bool:
+        """Check and auto-add .env path to .gitignore. Returns True if added.
 
-        # Walk up to find an existing .gitignore or .git directory
-        current = search
-        while True:
-            candidate = current / ".gitignore"
-            git_dir = current / ".git"
-            if candidate.exists() or git_dir.exists():
-                gitignore_path = candidate
-                break
-            parent = current.parent
-            if parent == current:
-                break
-            current = parent
+        Args:
+            dotenv_path: Path to the .env file.
+            root: Project root to place .gitignore in. If None, uses
+                  dotenv_path.parent.parent as the default.
+        """
+        if root is None:
+            root = dotenv_path.parent.parent
 
-        if gitignore_path is None:
-            # Default: create .gitignore next to the dotenv_path's grandparent
-            gitignore_path = dotenv_path.parent.parent / ".gitignore"
+        gitignore_path = root / ".gitignore"
 
         # Compute relative pattern
         try:
-            pattern = str(dotenv_path.relative_to(gitignore_path.parent))
+            pattern = str(dotenv_path.relative_to(root))
         except ValueError:
             pattern = dotenv_path.name
 
