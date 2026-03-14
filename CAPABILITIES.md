@@ -734,7 +734,7 @@ Full-screen read-only Textual dashboard (distinct from web dashboard in CAP-CROS
 
 ## SERVE -- HTTP Transport & Dashboard
 
-### CAP-CROSS-017: GovernanceEngine (Transport-Agnostic Pipeline)
+### CAP-SERVE-001: GovernanceEngine (Transport-Agnostic Pipeline)
 
 Transport-agnostic request governance pipeline. Any transport adapter (MCP, CLI, REST) can invoke it.
 
@@ -743,7 +743,7 @@ Transport-agnostic request governance pipeline. Any transport adapter (MCP, CLI,
 - Stages: action lookup, schema validation, decision engine, confirmation gate, rule check, breaker check, dry-run, execution, response processing
 - `transport_type` parameter propagated to `DecisionRequest.source` for per-transport audit trails
 
-### CAP-CROSS-017b: GovernanceRuntime (Transport-Agnostic Factory)
+### CAP-SERVE-002: GovernanceRuntime (Transport-Agnostic Factory)
 
 Factory class that wires all governance subsystems (manifest, lockfile, policy, audit, decision engine, rules, circuit breaker) into a ready-to-use GovernanceEngine. Transport adapters instantiate this instead of duplicating wiring logic.
 
@@ -753,7 +753,7 @@ Factory class that wires all governance subsystems (manifest, lockfile, policy, 
 - `ToolwrightMCPServer` delegates to `GovernanceRuntime` internally
 - Tests: `tests/test_governance_runtime.py` (19 tests), `tests/test_transport_conformance.py` (4 tests)
 
-### CAP-CROSS-018a: CLI Transport (JSONL)
+### CAP-SERVE-003: CLI Transport (JSONL)
 
 Governed tool execution via JSONL on stdin/stdout. Same governance guarantees as MCP at ~1/30th the token cost. No MCP dependency required.
 
@@ -764,7 +764,7 @@ Governed tool execution via JSONL on stdin/stdout. Same governance guarantees as
 - CLI: `toolwright serve --transport cli`
 - Tests: `tests/test_cli_transport.py` (14 tests), `tests/test_transport_conformance.py` (8 tests across MCP+CLI)
 
-### CAP-CROSS-018b: HTTP Transport (StreamableHTTP)
+### CAP-SERVE-004: HTTP Transport (StreamableHTTP)
 
 MCP server over HTTP with Starlette + StreamableHTTPSessionManager. Default port 8745.
 
