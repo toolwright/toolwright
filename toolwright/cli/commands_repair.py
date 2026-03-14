@@ -244,12 +244,34 @@ def register_repair_plan_apply(*, repair_group: click.Group) -> None:
         approval_patches = [p for p in patches if p.get("kind") == "approval_required"]
         manual_patches = [p for p in patches if p.get("kind") == "manual"]
 
-        # SAFE patches: apply automatically (stub - just report)
+        # SAFE patches: apply automatically
+        import shlex
+        import subprocess
+
         if safe_patches:
             click.echo(click.style(f"Applying {len(safe_patches)} SAFE patch(es):", fg="green"))
             for patch in safe_patches:
-                click.echo(f"  ✓ {patch.get('title', 'Untitled')}")
-                click.echo(f"    $ {patch.get('cli_command', '')}")
+                title = patch.get("title", "Untitled")
+                cli_cmd = patch.get("cli_command", "")
+                click.echo(f"  → {title}")
+                click.echo(f"    $ {cli_cmd}")
+                if cli_cmd:
+                    try:
+                        result = subprocess.run(
+                            shlex.split(cli_cmd),
+                            capture_output=True,
+                            text=True,
+                            timeout=60,
+                        )
+                        if result.returncode == 0:
+                            click.echo(click.style("    ✓ Applied", fg="green"))
+                        else:
+                            stderr = result.stderr.strip()
+                            click.echo(click.style(f"    ✗ Failed (exit {result.returncode})", fg="red"))
+                            if stderr:
+                                click.echo(f"      {stderr[:200]}")
+                    except Exception as exc:
+                        click.echo(click.style(f"    ✗ Error: {exc}", fg="red"))
             click.echo()
 
         # APPROVAL_REQUIRED patches: prompt user

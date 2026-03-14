@@ -139,6 +139,60 @@ class TestRulesAdd:
         assert rules[0]["config"]["param_name"] == "color"
         assert rules[0]["config"]["pattern"] == "^[0-9a-fA-F]{6}$"
 
+    def test_add_duplicate_rule_is_skipped(self, tmp_path: Path):
+        """Adding the same rule twice (same kind + targets + description) should skip."""
+        runner = CliRunner()
+        add_args = [
+            "add",
+            "--kind", "prohibition",
+            "--target", "delete_user",
+            "--description", "Never delete users",
+        ]
+        r1 = _invoke(runner, add_args, tmp_path)
+        assert r1.exit_code == 0
+        assert "added" in r1.output.lower()
+
+        r2 = _invoke(runner, add_args, tmp_path)
+        assert r2.exit_code == 0
+        assert "already exists" in r2.output.lower()
+
+        rules = json.loads(_rules_file(tmp_path).read_text())
+        assert len(rules) == 1
+
+    def test_add_duplicate_rule_id_gives_clean_error(self, tmp_path: Path):
+        """H7: Duplicate custom --rule-id should show clean error, not traceback."""
+        runner = CliRunner()
+        _invoke(runner, [
+            "add", "--kind", "prohibition", "--target", "delete_user",
+            "--description", "First rule", "--rule-id", "my-custom-id",
+        ], tmp_path)
+
+        result = _invoke(runner, [
+            "add", "--kind", "prohibition", "--target", "other_tool",
+            "--description", "Second rule", "--rule-id", "my-custom-id",
+        ], tmp_path)
+        assert result.exit_code == 1
+        assert "already exists" in result.output.lower()
+        # Ensure no traceback leaked
+        assert "Traceback" not in result.output
+
+    def test_add_different_rules_both_kept(self, tmp_path: Path):
+        """Adding rules with different descriptions should keep both."""
+        runner = CliRunner()
+        _invoke(runner, [
+            "add", "--kind", "prohibition",
+            "--target", "delete_user",
+            "--description", "Never delete users",
+        ], tmp_path)
+        _invoke(runner, [
+            "add", "--kind", "prohibition",
+            "--target", "delete_user",
+            "--description", "A different reason to block deletes",
+        ], tmp_path)
+
+        rules = json.loads(_rules_file(tmp_path).read_text())
+        assert len(rules) == 2
+
 
 # ---------------------------------------------------------------------------
 # Tests: rules list

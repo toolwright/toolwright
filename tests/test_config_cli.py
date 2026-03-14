@@ -21,7 +21,7 @@ def test_config_outputs_snippet_to_stdout(tmp_path: Path) -> None:
     )
 
     assert result.exit_code == 0
-    assert result.stderr == ""
+    # stderr may contain helpful context (target file path, restart hint)
     payload = json.loads(result.stdout)
     # _derive_server_name uses origin.start_url → "app-example-com"
     server = payload["mcpServers"]["app-example-com"]
@@ -40,7 +40,7 @@ def test_config_outputs_codex_toml(tmp_path: Path) -> None:
     )
 
     assert result.exit_code == 0
-    assert result.stderr == ""
+    # stderr may contain helpful context (target file path, restart hint)
     stdout = result.stdout
     assert "[mcp_servers.app-example-com]" in stdout
     assert "enabled = true" in stdout
@@ -67,7 +67,7 @@ def test_config_outputs_codex_toml_with_name_override(tmp_path: Path) -> None:
     )
 
     assert result.exit_code == 0
-    assert result.stderr == ""
+    # stderr may contain helpful context (target file path, restart hint)
     assert "[mcp_servers.dummyjson]" in result.stdout
 
 

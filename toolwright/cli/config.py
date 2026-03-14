@@ -29,3 +29,17 @@ def run_config(
         sys.exit(1)
 
     click.echo(snippet)
+
+    # Show helpful context on stderr so it doesn't pollute piped output
+    import os
+    import platform
+    _CLIENT_PATHS = {
+        "Darwin": "~/Library/Application Support/Claude/claude_desktop_config.json",
+        "Linux": "~/.config/Claude/claude_desktop_config.json",
+        "Windows": "%APPDATA%/Claude/claude_desktop_config.json",
+    }
+    target = _CLIENT_PATHS.get(platform.system())
+    if target:
+        expanded = os.path.expanduser(target)
+        click.echo(f"\nPaste into: {expanded}", err=True)
+        click.echo("Then restart Claude Desktop to apply.", err=True)

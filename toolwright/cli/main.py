@@ -41,7 +41,6 @@ ADVANCED_COMMANDS = {
     "compile",
     "bundle",
     "lint",
-    "doctor",
     "enforce",
     "migrate",
     "inspect",
@@ -72,6 +71,7 @@ OPERATIONS_COMMANDS = [
     "diff",
     "verify",
     "health",
+    "doctor",
     "auth",
     "kill",
     "enable",
@@ -94,6 +94,24 @@ CORE_COMMANDS = [
 
 class ToolwrightGroup(click.Group):
     """Custom group with sectioned help output and interactive flow dispatch."""
+
+    def parse_args(self, ctx: click.Context, args: list[str]) -> list[str]:
+        """Extract --no-interactive from anywhere in the arg list.
+
+        Click normally only sees parent-group options before the subcommand
+        name.  This override lets users write either:
+            toolwright --no-interactive serve ...
+            toolwright serve --no-interactive ...
+        """
+        # Pull --no-interactive out of any position so the subcommand
+        # parser never rejects it as "unknown option".
+        if "--no-interactive" in args:
+            # Ensure it's in the position where the *group* will see it
+            # (before the first subcommand token).  We remove all
+            # occurrences and prepend one.
+            args = [a for a in args if a != "--no-interactive"]
+            args.insert(0, "--no-interactive")
+        return super().parse_args(ctx, args)
 
     def invoke(self, ctx: click.Context) -> None:
         """Override invoke to intercept MissingParameter for allowlisted commands."""

@@ -58,6 +58,9 @@ def run_repair(
     _write_commands_sh(out, report)
     _write_diagnosis_json(out, report)
 
+    # Also write repair_plan.json to state dir so `repair plan`/`repair apply` find it
+    _write_state_plan(root_path, report)
+
     # Print summary to stdout
     _print_summary(report, out, verbose)
 
@@ -71,6 +74,18 @@ def _resolve_output_dir(output_dir: str | None, root_path: str) -> Path:
 
     timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%SZ")
     return Path(root_path) / "repairs" / f"{timestamp}_repair"
+
+
+def _write_state_plan(root_path: str, report: Any) -> None:
+    """Write repair_plan.json to .toolwright/state/ for plan/apply commands."""
+    state_dir = Path(root_path) / ".toolwright" / "state"
+    state_dir.mkdir(parents=True, exist_ok=True)
+    plan_file = state_dir / "repair_plan.json"
+    data = {
+        "generated_at": report.generated_at,
+        "plan": report.patch_plan.model_dump(mode="json"),
+    }
+    plan_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
 def _write_repair_json(out: Path, report: Any) -> None:

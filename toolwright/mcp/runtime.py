@@ -144,11 +144,27 @@ def load_dotenv_auth(root: Path) -> dict[str, str]:
     return d.load()
 
 
+def inject_dotenv_auth(root: Path) -> dict[str, str]:
+    """Load .toolwright/.env and inject TOOLWRIGHT_AUTH_* entries into os.environ.
+
+    Does NOT overwrite existing env vars (shell env takes precedence).
+    Returns the dict of entries that were actually injected.
+    """
+    entries = load_dotenv_auth(root)
+    injected: dict[str, str] = {}
+    for key, value in entries.items():
+        if key.startswith("TOOLWRIGHT_AUTH_") and key not in os.environ:
+            os.environ[key] = value
+            injected[key] = value
+    return injected
+
+
 def prompt_auth_setup_if_missing(
     *,
     tools_path: str | Path,
     auth_header: str | None,
     root: Path,
+    no_interactive: bool = False,
 ) -> None:
     """Warn about missing auth and offer interactive setup if possible."""
     warnings = warn_missing_auth(tools_path=tools_path, auth_header=auth_header)
@@ -158,12 +174,22 @@ def prompt_auth_setup_if_missing(
     for w in warnings:
         click.echo(f"  WARNING: {w}", err=True)
 
+    if no_interactive:
+        click.echo("  Skipping auth setup (non-interactive mode).", err=True)
+        return
+
     if sys.stdin.isatty():
         click.echo(err=True)
         if click.confirm("  Run auth setup?", default=True, err=True):
             from toolwright.cli.auth_setup import auth_setup_flow
 
             auth_setup_flow(root=root, no_probe=False)
+    else:
+        # Non-TTY (e.g. Claude Desktop launching serve) — can't prompt, show fix instructions
+        click.echo(
+            "  Fix: run 'toolwright auth setup' in a terminal, then restart.",
+            err=True,
+        )
 
 
 def run_mcp_serve(
@@ -199,6 +225,7 @@ def run_mcp_serve(
     no_tool_limit: bool = False,
     shape_baselines_path: str | None = None,
     shape_probe_interval: int = 300,
+    no_interactive: bool = False,
 ) -> None:
     """Run the MCP server command."""
     resolved_toolpack = None
@@ -269,11 +296,11 @@ def run_mcp_serve(
     effective_toolset = toolset_name
     if effective_toolset is None and resolved_toolsets_path and resolved_toolsets_path.exists():
         effective_toolset = "readonly"
-        if verbose:
-            click.echo(
-                "Defaulting to toolset readonly. Use --toolset <name> to change.",
-                err=True,
-            )
+        click.echo(
+            "Note: Using 'readonly' toolset (write tools hidden). "
+            "Use --toolset <name> to change.",
+            err=True,
+        )
 
     resolved_lockfile_path: Path | None = None
     if lockfile_path:
@@ -433,11 +460,20 @@ def run_mcp_serve(
     except (json.JSONDecodeError, OSError):
         pass  # Let downstream code handle invalid manifests
 
+    # Load auth tokens from .toolwright/.env into os.environ
+    _dotenv_injected = inject_dotenv_auth(root=Path.cwd())
+    if _dotenv_injected and verbose:
+        click.echo(
+            f"  Loaded {len(_dotenv_injected)} auth token(s) from .toolwright/.env",
+            err=True,
+        )
+
     # Warn about missing auth env vars (and offer interactive setup)
     prompt_auth_setup_if_missing(
         tools_path=resolved_tools_path,
         auth_header=auth_header,
         root=Path.cwd(),
+        no_interactive=no_interactive,
     )
 
     # Render startup card with governance layers

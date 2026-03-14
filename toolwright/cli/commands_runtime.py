@@ -23,6 +23,7 @@ def register_runtime_commands(
     @click.option(
         "--tools", "-t",
         type=click.Path(),
+        hidden=True,
         help="Path to tools.json manifest",
     )
     @click.option(
@@ -33,11 +34,13 @@ def register_runtime_commands(
     @click.option(
         "--toolsets",
         type=click.Path(),
+        hidden=True,
         help="Path to toolsets.yaml (defaults to sibling of --tools if present)",
     )
     @click.option(
         "--policy", "-p",
         type=click.Path(),
+        hidden=True,
         help="Path to policy.yaml (optional)",
     )
     @click.option(
@@ -47,10 +50,12 @@ def register_runtime_commands(
     @click.option(
         "--lockfile",
         type=click.Path(),
+        hidden=True,
         help="Path to approved lockfile (required by default unless --unsafe-no-lockfile)",
     )
     @click.option(
         "--base-url",
+        hidden=True,
         help="Base URL for upstream API (overrides manifest hosts)",
     )
     @click.option(
@@ -63,11 +68,13 @@ def register_runtime_commands(
         "--extra-header", "-H",
         "extra_header_raw",
         multiple=True,
+        hidden=True,
         help="Extra header to inject into upstream requests (repeatable, format: 'Name: value')",
     )
     @click.option(
         "--audit-log",
         type=click.Path(),
+        hidden=True,
         help="Path for audit log file",
     )
     @click.option(
@@ -78,22 +85,26 @@ def register_runtime_commands(
     @click.option(
         "--confirm-store",
         type=click.Path(),
+        hidden=True,
         help="Path to local out-of-band confirmation store",
     )
     @click.option(
         "--allow-private-cidr",
         "allow_private_cidrs",
         multiple=True,
+        hidden=True,
         help="Allow private CIDR targets (repeatable; default denies private ranges)",
     )
     @click.option(
         "--allow-redirects",
         is_flag=True,
+        hidden=True,
         help="Allow redirects (each hop is re-validated against allowlists)",
     )
     @click.option(
         "--unsafe-no-lockfile",
         is_flag=True,
+        hidden=True,
         help="Allow runtime without approved lockfile (unsafe escape hatch)",
     )
     @click.option(
@@ -104,6 +115,7 @@ def register_runtime_commands(
     @click.option(
         "--circuit-breaker-path",
         type=click.Path(),
+        hidden=True,
         help="Path to circuit breaker state JSON file (enables KILL pillar runtime enforcement)",
     )
     @click.option(
@@ -114,27 +126,32 @@ def register_runtime_commands(
     @click.option(
         "--watch-config",
         type=click.Path(),
+        hidden=True,
         help="Path to watch config YAML (default: .toolwright/watch.yaml)",
     )
     @click.option(
         "--auto-heal",
         type=click.Choice(["off", "safe", "all"]),
         default=None,
+        hidden=True,
         help="Auto-heal policy (requires --watch): off, safe, or all",
     )
     @click.option(
         "--verbose-tools",
         is_flag=True,
+        hidden=True,
         help="Use full verbose tool descriptions instead of compact ones",
     )
     @click.option(
         "--tool-filter",
+        hidden=True,
         help="Glob pattern to filter tools by name (e.g. 'get_*')",
     )
     @click.option(
         "--max-risk",
         type=click.Choice(["low", "medium", "high", "critical"]),
         default=None,
+        hidden=True,
         help="Maximum risk tier to expose (filters out higher-risk tools)",
     )
     @click.option(
@@ -142,12 +159,14 @@ def register_runtime_commands(
         "serve_scope",
         type=str,
         default=None,
+        hidden=True,
         help="Comma-separated tool groups to serve (e.g., 'products,orders'). Use 'toolwright groups list' to see available groups.",
     )
     @click.option(
         "--no-tool-limit",
         is_flag=True,
         default=False,
+        hidden=True,
         help="Override the 200-tool safety limit. Not recommended.",
     )
     @click.option(
@@ -155,12 +174,14 @@ def register_runtime_commands(
         type=click.Choice(["strict", "warn", "off"]),
         default="warn",
         show_default=True,
+        hidden=True,
         help="Output schema validation mode: strict (client validates), warn (lenient, default), off (skip)",
     )
     @click.option(
         "--shape-baselines",
         type=click.Path(),
         default=None,
+        hidden=True,
         help="Path to shape_baselines.json for autonomous drift probing (requires --watch)",
     )
     @click.option(
@@ -168,18 +189,21 @@ def register_runtime_commands(
         type=int,
         default=300,
         show_default=True,
+        hidden=True,
         help="Interval in seconds between shape drift probes (requires --shape-baselines)",
     )
     @click.option(
         "--http",
         "use_http",
         is_flag=True,
+        hidden=True,
         help="Use HTTP transport (StreamableHTTP) instead of stdio",
     )
     @click.option(
         "--host",
         default="127.0.0.1",
         show_default=True,
+        hidden=True,
         help="Host to bind the HTTP server to (requires --http)",
     )
     @click.option(
@@ -187,6 +211,7 @@ def register_runtime_commands(
         type=int,
         default=8745,
         show_default=True,
+        hidden=True,
         help="Port for the HTTP server (requires --http)",
     )
     @click.pass_context
@@ -315,6 +340,7 @@ def register_runtime_commands(
                 shape_probe_interval=shape_probe_interval,
                 scope=serve_scope,
                 no_tool_limit=no_tool_limit,
+                no_interactive=ctx.obj.get("no_interactive_explicit", False),
             ),
             lock_id=lock_id,
         )

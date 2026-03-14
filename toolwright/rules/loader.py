@@ -47,7 +47,25 @@ def apply_template(
     rules_path: Path,
     activate: bool = False,
 ) -> list[BehavioralRule]:
-    """Load a template and create rules in the rules JSON file."""
+    """Load a template and create rules in the rules JSON file.
+
+    Returns the list of newly created rules. Rules that already exist
+    (matched by template name + rule name prefix) are silently skipped.
+    Use ``apply_template_verbose`` if you need the skip count.
+    """
+    created, _ = apply_template_verbose(
+        name, rules_path=rules_path, activate=activate
+    )
+    return created
+
+
+def apply_template_verbose(
+    name: str,
+    *,
+    rules_path: Path,
+    activate: bool = False,
+) -> tuple[list[BehavioralRule], int]:
+    """Load a template and create rules, returning (created, skipped_count)."""
     template = load_template(name)
     status = RuleStatus.ACTIVE if activate else RuleStatus.DRAFT
 
@@ -69,10 +87,12 @@ def apply_template(
             existing_prefixes.add(parts[0])
 
     created: list[BehavioralRule] = []
+    skipped = 0
     for rule_def in template.get("rules", []):
         logical_prefix = f"tmpl-{name}-{rule_def['name']}"
         if logical_prefix in existing_prefixes:
             # Rule already exists from this template — skip
+            skipped += 1
             continue
 
         rule = BehavioralRule(
@@ -97,4 +117,4 @@ def apply_template(
     rules_path.parent.mkdir(parents=True, exist_ok=True)
     rules_path.write_text(json.dumps(existing, indent=2, default=str))
 
-    return created
+    return created, skipped

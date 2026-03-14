@@ -276,6 +276,11 @@ class OpenAPIParser:
         for pattern in self.allowed_hosts:
             if pattern and not any(token in pattern for token in ("*", "?", "[")):
                 return pattern
+        self.warnings.append(
+            "No server host found in OpenAPI spec (relative URL or missing 'servers' field). "
+            "Falling back to 'api.example.com' which will not work at runtime. "
+            "Use --base-url to specify the correct API host."
+        )
         return "api.example.com"
 
     def _collect_parameters(

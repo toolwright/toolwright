@@ -57,6 +57,20 @@ class RuleEngine:
         self._rules[rule.rule_id] = rule
         self._save_rules()
 
+    def find_duplicate(self, rule: BehavioralRule) -> BehavioralRule | None:
+        """Find an existing rule with the same kind, targets, and description.
+
+        Returns the matching rule if found, None otherwise.
+        """
+        for existing in self._rules.values():
+            if (
+                existing.kind == rule.kind
+                and sorted(existing.target_tool_ids) == sorted(rule.target_tool_ids)
+                and existing.description == rule.description
+            ):
+                return existing
+        return None
+
     def remove_rule(self, rule_id: str) -> None:
         """Remove a rule by ID. Raises KeyError if not found."""
         if rule_id not in self._rules:

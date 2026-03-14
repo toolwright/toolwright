@@ -410,7 +410,7 @@ def run_create(
     click.echo("  Next steps:")
     step = 1
     if recipe_data and recipe_data.get("hosts"):
-        click.echo(f"    {step}. Set your auth token (see above)")
+        click.echo(f"    {step}. Run: toolwright auth setup")
         step += 1
     click.echo(f"    {step}. Run: toolwright config --toolpack " + str(toolpack_file))
     click.echo(f"    {step + 1}. Paste config into Claude Desktop and restart")

@@ -333,15 +333,6 @@ def _first_run_flow(*, root: Path, verbose: bool) -> None:
     con.print("  [heading]Welcome to Toolwright[/heading] — the immune system for AI tools.")
     con.print()
 
-    # Auto-run demo to show governance in action
-    try:
-        from toolwright.cli.demo import run_demo
-
-        run_demo(output_root=None, verbose=verbose, quiet=False)
-    except Exception:
-        # Demo failure shouldn't block the wizard
-        pass
-
     con.print()
 
     # Auto-detect project context
@@ -365,6 +356,7 @@ def _first_run_flow(*, root: Path, verbose: bool) -> None:
     # Offer first-run options
     first_run_menu = [
         ("quickstart", f"Quick Start {sym.arrow} capture & govern an API in minutes"),
+        ("demo", f"Watch Demo {sym.arrow} see governance in action"),
         ("ship", f"Ship Secure Agent {sym.arrow} end-to-end governed deployment"),
         ("init", f"Initialize Toolwright {sym.arrow} set up .toolwright/ in this project"),
         ("exit", "Exit"),
@@ -482,6 +474,10 @@ def _dispatch(
             _run_verify(str(toolpacks[0]), con, sym)
         else:
             con.print("  [warning]No toolpacks found.[/warning]")
+    elif choice == "demo":
+        from toolwright.cli.demo import run_demo
+
+        run_demo(output_root=None, verbose=verbose, quiet=False)
     elif choice == "drift":
         con.print("  [muted]Run:[/muted] [command]toolwright drift[/command]")
     else:

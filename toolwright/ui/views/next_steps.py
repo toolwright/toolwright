@@ -102,7 +102,7 @@ def compute_next_steps(inp: NextStepsInput) -> NextStepsOutput:
     if inp.pending_count > 0:
         noun = "tool" if inp.pending_count == 1 else "tools"
         candidates.append(NextStep(
-            command=_tp("toolwright gate allow", tid),
+            command=_tp("toolwright gate allow --all", tid),
             label="Approve pending tools",
             why=f"{inp.pending_count} {noun} awaiting approval before serving",
         ))

@@ -51,6 +51,12 @@ def run_verify(
     if mode not in VERIFY_MODES:
         click.echo(f"Error: unsupported verify mode '{mode}'", err=True)
         sys.exit(3)
+    if mode in ("all", "provenance") and not playbook_path:
+        click.echo(
+            "Error: --playbook is required when --mode is 'all' or 'provenance'",
+            err=True,
+        )
+        sys.exit(1)
     if mode == "replay":
         click.echo(
             "Warning: --mode replay is deprecated. Use --mode baseline-check instead.",

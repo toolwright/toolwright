@@ -156,6 +156,11 @@ def register_auth_check_command(*, auth_group: click.Group) -> None:
         click.echo(f"Hosts: {', '.join(hosts)}")
         click.echo()
 
+        # Load .toolwright/.env tokens so auth check sees them
+        from toolwright.mcp.runtime import inject_dotenv_auth
+
+        inject_dotenv_auth(root=cli_root(ctx))
+
         all_ok = True
 
         for host in hosts:

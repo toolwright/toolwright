@@ -240,3 +240,49 @@ class TestTemplateApplyCLI:
         runner = CliRunner()
         result = _invoke_template(runner, ["apply", "retry-safety"], tmp_path)
         assert "toolwright rules activate" in result.output
+
+    def test_apply_twice_is_idempotent(self, tmp_path):
+        """Applying the same template twice must not create duplicate rules."""
+        runner = CliRunner()
+        _invoke_template(runner, ["apply", "crud-safety"], tmp_path)
+        result = _invoke_template(runner, ["apply", "crud-safety"], tmp_path)
+        assert result.exit_code == 0
+        data = json.loads(_rules_path(tmp_path).read_text())
+        assert len(data) == 3  # not 6
+        assert "already exists" in result.output.lower() or "skipping" in result.output.lower()
+
+    def test_apply_twice_logs_skip_message(self, tmp_path):
+        """Second apply should log that rules were skipped."""
+        runner = CliRunner()
+        _invoke_template(runner, ["apply", "crud-safety"], tmp_path)
+        result = _invoke_template(runner, ["apply", "crud-safety"], tmp_path)
+        assert "already exist" in result.output.lower()
+
+
+class TestApplyTemplateIdempotent:
+    """Idempotency tests at the loader level."""
+
+    def test_apply_template_twice_no_duplicates(self, tmp_path):
+        """apply_template called twice produces no duplicates."""
+        rules_path = tmp_path / "rules.json"
+        rules_path.write_text("[]")
+
+        apply_template("crud-safety", rules_path=rules_path)
+        created2 = apply_template("crud-safety", rules_path=rules_path)
+        assert len(created2) == 0
+
+        data = json.loads(rules_path.read_text())
+        assert len(data) == 3
+
+    def test_apply_template_twice_different_templates_ok(self, tmp_path):
+        """Applying two different templates should create all rules."""
+        rules_path = tmp_path / "rules.json"
+        rules_path.write_text("[]")
+
+        c1 = apply_template("crud-safety", rules_path=rules_path)
+        c2 = apply_template("retry-safety", rules_path=rules_path)
+        assert len(c1) == 3
+        assert len(c2) == 1
+
+        data = json.loads(rules_path.read_text())
+        assert len(data) == 4

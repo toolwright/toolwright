@@ -103,7 +103,15 @@ def register_rules_commands(*, cli: click.Group) -> None:
             target_tool_ids=list(target),
             config=config,
         )
-        engine.add_rule(rule)
+        existing = engine.find_duplicate(rule)
+        if existing is not None:
+            click.echo(f"Rule already exists ({existing.rule_id}), skipping.")
+            return
+        try:
+            engine.add_rule(rule)
+        except ValueError:
+            click.echo(f"Error: Rule ID '{rid}' already exists. Use a different --rule-id.", err=True)
+            raise SystemExit(1)
         click.echo(f"Rule '{rid}' added ({kind}).")
 
     @rules.command("list")
@@ -290,23 +298,30 @@ def register_rules_commands(*, cli: click.Group) -> None:
     @click.pass_context
     def template_apply(ctx: click.Context, name: str, activate: bool) -> None:
         """Apply a rule template to the active toolpack."""
-        from toolwright.rules.loader import apply_template
+        from toolwright.rules.loader import apply_template_verbose
 
         rules_path = ctx.obj["rules_path"]
         try:
-            created = apply_template(
+            created, skipped = apply_template_verbose(
                 name, rules_path=rules_path, activate=activate
             )
         except ValueError as e:
             click.echo(f"Error: {e}", err=True)
             raise SystemExit(1) from e
         status = "ACTIVE" if activate else "DRAFT"
-        click.echo(
-            f"Applied template '{name}': {len(created)} {'rule' if len(created) == 1 else 'rules'} created as {status}."
-        )
-        for r in created:
-            click.echo(f"  {r.rule_id}: {r.description}")
-        if not activate:
+        if created:
+            click.echo(
+                f"Applied template '{name}': {len(created)} {'rule' if len(created) == 1 else 'rules'} created as {status}."
+            )
+            for r in created:
+                click.echo(f"  {r.rule_id}: {r.description}")
+        if skipped:
+            click.echo(
+                f"{skipped} {'rule' if skipped == 1 else 'rules'} already exist, skipping."
+            )
+        if not created and not skipped:
+            click.echo(f"Template '{name}' has no rules.")
+        if created and not activate:
             click.echo("\nActivate with: toolwright rules activate <rule-id>")
 
 

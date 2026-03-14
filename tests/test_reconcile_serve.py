@@ -148,21 +148,23 @@ class TestServeCommandWatchOptions:
         runner = CliRunner()
         result = runner.invoke(cli, ["serve", "--help"])
         assert "--watch" in result.output
-        assert "--watch-config" in result.output
+        # --watch-config is hidden (advanced); verify it's accepted
+        result2 = runner.invoke(cli, ["serve", "--watch-config", "watch.yaml", "--help"])
+        assert result2.exit_code == 0
 
 
 class TestServeAutoHealFlag:
     """Tests for --auto-heal CLI option on serve command."""
 
-    def test_auto_heal_in_help(self):
-        """serve --help should show --auto-heal option."""
+    def test_auto_heal_accepted(self):
+        """serve should accept --auto-heal option (hidden but functional)."""
         from click.testing import CliRunner
 
         from toolwright.cli.main import cli
 
         runner = CliRunner()
-        result = runner.invoke(cli, ["serve", "--help"])
-        assert "--auto-heal" in result.output
+        result = runner.invoke(cli, ["serve", "--auto-heal", "safe", "--help"])
+        assert result.exit_code == 0
 
     def test_auto_heal_without_watch_errors(self):
         """Using --auto-heal without --watch should exit with error code 2."""
@@ -175,14 +177,12 @@ class TestServeAutoHealFlag:
         assert result.exit_code == 2
         assert "--watch" in result.output
 
-    def test_auto_heal_choices_shown(self):
-        """Help text should show off/safe/all choices for --auto-heal."""
+    def test_auto_heal_choices_validated(self):
+        """--auto-heal should reject invalid choices."""
         from click.testing import CliRunner
 
         from toolwright.cli.main import cli
 
         runner = CliRunner()
-        result = runner.invoke(cli, ["serve", "--help"])
-        assert "off" in result.output
-        assert "safe" in result.output
-        assert "all" in result.output
+        result = runner.invoke(cli, ["serve", "--auto-heal", "invalid"])
+        assert result.exit_code != 0
