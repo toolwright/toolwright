@@ -408,11 +408,13 @@ def run_create(
 
     # Section 4: Next Steps
     click.echo("  Next steps:")
+    step = 1
     if recipe_data and recipe_data.get("hosts"):
-        click.echo("    1. Set your auth token (see above)")
-    click.echo("    2. Run: toolwright config --toolpack " + str(toolpack_file))
-    click.echo("    3. Paste config into Claude Desktop and restart")
-    click.echo("    4. Ask Claude about your API!")
+        click.echo(f"    {step}. Set your auth token (see above)")
+        step += 1
+    click.echo(f"    {step}. Run: toolwright config --toolpack " + str(toolpack_file))
+    click.echo(f"    {step + 1}. Paste config into Claude Desktop and restart")
+    click.echo(f"    {step + 2}. Ask Claude about your API!")
 
 
 def register_create_commands(*, cli: click.Group, run_with_lock: Any) -> None:
