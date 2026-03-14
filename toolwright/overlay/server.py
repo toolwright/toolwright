@@ -166,7 +166,7 @@ class OverlayServer:
         """Create MCP Server and register list_tools/call_tool handlers."""
         self._mcp_server = Server(f"toolwright-overlay-{self.config.server_name}")
 
-        @self._mcp_server.list_tools()  # type: ignore[misc, no-untyped-call]
+        @self._mcp_server.list_tools()  # type: ignore
         async def handle_list_tools() -> list[types.Tool]:
             tools = []
             for action in self.actions.values():
@@ -180,7 +180,7 @@ class OverlayServer:
                 tools.append(tool)
             return tools
 
-        @self._mcp_server.call_tool()  # type: ignore[misc]
+        @self._mcp_server.call_tool()  # type: ignore
         async def handle_call_tool(
             name: str,
             arguments: dict[str, Any] | None,
