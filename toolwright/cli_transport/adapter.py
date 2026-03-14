@@ -50,8 +50,6 @@ class CLITransportAdapter:
 
     async def _run_async(self) -> None:
         """Async main loop: read JSONL from stdin, process, write JSONL to stdout."""
-        loop = asyncio.get_event_loop()
-
         for raw_line in sys.stdin:
             line = raw_line.strip()
             if not line:

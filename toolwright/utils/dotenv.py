@@ -71,8 +71,11 @@ class DotenvFile:
         """Write to disk with 0600 permissions. Creates parent dirs."""
         self.path.parent.mkdir(parents=True, exist_ok=True)
         content = "\n".join(self._raw_lines) + "\n"
-        self.path.write_text(content)
-        os.chmod(self.path, 0o600)
+        fd = os.open(str(self.path), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        try:
+            os.write(fd, content.encode())
+        finally:
+            os.close(fd)
 
     @staticmethod
     def ensure_gitignored(

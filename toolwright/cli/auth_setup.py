@@ -70,6 +70,7 @@ def auth_setup_flow(
 
     # Load .env file
     env_file = DotenvFile(root / ".toolwright" / ".env")
+    env_file.load()
 
     # Check status for each host
     host_status: dict[str, tuple[str, str | None]] = {}  # host -> (status, value)

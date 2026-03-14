@@ -110,6 +110,7 @@ def compute_score(
     drift_score = 0.5  # default: not checked
     drift_details = "Not checked"
     drift_recs: list[str] = []
+    status = None  # hoisted for reuse in verification block
 
     try:
         status = get_status(str(tp_path))
@@ -148,6 +149,8 @@ def compute_score(
     verify_recs: list[str] = []
 
     try:
+        if status is None:
+            raise ValueError("status unavailable")
         verify_state = status.verification_state
         if verify_state == "pass":
             verify_score = 1.0
