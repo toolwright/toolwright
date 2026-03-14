@@ -272,9 +272,8 @@ toolwright serve --watch --auto-heal safe           # continuous healing
 
 - `toolwright wrap` for CLI tools (govern `gh`, `aws`, any CLI)
 - REST transport adapter (`toolwright serve --transport rest`)
-- Governance maturity scoring (`toolwright score`)
 - GitHub Action for CI governance checks
-- Token budget estimator (MCP vs CLI vs REST cost comparison)
+- Public toolpack registry
 
 ---
 
