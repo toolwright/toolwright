@@ -14,34 +14,13 @@ All 5 items shipped. Files: `toolwright/utils/dotenv.py`, `toolwright/utils/auth
 
 **Context**: CEO review determined that toolwright's governance engine is already transport-agnostic in design but MCP-coupled in implementation. The market is splitting into CLI-first (10-32x cheaper, 100% reliable) and MCP-first (enterprise compliance, multi-tenant auth) camps. Rather than picking a side, toolwright should govern both. The `ToolwrightMCPServer` monolith (1000+ lines) tangles governance, execution, and MCP transport — extraction unlocks multi-transport support with minimal new code.
 
-### TODO-TRANSPORT-001: Extract GovernanceEngine from ToolwrightMCPServer
-- **Priority**: P1 | **Effort**: M
-- **What**: Split `toolwright/mcp/server.py` (1000+ lines) into three components:
-  1. `toolwright/core/governance/engine.py` — GovernanceEngine (lockfile enforcement, circuit breakers, rule engine, network safety, decision trace, audit logging, schema validation, confirmation flow)
-  2. `toolwright/core/governance/executor.py` — ExecutionEngine (URL building, auth injection, httpx client, response processing, size limits)
-  3. `toolwright/mcp/adapter.py` — MCPAdapter (MCP Server registration, type conversion, stdio/SSE transport)
-- **Why**: The governance engine is the core value. Coupling it to MCP limits our addressable market to MCP users only. Extraction enables CLI and REST adapters with zero governance code duplication.
-- **Details**:
-  - Promote `RequestPipeline` (`mcp/pipeline.py`) to `core/governance/pipeline.py`
-  - GovernanceEngine.evaluate(tool_name, params) → DecisionTrace
-  - ExecutionEngine.execute(tool_def, params, auth_context) → ExecutionResult
-  - MCPAdapter wraps both to implement MCP list_tools/call_tool
-  - All existing tests must pass with zero behavior change
-  - Add `transport_type` field to DecisionTrace
-- **Depends on**: Nothing
+### ~~TODO-TRANSPORT-001: Extract GovernanceEngine from ToolwrightMCPServer~~ (COMPLETED 2026-03-14)
 
-### TODO-TRANSPORT-002: Build CLI Adapter
-- **Priority**: P1 | **Effort**: M
-- **What**: Allow `toolwright serve --transport cli` to expose governed tools as CLI subprocess calls. Agent sends tool name + params, adapter validates through GovernanceEngine, then invokes the target CLI tool as a subprocess.
-- **Why**: CLI-first agents (Claude Code, Devin, custom) get the same governance guarantees at 1/30th the token cost. Addresses the #1 criticism of MCP — context bloat.
-- **Details**:
-  - New file: `toolwright/cli_transport/adapter.py`
-  - Security: `subprocess.run([tool, ...args], shell=False)` — NEVER shell=True
-  - All parameters validated against tool schema before passing to subprocess
-  - CLI tool paths must come from approved manifest (prevent path traversal)
-  - Handle: tool not on PATH → clean error, subprocess timeout → clean error, non-zero exit → include stderr in response
-  - stdin=DEVNULL to prevent interactive tool hangs
-- **Depends on**: TODO-TRANSPORT-001
+Shipped as GovernanceRuntime (`toolwright/core/governance/runtime.py`) + GovernanceEngine (`toolwright/core/governance/engine.py`). ToolwrightMCPServer refactored to delegate to GovernanceRuntime. `transport_type` parameterized in DecisionRequest.source. 3198 tests pass. Files: `runtime.py`, `engine.py`, `mcp/server.py`. Tests: `test_governance_runtime.py` (19), `test_transport_conformance.py` (8).
+
+### ~~TODO-TRANSPORT-002: Build CLI Adapter~~ (COMPLETED 2026-03-14)
+
+Shipped CLI transport adapter (`toolwright/cli_transport/adapter.py`, `serve.py`). JSONL protocol on stdin/stdout. `toolwright serve --transport cli` wired into CLI. Same governance guarantees as MCP. Tests: `test_cli_transport.py` (14), `test_transport_conformance.py` (8 across MCP+CLI).
 
 ### TODO-TRANSPORT-003: Build REST/HTTP API Adapter
 - **Priority**: P2 | **Effort**: M
@@ -88,10 +67,15 @@ All 5 items shipped. Files: `toolwright/utils/dotenv.py`, `toolwright/utils/auth
 - **Depends on**: TODO-TRANSPORT-001, TODO-TRANSPORT-002, TODO-TRANSPORT-003
 
 ### TODO-DELIGHT-002: `toolwright wrap` for CLI tools
-- **Priority**: P2 | **Effort**: S
-- **What**: Extend `toolwright wrap` (currently MCP-only) to wrap any CLI tool with governance. Example: `toolwright wrap gh` governs GitHub CLI calls with lockfile, circuit breakers, and rules.
-- **Why**: Killer demo for CLI-first developers. Shows governance works without MCP.
-- **Depends on**: TODO-TRANSPORT-002
+- **Priority**: P0 | **Effort**: M
+- **What**: Extend `toolwright wrap` (currently MCP-only) to wrap any CLI tool with governance. Example: `toolwright wrap gh` governs GitHub CLI calls with lockfile, circuit breakers, and rules. Uses the new CLI transport adapter and GovernanceRuntime.
+- **Why**: Killer demo for CLI-first developers. Shows governance works without MCP. CEO identified this as the #1 differentiator for the transport-agnostic story.
+- **Details**:
+  - `toolwright wrap gh` introspects the CLI tool's help/man page to generate a synthetic tool manifest
+  - Wraps subprocess calls through GovernanceRuntime with shell=False, stdin=DEVNULL
+  - CLI tool paths validated against approved manifest (prevent path traversal)
+  - Handle: tool not on PATH → clean error, subprocess timeout → clean error, non-zero exit → include stderr
+- **Depends on**: TODO-TRANSPORT-001 (DONE), TODO-TRANSPORT-002 (DONE)
 
 ### TODO-DELIGHT-003: Multi-transport demo panel
 - **Priority**: P3 | **Effort**: S

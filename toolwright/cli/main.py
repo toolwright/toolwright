@@ -59,7 +59,6 @@ ADVANCED_COMMANDS = {
     "share",
     "install",
     "capture",
-    "wrap",
 }
 
 # Operations commands shown after core in default help.
@@ -80,6 +79,8 @@ OPERATIONS_COMMANDS = [
     "watch",
     "recipes",
     "dashboard",
+    "completions",
+    "wrap",
 ]
 
 # Core commands shown prominently in default help, in workflow order.
@@ -162,7 +163,7 @@ class ToolwrightGroup(click.Group):
 
         formatter.write("\n")
         formatter.write("  Use 'toolwright <command> --help' for details on any command.\n")
-        formatter.write("  Use 'toolwright --help-all' to see all commands including advanced.\n")
+        formatter.write("  Use 'toolwright --help-all' to see all commands (init, ship, demo, and more).\n")
 
 
 def _render_help_all(ctx: click.Context) -> str:
@@ -298,6 +299,30 @@ register_tokens_commands(cli=cli)
 from toolwright.cli.commands_wrap import wrap_command as _wrap_cmd  # noqa: E402
 
 cli.add_command(_wrap_cmd, "wrap")
+
+# Shell completions command
+@cli.command()
+@click.argument("shell", type=click.Choice(["bash", "zsh", "fish"]))
+def completions(shell: str) -> None:
+    """Print shell completion activation script.
+
+    Add the printed line to your shell profile (~/.bashrc, ~/.zshrc, etc.)
+    to enable tab-completion for all toolwright commands.
+
+    \b
+    Examples:
+      toolwright completions bash >> ~/.bashrc
+      toolwright completions zsh >> ~/.zshrc
+      toolwright completions fish > ~/.config/fish/completions/toolwright.fish
+    """
+    prog = CLI_PRIMARY_COMMAND
+    if shell == "bash":
+        click.echo(f'eval "$(_TOOLWRIGHT_COMPLETE=bash_source {prog})"')
+    elif shell == "zsh":
+        click.echo(f'eval "$(_TOOLWRIGHT_COMPLETE=zsh_source {prog})"')
+    elif shell == "fish":
+        click.echo(f"_TOOLWRIGHT_COMPLETE=fish_source {prog} | source")
+
 
 # Register drift status subcommand
 from toolwright.cli.drift import drift_status as _drift_status_cmd  # noqa: E402

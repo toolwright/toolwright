@@ -193,6 +193,13 @@ def register_runtime_commands(
         help="Interval in seconds between shape drift probes (requires --shape-baselines)",
     )
     @click.option(
+        "--transport",
+        "transport_mode",
+        type=click.Choice(["stdio", "http", "cli"]),
+        default=None,
+        help="Transport protocol: stdio (MCP default), http (StreamableHTTP), cli (JSONL on stdin/stdout)",
+    )
+    @click.option(
         "--http",
         "use_http",
         is_flag=True,
@@ -204,7 +211,7 @@ def register_runtime_commands(
         default="127.0.0.1",
         show_default=True,
         hidden=True,
-        help="Host to bind the HTTP server to (requires --http)",
+        help="Host to bind the HTTP server to (requires --http or --transport http)",
     )
     @click.option(
         "--port",
@@ -212,7 +219,7 @@ def register_runtime_commands(
         default=8745,
         show_default=True,
         hidden=True,
-        help="Port for the HTTP server (requires --http)",
+        help="Port for the HTTP server (requires --http or --transport http)",
     )
     @click.pass_context
     def serve(
@@ -245,11 +252,12 @@ def register_runtime_commands(
         schema_validation: str,
         shape_baselines: str | None,
         shape_probe_interval: int,
+        transport_mode: str | None,
         use_http: bool,
         host: str,
         port: int,
     ) -> None:
-        """Start the governed MCP server on stdio transport.
+        """Start the governed tool server.
 
         Exposes compiled tools as callable actions that AI agents can use
         safely, with policy enforcement, confirmation requirements, and
@@ -296,7 +304,8 @@ def register_runtime_commands(
             except (FileNotFoundError, click.UsageError):
                 pass
 
-        from toolwright.mcp.runtime import run_mcp_serve
+        # Resolve effective transport: --transport > --http > default stdio
+        effective_transport = transport_mode or ("http" if use_http else "stdio")
 
         lock_id = None
         if toolpack:
@@ -304,46 +313,78 @@ def register_runtime_commands(
         elif tools:
             lock_id = f"tools:{Path(tools).resolve()}"
 
-        run_with_lock(
-            ctx,
-            "serve",
-            lambda: run_mcp_serve(
-                tools_path=tools,
-                toolpack_path=toolpack,
-                toolsets_path=toolsets,
-                toolset_name=toolset,
-                policy_path=policy,
-                lockfile_path=lockfile,
-                base_url=base_url,
-                auth_header=auth_header,
-                audit_log=audit_log,
-                dry_run=dry_run,
-                confirmation_store_path=resolve_confirmation_store(ctx, confirm_store),
-                allow_private_cidrs=list(allow_private_cidrs),
-                allow_redirects=allow_redirects,
-                unsafe_no_lockfile=unsafe_no_lockfile,
-                verbose=ctx.obj.get("verbose", False),
-                rules_path=rules_path,
-                circuit_breaker_path=circuit_breaker_path,
-                watch=watch,
-                watch_config_path=watch_config,
-                auto_heal_override=auto_heal,
-                verbose_tools=verbose_tools,
-                tool_filter=tool_filter,
-                max_risk=max_risk,
-                transport="http" if use_http else "stdio",
-                host=host,
-                port=port,
-                extra_headers=cli_extra_headers,
-                schema_validation=schema_validation,
-                shape_baselines_path=shape_baselines,
-                shape_probe_interval=shape_probe_interval,
-                scope=serve_scope,
-                no_tool_limit=no_tool_limit,
-                no_interactive=ctx.obj.get("no_interactive_explicit", False),
-            ),
-            lock_id=lock_id,
-        )
+        if effective_transport == "cli":
+            from toolwright.cli_transport.serve import run_cli_serve
+
+            run_with_lock(
+                ctx,
+                "serve",
+                lambda: run_cli_serve(
+                    tools_path=tools,
+                    toolpack_path=toolpack,
+                    toolsets_path=toolsets,
+                    toolset_name=toolset,
+                    policy_path=policy,
+                    lockfile_path=lockfile,
+                    base_url=base_url,
+                    auth_header=auth_header,
+                    audit_log=audit_log,
+                    dry_run=dry_run,
+                    confirmation_store_path=resolve_confirmation_store(ctx, confirm_store),
+                    allow_private_cidrs=list(allow_private_cidrs),
+                    allow_redirects=allow_redirects,
+                    unsafe_no_lockfile=unsafe_no_lockfile,
+                    rules_path=rules_path,
+                    circuit_breaker_path=circuit_breaker_path,
+                    extra_headers=cli_extra_headers,
+                    schema_validation=schema_validation,
+                    verbose=ctx.obj.get("verbose", False),
+                ),
+                lock_id=lock_id,
+            )
+        else:
+            from toolwright.mcp.runtime import run_mcp_serve
+
+            run_with_lock(
+                ctx,
+                "serve",
+                lambda: run_mcp_serve(
+                    tools_path=tools,
+                    toolpack_path=toolpack,
+                    toolsets_path=toolsets,
+                    toolset_name=toolset,
+                    policy_path=policy,
+                    lockfile_path=lockfile,
+                    base_url=base_url,
+                    auth_header=auth_header,
+                    audit_log=audit_log,
+                    dry_run=dry_run,
+                    confirmation_store_path=resolve_confirmation_store(ctx, confirm_store),
+                    allow_private_cidrs=list(allow_private_cidrs),
+                    allow_redirects=allow_redirects,
+                    unsafe_no_lockfile=unsafe_no_lockfile,
+                    verbose=ctx.obj.get("verbose", False),
+                    rules_path=rules_path,
+                    circuit_breaker_path=circuit_breaker_path,
+                    watch=watch,
+                    watch_config_path=watch_config,
+                    auto_heal_override=auto_heal,
+                    verbose_tools=verbose_tools,
+                    tool_filter=tool_filter,
+                    max_risk=max_risk,
+                    transport=effective_transport,
+                    host=host,
+                    port=port,
+                    extra_headers=cli_extra_headers,
+                    schema_validation=schema_validation,
+                    shape_baselines_path=shape_baselines,
+                    shape_probe_interval=shape_probe_interval,
+                    scope=serve_scope,
+                    no_tool_limit=no_tool_limit,
+                    no_interactive=ctx.obj.get("no_interactive_explicit", False),
+                ),
+                lock_id=lock_id,
+            )
 
     @cli.command()
     @click.option(

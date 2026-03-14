@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import hashlib
-import ipaddress
 import json
 import logging
 import os
@@ -15,28 +13,13 @@ import time
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode, urljoin, urlparse
-from uuid import uuid4
 
 import httpx
-import yaml
 
 from toolwright.core.approval import (
     ApprovalStatus,
-    LockfileManager,
-    compute_artifacts_digest_from_paths,
     compute_lockfile_digest,
 )
-from toolwright.core.approval.signing import resolve_approval_root
-from toolwright.core.audit import (
-    AuditLogger,
-    DecisionTraceEmitter,
-    FileAuditBackend,
-    MemoryAuditBackend,
-)
-from toolwright.core.correct.engine import RuleEngine
-from toolwright.core.correct.session import SessionHistory
-from toolwright.core.enforce import ConfirmationStore, DecisionEngine, PolicyEngine
-from toolwright.core.kill.breaker import CircuitBreakerRegistry
 from toolwright.core.network_safety import (
     RuntimeBlockError,
     host_matches_allowlist,
@@ -54,13 +37,9 @@ from toolwright.mcp._compat import (
 from toolwright.mcp._compat import (
     mcp_types as types,
 )
-from toolwright.mcp.pipeline import RequestPipeline
 from toolwright.models.decision import (
-    DecisionContext,
-    NetworkSafetyConfig,
     ReasonCode,
 )
-from toolwright.utils.schema_version import resolve_schema_version
 
 logger = logging.getLogger(__name__)
 
@@ -122,177 +101,75 @@ class ToolwrightMCPServer:
         schema_validation: str = "warn",
         auth_requirements: list[ToolpackAuthRequirement] | None = None,
     ) -> None:
-        self.schema_validation = schema_validation
-        self._auth_requirements = auth_requirements or []
-        self.tools_path = Path(tools_path)
-        self.toolsets_path = Path(toolsets_path) if toolsets_path else None
-        self.toolset_name = toolset_name
-        self.policy_path = Path(policy_path) if policy_path else None
-        self.lockfile_path = Path(lockfile_path) if lockfile_path else None
-        self.base_url = base_url
-        self.auth_header = auth_header
-        self.extra_headers = extra_headers
-        self.dry_run = dry_run
-        self.allow_private_networks = [
-            ipaddress.ip_network(cidr)
-            for cidr in (allow_private_cidrs or [])
-        ]
-        self.allow_redirects = allow_redirects
-        self.approval_root_path = resolve_approval_root(
-            lockfile_path=self.lockfile_path,
-            fallback_root=confirmation_store_path,
-        )
-        self.run_id = f"run_{uuid4().hex[:12]}"
+        from toolwright.core.governance.runtime import GovernanceRuntime
 
-        with open(self.tools_path) as f:
-            self.manifest: dict[str, Any] = json.load(f)
-        resolve_schema_version(
-            self.manifest,
-            artifact="tools manifest",
-            allow_legacy=True,
-        )
-
-        self.toolsets_payload: dict[str, Any] | None = None
-        selected_action_names: set[str] | None = None
-        if self.toolsets_path is not None:
-            with open(self.toolsets_path) as f:
-                self.toolsets_payload = yaml.safe_load(f) or {}
-            resolve_schema_version(
-                self.toolsets_payload,
-                artifact="toolsets artifact",
-                allow_legacy=False,
-            )
-
-            if self.toolset_name:
-                toolsets = self.toolsets_payload.get("toolsets", {})
-                if self.toolset_name not in toolsets:
-                    available = ", ".join(sorted(toolsets))
-                    raise ValueError(
-                        f"Unknown toolset '{self.toolset_name}'. Available: {available}"
-                    )
-                selected_action_names = set(toolsets[self.toolset_name].get("actions", []))
-
-        self.lockfile_manager: LockfileManager | None = None
-        self.lockfile_digest_current: str | None = None
-        self._lockfile_mtime: float = 0.0
-        self._last_lockfile_check: float = 0.0
-        if self.lockfile_path is not None:
-            manager = LockfileManager(self.lockfile_path)
-            if not manager.exists():
-                raise ValueError(f"Lockfile not found: {manager.lockfile_path}")
-            lockfile = manager.load()
-
-            # Verify Ed25519 signatures at startup.
-            # This is a defense-in-depth check; per-request verification in
-            # DecisionEngine is the primary enforcement point.
-            sig_passed, sig_message = manager.verify_signatures(
-                root_path=self.approval_root_path,
-            )
-            if not sig_passed:
-                logger.warning(
-                    "Lockfile signature verification failed at startup: %s "
-                    "Per-request signature verification is still enforced.",
-                    sig_message,
-                )
-
-            self.lockfile_manager = manager
-            self.lockfile_digest_current = compute_lockfile_digest(lockfile.model_dump(mode="json"))
-            if self.lockfile_path.exists():
-                self._lockfile_mtime = self.lockfile_path.stat().st_mtime
-
-        self.actions: dict[str, dict[str, Any]] = {}
-        self.actions_by_tool_id: dict[str, dict[str, Any]] = {}
-        for action in self.manifest.get("actions", []):
-            if selected_action_names is not None and action.get("name") not in selected_action_names:
-                continue
-            if not self._is_action_exposed(action):
-                continue
-            self.actions[action["name"]] = action
-            tool_id = str(action.get("tool_id") or action.get("signature_id") or action.get("name"))
-            self.actions_by_tool_id[tool_id] = action
-            self.actions_by_tool_id[action["name"]] = action
-
-        if selected_action_names is not None:
-            missing = sorted(selected_action_names - set(self.actions))
-            if missing:
-                raise ValueError(
-                    f"Toolset '{self.toolset_name}' references missing tools: {', '.join(missing)}"
-                )
-
-        backend = FileAuditBackend(audit_log) if audit_log else MemoryAuditBackend()
-        self.audit_logger = AuditLogger(backend)
-        self.policy_digest = (
-            hashlib.sha256(self.policy_path.read_bytes()).hexdigest()
-            if self.policy_path and self.policy_path.exists()
-            else None
-        )
-        self.decision_trace = DecisionTraceEmitter(
-            output_path=audit_log,
-            run_id=self.run_id,
-            lockfile_digest=self.lockfile_digest_current,
-            policy_digest=self.policy_digest,
-        )
-
-        self.policy_engine: PolicyEngine | None = None
-        if self.policy_path and self.policy_path.exists():
-            self.policy_engine = PolicyEngine.from_file(str(self.policy_path))
-        # Backward-compatible alias used by existing tests/callers.
-        self.enforcer = self.policy_engine
-
-        toolsets_for_digest: str | None = str(self.toolsets_path) if self.toolsets_path else None
-        policy_for_digest: str | None = str(self.policy_path) if self.policy_path else None
-        self.artifacts_digest_current = compute_artifacts_digest_from_paths(
-            tools_path=self.tools_path,
-            toolsets_path=toolsets_for_digest,
-            policy_path=policy_for_digest,
-        )
-
-        self.confirmation_store = ConfirmationStore(confirmation_store_path)
-        self.decision_engine = DecisionEngine(self.confirmation_store)
-        self.decision_context = DecisionContext(
-            manifest_view=self.actions_by_tool_id,
-            policy=self.policy_engine.policy if self.policy_engine else None,
-            policy_engine=self.policy_engine,
-            lockfile=self.lockfile_manager,
-            toolsets=self.toolsets_payload,
-            network_safety=NetworkSafetyConfig(
-                allow_private_cidrs=allow_private_cidrs or [],
-                allow_redirects=allow_redirects,
-                max_redirects=3,
-            ),
-            artifacts_digest_current=self.artifacts_digest_current,
-            lockfile_digest_current=self.lockfile_digest_current,
-            approval_root_path=str(self.approval_root_path),
-            require_signed_approvals=True,
-        )
-
-        # CORRECT pillar: behavioral rule engine (optional)
-        self.rule_engine: RuleEngine | None = None
-        self.session_history: SessionHistory | None = None
-        if rules_path is not None:
-            self.rule_engine = RuleEngine(rules_path=Path(rules_path))
-            self.session_history = SessionHistory()
-
-        # KILL pillar: circuit breaker (optional)
-        self.circuit_breaker: CircuitBreakerRegistry | None = None
-        if circuit_breaker_path is not None:
-            self.circuit_breaker = CircuitBreakerRegistry(
-                state_path=Path(circuit_breaker_path)
-            )
-
-        self.pipeline = RequestPipeline(
-            actions=self.actions,
-            decision_engine=self.decision_engine,
-            decision_context=self.decision_context,
-            decision_trace=self.decision_trace,
-            audit_logger=self.audit_logger,
-            dry_run=self.dry_run,
-            rule_engine=self.rule_engine,
-            session_history=self.session_history,
-            circuit_breaker=self.circuit_breaker,
+        # ── Build transport-agnostic governance runtime ────────────────
+        self._runtime = GovernanceRuntime(
+            tools_path=tools_path,
+            toolsets_path=toolsets_path,
+            toolset_name=toolset_name,
+            policy_path=policy_path,
+            lockfile_path=lockfile_path,
+            base_url=base_url,
+            auth_header=auth_header,
+            audit_log=audit_log,
+            dry_run=dry_run,
+            confirmation_store_path=confirmation_store_path,
+            allow_private_cidrs=allow_private_cidrs,
+            allow_redirects=allow_redirects,
+            rules_path=rules_path,
+            circuit_breaker_path=circuit_breaker_path,
+            extra_headers=extra_headers,
+            schema_validation=schema_validation,
+            auth_requirements=auth_requirements,
+            transport_type="mcp",
             execute_request_fn=lambda action, args: self._execute_request(action, args),
         )
 
+        # ── Expose governance attributes for backward compatibility ────
+        # These delegate to the runtime so existing tests and callers
+        # continue to work unchanged.
+        self.schema_validation = schema_validation
+        self._auth_requirements = auth_requirements or []
+        self.tools_path = self._runtime.tools_path
+        self.toolsets_path = self._runtime.toolsets_path
+        self.toolset_name = self._runtime.toolset_name
+        self.policy_path = self._runtime.policy_path
+        self.lockfile_path = self._runtime.lockfile_path
+        self.base_url = self._runtime.base_url
+        self.auth_header = self._runtime.auth_header
+        self.extra_headers = self._runtime.extra_headers
+        self.dry_run = self._runtime.dry_run
+        self.allow_private_networks = self._runtime.allow_private_networks
+        self.allow_redirects = self._runtime.allow_redirects
+        self.approval_root_path = self._runtime.approval_root_path
+        self.run_id = self._runtime.run_id
+
+        self.manifest = self._runtime.manifest
+        self.toolsets_payload = self._runtime.toolsets_payload
+        self.lockfile_manager = self._runtime.lockfile_manager
+        self.lockfile_digest_current = self._runtime.lockfile_digest_current
+        self._lockfile_mtime = self._runtime._lockfile_mtime
+        self._last_lockfile_check = self._runtime._last_lockfile_check
+        self.actions = self._runtime.actions
+        self.actions_by_tool_id = self._runtime.actions_by_tool_id
+
+        self.audit_logger = self._runtime.audit_logger
+        self.policy_digest = self._runtime.policy_digest
+        self.decision_trace = self._runtime.decision_trace
+        self.policy_engine = self._runtime.policy_engine
+        self.enforcer = self._runtime.enforcer
+        self.artifacts_digest_current = self._runtime.artifacts_digest_current
+        self.confirmation_store = self._runtime.confirmation_store
+        self.decision_engine = self._runtime.decision_engine
+        self.decision_context = self._runtime.decision_context
+        self.rule_engine = self._runtime.rule_engine
+        self.session_history = self._runtime.session_history
+        self.circuit_breaker = self._runtime.circuit_breaker
+
+        self.pipeline = self._runtime.engine
+
+        # ── MCP-specific setup ─────────────────────────────────────────
         self.compact_descriptions: bool = True
         self.server = Server("toolwright")
         self._register_handlers()
@@ -305,58 +182,11 @@ class ToolwrightMCPServer:
             len(self.actions),
         )
 
-    def _is_action_exposed(self, action: dict[str, Any]) -> bool:
-        if self.lockfile_manager is None:
-            return True
-
-        action_name = str(action.get("name", ""))
-        action_signature = str(action.get("signature_id", ""))
-        action_tool_id = str(action.get("tool_id") or action_signature or action_name)
-
-        tool = self.lockfile_manager.get_tool(action_signature) if action_signature else None
-        if tool is None:
-            tool = self.lockfile_manager.get_tool(action_tool_id)
-        if tool is None:
-            tool = self.lockfile_manager.get_tool(action_name)
-        if tool is None:
-            return False
-
-        if self.toolset_name:
-            if tool.status == ApprovalStatus.REJECTED:
-                return False
-            if tool.toolsets and self.toolset_name not in tool.toolsets:
-                return False
-            if tool.approved_toolsets:
-                return self.toolset_name in tool.approved_toolsets
-            return tool.status == ApprovalStatus.APPROVED
-
-        return tool.status == ApprovalStatus.APPROVED
-
     def _maybe_reload_lockfile(self) -> None:
-        """Reload lockfile if it has changed on disk (checked at most every 5s)."""
-        if self.lockfile_path is None or self.lockfile_manager is None:
-            return
-        now = time.monotonic()
-        if now - self._last_lockfile_check < 5.0:
-            return
-        self._last_lockfile_check = now
-        try:
-            current_mtime = self.lockfile_path.stat().st_mtime
-        except OSError:
-            return  # File gone or unreadable -- keep last known good
-        if current_mtime == self._lockfile_mtime:
-            return
-        try:
-            lockfile = self.lockfile_manager.load()
-            self.lockfile_digest_current = compute_lockfile_digest(
-                lockfile.model_dump(mode="json")
-            )
-            self._lockfile_mtime = current_mtime
-            self.decision_context.lockfile_digest_current = self.lockfile_digest_current
-            logger.info("Reloaded lockfile (mtime changed)")
-        except Exception as exc:
-            logger.error("Failed to reload lockfile: %s", exc)
-            # Keep last known good state
+        """Delegate lockfile reload to GovernanceRuntime."""
+        self._runtime.maybe_reload_lockfile()
+        # Sync mutable state back from runtime for backward-compat
+        self.lockfile_digest_current = self._runtime.lockfile_digest_current
 
     def _register_signal_handlers(self) -> None:
         """Register graceful shutdown handlers (SIGTERM)."""

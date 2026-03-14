@@ -15,7 +15,7 @@ toolwright create --spec ./openapi.json     # from any OpenAPI spec
 [![PyPI version](https://img.shields.io/pypi/v/toolwright.svg)](https://pypi.org/project/toolwright/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776ab.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-3142%20passing-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-3198%20passing-brightgreen.svg)](tests/)
 
 ---
 
@@ -256,6 +256,16 @@ pip install "toolwright[all]"             # everything
 ```
 
 `tw` works as shorthand for `toolwright`.
+
+### Shell completions
+
+Enable tab-completion by adding the output of `toolwright completions` to your shell profile:
+
+```bash
+toolwright completions bash >> ~/.bashrc
+toolwright completions zsh  >> ~/.zshrc
+toolwright completions fish >  ~/.config/fish/completions/toolwright.fish
+```
 
 ## License
 

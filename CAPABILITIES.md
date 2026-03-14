@@ -631,6 +631,14 @@ Agent-facing meta-tools for reconciliation status and pending repairs. Return co
 - Optional filters: `filter_status` (for status), `filter_kind` (for repairs)
 - Tests: `tests/test_reconcile_meta_tools.py`
 
+### CAP-CROSS-017: Shell Completions
+
+Print shell completion activation scripts for bash, zsh, and fish. Uses Click 8.x native completion support.
+
+- `toolwright/cli/main.py` -> `completions()` command
+- CLI: `toolwright completions bash|zsh|fish`
+- Tests: `tests/test_completions.py`
+
 ### CAP-CROSS-013: Schema Version Migration
 
 Migrate artifacts between schema versions.
@@ -726,15 +734,37 @@ Full-screen read-only Textual dashboard (distinct from web dashboard in CAP-CROS
 
 ## SERVE -- HTTP Transport & Dashboard
 
-### CAP-CROSS-017: Request Pipeline Abstraction
+### CAP-CROSS-017: GovernanceEngine (Transport-Agnostic Pipeline)
 
-Extracted tool-call lifecycle as a reusable pipeline that both stdio and HTTP transports invoke.
+Transport-agnostic request governance pipeline. Any transport adapter (MCP, CLI, REST) can invoke it.
 
-- `toolwright/mcp/pipeline.py` -> `RequestPipeline`, `PipelineContext`, `PipelineResult`
-- Stages: action lookup, decision engine, confirmation gate, rule check, breaker check, dry-run, HTTP execution, response processing
-- Wired into: `toolwright/mcp/server.py` -> `handle_call_tool` delegates to pipeline
+- `toolwright/core/governance/engine.py` -> `GovernanceEngine`, `PipelineContext`, `PipelineResult`, `ExecuteRequestFn`
+- `toolwright/mcp/pipeline.py` -> backward-compat re-export (`RequestPipeline = GovernanceEngine`)
+- Stages: action lookup, schema validation, decision engine, confirmation gate, rule check, breaker check, dry-run, execution, response processing
+- `transport_type` parameter propagated to `DecisionRequest.source` for per-transport audit trails
 
-### CAP-CROSS-018: HTTP Transport (StreamableHTTP)
+### CAP-CROSS-017b: GovernanceRuntime (Transport-Agnostic Factory)
+
+Factory class that wires all governance subsystems (manifest, lockfile, policy, audit, decision engine, rules, circuit breaker) into a ready-to-use GovernanceEngine. Transport adapters instantiate this instead of duplicating wiring logic.
+
+- `toolwright/core/governance/runtime.py` -> `GovernanceRuntime`
+- Accepts `transport_type` (mcp/cli/rest) to parameterize audit traces
+- Accepts pluggable `execute_request_fn` callback for transport-specific execution
+- `ToolwrightMCPServer` delegates to `GovernanceRuntime` internally
+- Tests: `tests/test_governance_runtime.py` (19 tests), `tests/test_transport_conformance.py` (4 tests)
+
+### CAP-CROSS-018a: CLI Transport (JSONL)
+
+Governed tool execution via JSONL on stdin/stdout. Same governance guarantees as MCP at ~1/30th the token cost. No MCP dependency required.
+
+- `toolwright/cli_transport/adapter.py` -> `CLITransportAdapter`, `run_cli_transport`
+- `toolwright/cli_transport/serve.py` -> `run_cli_serve` (path resolution + adapter startup)
+- Protocol: `{"tool": "name", "args": {...}}` in, `{"ok": true, "result": ...}` out
+- Special methods: `list_tools`, `exit`/`quit`
+- CLI: `toolwright serve --transport cli`
+- Tests: `tests/test_cli_transport.py` (14 tests), `tests/test_transport_conformance.py` (8 tests across MCP+CLI)
+
+### CAP-CROSS-018b: HTTP Transport (StreamableHTTP)
 
 MCP server over HTTP with Starlette + StreamableHTTPSessionManager. Default port 8745.
 

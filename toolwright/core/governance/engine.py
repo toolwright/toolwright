@@ -115,6 +115,7 @@ class GovernanceEngine:
         circuit_breaker: Any | None = None,
         execute_request_fn: ExecuteRequestFn | None = None,
         console_event_store: Any | None = None,
+        transport_type: str = "mcp",
     ) -> None:
         self.actions = actions
         self.decision_engine = decision_engine
@@ -127,6 +128,7 @@ class GovernanceEngine:
         self.circuit_breaker = circuit_breaker
         self._execute_request_fn = execute_request_fn
         self._console_event_store = console_event_store
+        self.transport_type = transport_type
 
     async def execute(
         self,
@@ -179,7 +181,7 @@ class GovernanceEngine:
             params=effective_args,
             toolset_name=toolset_name,
             confirmation_token_id=ctx.confirmation_token_id,
-            source="mcp",
+            source=self.transport_type,
             mode="execute",
         )
         decision = self.decision_engine.evaluate(request, self.decision_context)
