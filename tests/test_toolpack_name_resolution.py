@@ -42,7 +42,7 @@ class TestToolpackNameResolution:
         result = resolve_toolpack_path(explicit=str(tp_file))
         assert result == tp_file
 
-    def test_bare_name_with_cwd_toolpacks(self, tmp_path: Path, monkeypatch) -> None:
+    def test_bare_name_with_cwd_toolpacks(self, tmp_path: Path, monkeypatch) -> None:  # noqa: ARG002
         """Name resolves under .toolwright/toolpacks/ relative to root."""
         root = tmp_path / ".toolwright"
         tp_dir = root / "toolpacks" / "stripe"

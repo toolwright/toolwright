@@ -259,7 +259,7 @@ class TestWizardFirstRun:
             patch("toolwright.ui.flows.quickstart.err_console", mock_console),
             patch("toolwright.ui.flows.quickstart.select_one", return_value="exit"),
             patch("toolwright.ui.views.branding.err_console", mock_console),
-            patch("toolwright.cli.demo.run_demo") as mock_demo,
+            patch("toolwright.cli.demo.run_demo"),
         ):
             wizard_flow(root=Path("/nonexistent/.toolwright"))
 

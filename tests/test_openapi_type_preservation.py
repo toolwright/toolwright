@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import pytest
 
 from toolwright.core.capture.openapi_parser import OpenAPIParser
-
 
 PETSTORE_SPEC = """\
 openapi: "3.0.0"

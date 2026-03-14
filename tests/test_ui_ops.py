@@ -188,7 +188,7 @@ class TestDashboardStatusWidget:
 
         output = render_plain(model)
         # Find the Lockfile line
-        lockfile_line = [l for l in output.splitlines() if "Lockfile" in l][0]
+        lockfile_line = [ln for ln in output.splitlines() if "Lockfile" in ln][0]
         # Should NOT show [OK] when there are blocked tools
         assert "[OK]" not in lockfile_line, (
             f"Lockfile with blocked tools should not show [OK]: {lockfile_line}"
@@ -219,7 +219,7 @@ class TestDashboardStatusWidget:
         )
 
         output = render_plain(model)
-        lockfile_line = [l for l in output.splitlines() if "Lockfile" in l][0]
+        lockfile_line = [ln for ln in output.splitlines() if "Lockfile" in ln][0]
         assert "[OK]" in lockfile_line
 
     def test_next_step_computed_from_engine(self) -> None:

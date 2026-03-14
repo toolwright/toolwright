@@ -45,7 +45,7 @@ def compute_score(
     toolpack_path: str | Path,
 ) -> GovernanceScore:
     """Compute governance health score for a toolpack."""
-    from toolwright.core.approval.lockfile import ApprovalStatus, LockfileManager
+    from toolwright.core.approval.lockfile import LockfileManager
     from toolwright.core.toolpack import load_toolpack, resolve_toolpack_paths
     from toolwright.ui.ops import get_status, run_doctor_checks
 

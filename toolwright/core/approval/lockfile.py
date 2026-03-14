@@ -25,7 +25,6 @@ from pydantic import BaseModel, Field
 
 from toolwright.utils.schema_version import (
     CURRENT_SCHEMA_VERSION,
-    resolve_generated_at,
     resolve_schema_version,
 )
 
@@ -271,7 +270,7 @@ class LockfileManager:
         capture_id: str | None = None,
         scope: str | None = None,
         toolsets: dict[str, Any] | None = None,
-        deterministic: bool = False,
+        deterministic: bool = False,  # noqa: ARG002 — public API, reserved for stable ordering
         prune_removed: bool = False,
     ) -> dict[str, list[str]]:
         """Sync lockfile with a tools manifest.

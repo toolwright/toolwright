@@ -21,6 +21,7 @@ import hashlib
 import ipaddress
 import json
 import logging
+import time
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -351,8 +352,6 @@ class GovernanceRuntime:
 
     def maybe_reload_lockfile(self) -> None:
         """Hot-reload lockfile if it changed on disk. Call periodically."""
-        import time
-
         if self.lockfile_path is None or self.lockfile_manager is None:
             return
         now = time.monotonic()

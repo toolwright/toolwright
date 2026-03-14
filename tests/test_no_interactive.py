@@ -8,7 +8,7 @@ H2: --no-interactive must suppress ALL interactive prompts, including
 from __future__ import annotations
 
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
@@ -64,34 +64,38 @@ class TestNoInteractiveSuppressesAllPrompts:
         """prompt_auth_setup_if_missing must not prompt when no_interactive=True."""
         from toolwright.mcp.runtime import prompt_auth_setup_if_missing
 
-        with patch("toolwright.mcp.runtime.warn_missing_auth", return_value=["Missing API_KEY"]):
+        with (
+            patch("toolwright.mcp.runtime.warn_missing_auth", return_value=["Missing API_KEY"]),
+            patch("sys.stdin") as mock_stdin,
+            patch("toolwright.mcp.runtime.click") as mock_click,
+        ):
             # Even if stdin is a tty, no_interactive=True should skip the prompt
-            with patch("sys.stdin") as mock_stdin:
-                mock_stdin.isatty.return_value = True
-                with patch("toolwright.mcp.runtime.click") as mock_click:
-                    prompt_auth_setup_if_missing(
-                        tools_path="tools.json",
-                        auth_header=None,
-                        root=Path("."),
-                        no_interactive=True,
-                    )
-                    # confirm should NOT have been called
-                    mock_click.confirm.assert_not_called()
+            mock_stdin.isatty.return_value = True
+            prompt_auth_setup_if_missing(
+                tools_path="tools.json",
+                auth_header=None,
+                root=Path("."),
+                no_interactive=True,
+            )
+            # confirm should NOT have been called
+            mock_click.confirm.assert_not_called()
 
     def test_prompt_auth_setup_prompts_when_interactive(self) -> None:
         """prompt_auth_setup_if_missing prompts normally when no_interactive=False."""
         from toolwright.mcp.runtime import prompt_auth_setup_if_missing
 
-        with patch("toolwright.mcp.runtime.warn_missing_auth", return_value=["Missing API_KEY"]):
-            with patch("sys.stdin") as mock_stdin:
-                mock_stdin.isatty.return_value = True
-                with patch("toolwright.mcp.runtime.click") as mock_click:
-                    mock_click.confirm.return_value = False
-                    prompt_auth_setup_if_missing(
-                        tools_path="tools.json",
-                        auth_header=None,
-                        root=Path("."),
-                        no_interactive=False,
-                    )
-                    # confirm SHOULD have been called
-                    mock_click.confirm.assert_called_once()
+        with (
+            patch("toolwright.mcp.runtime.warn_missing_auth", return_value=["Missing API_KEY"]),
+            patch("sys.stdin") as mock_stdin,
+            patch("toolwright.mcp.runtime.click") as mock_click,
+        ):
+            mock_stdin.isatty.return_value = True
+            mock_click.confirm.return_value = False
+            prompt_auth_setup_if_missing(
+                tools_path="tools.json",
+                auth_header=None,
+                root=Path("."),
+                no_interactive=False,
+            )
+            # confirm SHOULD have been called
+            mock_click.confirm.assert_called_once()

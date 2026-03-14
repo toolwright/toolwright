@@ -104,7 +104,7 @@ class TestLockfileReload:
         def fake_monotonic():
             return fake_time[0]
 
-        with patch("toolwright.mcp.server.time.monotonic", side_effect=fake_monotonic):
+        with patch("toolwright.core.governance.runtime.time.monotonic", side_effect=fake_monotonic):
             # Set last check to now (0.0)
             server._last_lockfile_check = 0.0
             # Call at 3.0s — still within 5s window
@@ -133,7 +133,7 @@ class TestLockfileReload:
         def fake_monotonic():
             return fake_time[0]
 
-        with patch("toolwright.mcp.server.time.monotonic", side_effect=fake_monotonic):
+        with patch("toolwright.core.governance.runtime.time.monotonic", side_effect=fake_monotonic):
             server._last_lockfile_check = 0.0
             # Advance past 5s threshold
             fake_time[0] = 6.0
@@ -153,7 +153,7 @@ class TestLockfileReload:
         def fake_monotonic():
             return fake_time[0]
 
-        with patch("toolwright.mcp.server.time.monotonic", side_effect=fake_monotonic):
+        with patch("toolwright.core.governance.runtime.time.monotonic", side_effect=fake_monotonic):
             server._last_lockfile_check = 0.0
             fake_time[0] = 6.0
             server._maybe_reload_lockfile()
@@ -177,7 +177,7 @@ class TestLockfileReload:
         def fake_monotonic():
             return fake_time[0]
 
-        with patch("toolwright.mcp.server.time.monotonic", side_effect=fake_monotonic):
+        with patch("toolwright.core.governance.runtime.time.monotonic", side_effect=fake_monotonic):
             server._last_lockfile_check = 0.0
             fake_time[0] = 6.0
             server._maybe_reload_lockfile()
@@ -202,7 +202,7 @@ class TestLockfileReload:
         def fake_monotonic():
             return fake_time[0]
 
-        with patch("toolwright.mcp.server.time.monotonic", side_effect=fake_monotonic):
+        with patch("toolwright.core.governance.runtime.time.monotonic", side_effect=fake_monotonic):
             server._last_lockfile_check = 0.0
             fake_time[0] = 6.0
             # Should not raise

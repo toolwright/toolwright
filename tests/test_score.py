@@ -11,7 +11,6 @@ from tests.helpers import write_demo_toolpack
 from toolwright.cli.main import cli
 from toolwright.core.score import GovernanceScore, compute_score
 
-
 # ---------------------------------------------------------------------------
 # Score engine tests
 # ---------------------------------------------------------------------------
@@ -19,7 +18,6 @@ from toolwright.core.score import GovernanceScore, compute_score
 
 def test_score_healthy_toolpack(tmp_path: Path) -> None:
     """A toolpack with an approved lockfile scores high on approval."""
-    from toolwright.core.approval.lockfile import LockfileManager
     from toolwright.ui.ops import run_gate_approve
 
     toolpack_file = write_demo_toolpack(tmp_path)

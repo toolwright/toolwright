@@ -435,7 +435,7 @@ def test_quick_start_has_exactly_seven_core_commands() -> None:
     from toolwright.cli.main import CORE_COMMANDS
 
     expected = ["create", "serve", "gate", "status", "score", "drift", "repair"]
-    assert CORE_COMMANDS == expected, (
+    assert expected == CORE_COMMANDS, (
         f"CORE_COMMANDS should be {expected}, got {CORE_COMMANDS}"
     )
 

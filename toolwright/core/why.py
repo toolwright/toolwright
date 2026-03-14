@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 
@@ -39,12 +39,10 @@ def explain_tool(
 
     # Check if tool exists in tools.json
     tools_path = resolved.tools_path
-    tool_exists = False
     if tools_path and tools_path.exists():
         data = json.loads(tools_path.read_text())
         tool_names = [a.get("name") for a in data.get("actions", [])]
         if tool_name in tool_names:
-            tool_exists = True
             timeline.append(f"Tool '{tool_name}' found in tools manifest")
         else:
             reasons.append(f"Tool '{tool_name}' not found in tools manifest")

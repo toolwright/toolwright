@@ -348,10 +348,7 @@ def _print_polished_output(
     for description, status, elapsed in steps:
         timing = _format_timing(elapsed)
         # Build the status suffix
-        if status == "done":
-            suffix = f"\u2713  {timing}" if timing else "\u2713"
-        else:
-            suffix = f"\u2713  {status}"
+        suffix = (f"✓  {timing}" if timing else "✓") if status == "done" else f"✓  {status}"
         # Pad description to align status
         padded = f"  {description}..."
         click.echo(f"{padded:50s} {suffix}")

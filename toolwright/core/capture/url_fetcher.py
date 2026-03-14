@@ -8,6 +8,7 @@ Given a URL, this module:
 
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
 from typing import Any
@@ -135,7 +136,7 @@ def _normalise_base_url(url: str) -> str:
     return f"{parsed.scheme}://{parsed.netloc}"
 
 
-def _parse_response(text: str, url: str) -> dict[str, Any] | None:
+def _parse_response(text: str, url: str) -> dict[str, Any] | None:  # noqa: ARG001 — url kept for future error messages
     """Parse response text as JSON or YAML and validate it's an OpenAPI spec.
 
     Returns the parsed spec dict if valid, None otherwise.
@@ -143,10 +144,8 @@ def _parse_response(text: str, url: str) -> dict[str, Any] | None:
     spec: dict[str, Any] | None = None
 
     # Try JSON first
-    try:
+    with contextlib.suppress(json.JSONDecodeError, ValueError):
         spec = json.loads(text)
-    except (json.JSONDecodeError, ValueError):
-        pass
 
     # Try YAML if JSON failed
     if spec is None:

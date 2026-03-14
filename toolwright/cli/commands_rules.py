@@ -111,7 +111,7 @@ def register_rules_commands(*, cli: click.Group) -> None:
             engine.add_rule(rule)
         except ValueError:
             click.echo(f"Error: Rule ID '{rid}' already exists. Use a different --rule-id.", err=True)
-            raise SystemExit(1)
+            raise SystemExit(1) from None
         click.echo(f"Rule '{rid}' added ({kind}).")
 
     @rules.command("list")

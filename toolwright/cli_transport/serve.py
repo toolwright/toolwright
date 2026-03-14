@@ -6,14 +6,13 @@ Mirrors the path resolution from mcp/runtime.py but without MCP dependencies.
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
 import click
 
-from toolwright.core.governance.runtime import GovernanceRuntime
 from toolwright.cli_transport.adapter import CLITransportAdapter
+from toolwright.core.governance.runtime import GovernanceRuntime
 
 
 def run_cli_serve(

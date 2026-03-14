@@ -992,7 +992,7 @@ def run_enforce(
         denied = 0
         for action_name in sorted(gateway.actions):
             result = gateway.evaluate_action(action_name, emit_trace=False)
-            decision = result.get("decision", "unknown")
+            result.get("decision", "unknown")
             if result.get("allowed"):
                 allowed += 1
             else:

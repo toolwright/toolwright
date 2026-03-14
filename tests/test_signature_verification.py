@@ -7,16 +7,12 @@ that tampered lockfile fields are detected by gate check and serve.
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
 from pathlib import Path
 
-import pytest
 import yaml
 
-from toolwright.cli.approve import run_approve_tool, sync_lockfile
-from toolwright.core.approval import ApprovalStatus, LockfileManager
-from toolwright.core.approval.signing import ApprovalSigner
-from tests.helpers import write_demo_toolpack
+from toolwright.cli.approve import run_approve_tool
+from toolwright.core.approval import LockfileManager
 
 
 def _manifest() -> dict[str, object]:
@@ -248,7 +244,7 @@ class TestVerifySignaturesErrorMessages:
         lockfile, root_path = _setup_approved_lockfile(tmp_path)
 
         data = yaml.safe_load(lockfile.read_text())
-        for tool_key, tool_data in data["tools"].items():
+        for _tool_key, tool_data in data["tools"].items():
             if tool_data.get("name") == "get_users":
                 tool_data["method"] = "POST"
                 break

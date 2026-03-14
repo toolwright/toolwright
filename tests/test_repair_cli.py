@@ -8,7 +8,7 @@ from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
-from toolwright.cli.main import CORE_COMMANDS, OPERATIONS_COMMANDS, cli
+from toolwright.cli.main import CORE_COMMANDS, cli
 
 # ---------------------------------------------------------------------------
 # Helpers

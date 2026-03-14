@@ -74,7 +74,7 @@ def build_scope_warning(
     tool_count: int,
     *,
     groups_index: Any | None,
-    toolpack_id: str,
+    toolpack_id: str,  # noqa: ARG001 — reserved for future use in scope warnings
 ) -> str:
     """Build a scope warning message when tool count exceeds agent-friendly limits.
 

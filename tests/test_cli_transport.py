@@ -15,7 +15,6 @@ import pytest
 
 from toolwright.cli_transport.adapter import CLITransportAdapter
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -185,7 +184,7 @@ class TestCLITransportProtocol:
 
         assert result["ok"] is True
 
-    def test_write_response_jsonl(self, tmp_path: Path) -> None:
+    def test_write_response_jsonl(self) -> None:
         """Verify responses are valid JSONL."""
         output = StringIO()
         with patch("sys.stdout", output):
@@ -196,7 +195,7 @@ class TestCLITransportProtocol:
         assert parsed["ok"] is True
         assert parsed["result"] == "test"
 
-    def test_write_response_newline_terminated(self, tmp_path: Path) -> None:
+    def test_write_response_newline_terminated(self) -> None:
         output = StringIO()
         with patch("sys.stdout", output):
             CLITransportAdapter._write_response({"ok": True})
@@ -213,12 +212,11 @@ class TestCLITransportErrorHandling:
         adapter = _make_adapter(tmp_path)
         # Simulate processing a non-dict (the main loop would catch this)
         output = StringIO()
-        with patch("sys.stdout", output):
-            with patch(
-                "sys.stdin",
-                StringIO('"just a string"\n'),
-            ):
-                await adapter._run_async()
+        with patch("sys.stdout", output), patch(
+            "sys.stdin",
+            StringIO('"just a string"\n'),
+        ):
+            await adapter._run_async()
 
         line = output.getvalue().strip()
         parsed = json.loads(line)

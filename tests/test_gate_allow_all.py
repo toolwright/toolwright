@@ -79,6 +79,7 @@ class TestGateAllowAllWithRejected:
     ) -> None:
         """gate allow --all --yes should warn when rejected tools exist."""
         from click.testing import CliRunner
+
         from toolwright.cli.main import cli
 
         _tools_path, lockfile_path = setup_env_with_rejected
@@ -98,6 +99,7 @@ class TestGateAllowAllWithRejected:
     ) -> None:
         """gate allow --all --include-rejected should approve all including rejected."""
         from click.testing import CliRunner
+
         from toolwright.cli.main import cli
 
         _tools_path, lockfile_path = setup_env_with_rejected
@@ -125,6 +127,7 @@ class TestGateAllowAllWithRejected:
     ) -> None:
         """gate allow --all --yes with rejected tools (no --include-rejected) should exit 1."""
         from click.testing import CliRunner
+
         from toolwright.cli.main import cli
 
         _tools_path, lockfile_path = setup_env_with_rejected

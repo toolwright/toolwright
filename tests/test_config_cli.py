@@ -46,7 +46,7 @@ def test_config_uses_full_binary_path(tmp_path: Path) -> None:
     command = server["command"]
     # Must be an absolute path, not bare "toolwright"
     assert command != "toolwright", (
-        f"Config should use full binary path, got bare 'toolwright'"
+        "Config should use full binary path, got bare 'toolwright'"
     )
     assert "/" in command, f"Expected absolute path, got: {command}"
 

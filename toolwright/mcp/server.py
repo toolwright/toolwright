@@ -9,7 +9,6 @@ import os
 import re
 import signal
 import sys
-import time
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode, urljoin, urlparse
@@ -18,7 +17,6 @@ import httpx
 
 from toolwright.core.approval import (
     ApprovalStatus,
-    compute_lockfile_digest,
 )
 from toolwright.core.network_safety import (
     RuntimeBlockError,

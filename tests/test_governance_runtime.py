@@ -8,13 +8,11 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
 from unittest.mock import AsyncMock
 
 import pytest
 
-from tests.helpers import write_demo_artifacts, write_demo_toolpack
-
+from tests.helpers import write_demo_artifacts
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -172,9 +170,9 @@ class TestGovernanceRuntimeWithLockfile:
 
     def test_lockfile_manager_loaded(self, demo_toolpack: Path) -> None:
         """Runtime loads lockfile from toolpack fixture."""
-        from toolwright.core.governance.runtime import GovernanceRuntime
-
         import yaml
+
+        from toolwright.core.governance.runtime import GovernanceRuntime
 
         with open(demo_toolpack) as f:
             tp = yaml.safe_load(f)

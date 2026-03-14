@@ -7,7 +7,6 @@ and the CLI must raise if ALL endpoints are skipped.
 from __future__ import annotations
 
 import json
-import textwrap
 from pathlib import Path
 from unittest.mock import patch
 
@@ -53,7 +52,7 @@ class TestFallbackHostWarning:
         }
         spec_path = _write_spec(tmp_path, spec)
         parser = OpenAPIParser()
-        session = parser.parse_file(spec_path)
+        parser.parse_file(spec_path)
 
         assert any("api.example.com" in w for w in parser.warnings)
         assert any("--base-url" in w for w in parser.warnings)
@@ -74,7 +73,7 @@ class TestFallbackHostWarning:
         }
         spec_path = _write_spec(tmp_path, spec)
         parser = OpenAPIParser()
-        session = parser.parse_file(spec_path)
+        parser.parse_file(spec_path)
 
         assert any("api.example.com" in w for w in parser.warnings)
 
@@ -90,7 +89,7 @@ class TestFallbackHostWarning:
         })
         spec_path = _write_spec(tmp_path, spec)
         parser = OpenAPIParser()
-        session = parser.parse_file(spec_path)
+        parser.parse_file(spec_path)
 
         assert not any("api.example.com" in w for w in parser.warnings)
 
@@ -126,7 +125,7 @@ class TestSkippedEndpointWarnings:
             return original(*args, **kwargs)
 
         with patch.object(parser, "_create_exchange", side_effect=patched):
-            session = parser.parse_file(spec_path)
+            parser.parse_file(spec_path)
 
         assert parser.stats["skipped"] == 1
         assert parser.stats["imported"] == 1
@@ -225,14 +224,13 @@ class TestCommandsCreateSkippedWarning:
 
         with patch.object(
             OpenAPIParser, "_create_exchange", side_effect=RuntimeError("all fail")
-        ):
-            with pytest.raises(click.ClickException, match="skipped"):
-                run_create(
-                    api_name=None,
-                    spec=str(spec_path),
-                    name="test",
-                    auto_approve=True,
-                    apply_rules=False,
-                    output_root=str(tmp_path / ".toolwright"),
-                    verbose=False,
-                )
+        ), pytest.raises(click.ClickException, match="skipped"):
+            run_create(
+                api_name=None,
+                spec=str(spec_path),
+                name="test",
+                auto_approve=True,
+                apply_rules=False,
+                output_root=str(tmp_path / ".toolwright"),
+                verbose=False,
+            )

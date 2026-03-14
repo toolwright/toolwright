@@ -23,7 +23,6 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -145,10 +144,8 @@ class TestConformance_TransportTypeInDecision:
         self, tmp_path: Path, transport_type: str
     ) -> None:
         """The DecisionRequest.source field matches the transport_type."""
-        from unittest.mock import MagicMock, patch
 
         from toolwright.core.governance.runtime import GovernanceRuntime
-        from toolwright.models.decision import DecisionType, ReasonCode
 
         tools_path = _write_manifest(tmp_path, [BASIC_ACTION])
         runtime = GovernanceRuntime(
