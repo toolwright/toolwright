@@ -16,6 +16,7 @@ toolwright create --spec ./openapi.json     # from any OpenAPI spec
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776ab.svg)](https://www.python.org/downloads/)
 [![Tests](https://img.shields.io/badge/tests-3198%20passing-brightgreen.svg)](tests/)
+[![Transport](https://img.shields.io/badge/transport-MCP%20%7C%20CLI%20%7C%20REST-8A2BE2.svg)](docs/architecture.md)
 
 ---
 
@@ -157,7 +158,7 @@ All paths produce the same governed artifacts: tools, policy, lockfile, baseline
   HAR / OTEL         │                                              │
                      │   toolpack (tools + policy + lockfile)       │
                      │                                              │
-                     │   serve  ──>  governed MCP server            │
+                     │   serve  ──>  governed tools (MCP / CLI / REST) │
                      │     ├── credential injection (proxy layer)   │
                      │     ├── signed approval gates                │
                      │     ├── circuit breakers                     │
@@ -168,7 +169,7 @@ All paths produce the same governed artifacts: tools, policy, lockfile, baseline
 1. **Capture** — Record real API behavior from any source
 2. **Compile** — Generate deterministic tool definitions with schemas, risk tiers, and policies
 3. **Approve** — Sign changes with Ed25519 keys. Nothing runs until reviewed.
-4. **Serve** — Expose tools via MCP with auth injection, policy enforcement, and circuit breakers
+4. **Serve** — Expose tools via MCP, CLI, or REST with auth injection, policy enforcement, and circuit breakers
 5. **Heal** — Detect drift, verify behavior, and auto-repair within safety bounds
 
 ---
@@ -215,11 +216,51 @@ toolwright wrap --url https://mcp.sentry.dev/mcp --header "Authorization: Bearer
 
 ---
 
+## Any transport. Same governance.
+
+Toolwright's governance engine is transport-agnostic. MCP, CLI, REST — same lockfile, same rules, same circuit breakers, same audit trail.
+
+```bash
+# MCP — Claude Desktop, Cursor, Windsurf
+toolwright serve                                    # stdio
+toolwright serve --http                             # HTTP + web dashboard
+
+# CLI — shell scripts, agent frameworks, CI pipelines
+toolwright serve --transport cli                    # JSONL on stdin/stdout
+echo '{"tool":"get_users","args":{}}' | toolwright serve --transport cli
+
+# Wrap any existing MCP server with governance
+toolwright wrap npx -y @modelcontextprotocol/server-github
+```
+
+```
+  ┌─────────────────────────────────────────────────────┐
+  │              GovernanceRuntime                       │
+  │  lockfile ─ policy ─ rules ─ breakers ─ audit       │
+  │                                                     │
+  │  ┌───────────┐  ┌───────────┐  ┌───────────┐       │
+  │  │    MCP    │  │    CLI    │  │   REST    │       │
+  │  │  (stdio/  │  │  (JSONL)  │  │  (HTTP)   │       │
+  │  │   HTTP)   │  │           │  │           │       │
+  │  └─────┬─────┘  └─────┬─────┘  └─────┬─────┘       │
+  │        │              │              │              │
+  │        └──────────────┴──────────────┘              │
+  │                       │                             │
+  │              GovernanceEngine                        │
+  │     (identical pipeline for every transport)         │
+  └─────────────────────────────────────────────────────┘
+```
+
+The CLI transport costs ~1/30th the tokens of MCP for the same governance. Use MCP when your agent requires it. Use CLI when it doesn't. Toolwright doesn't care.
+
+---
+
 ## Serving options
 
 ```bash
 toolwright serve                                    # stdio (Claude Desktop)
 toolwright serve --http                             # HTTP + web dashboard
+toolwright serve --transport cli                    # JSONL (shell/CI/pipelines)
 toolwright serve --scope repos,issues               # serve specific groups
 toolwright serve --max-risk low                     # cap risk tier exposure
 toolwright serve --watch --auto-heal safe           # continuous healing
@@ -229,10 +270,11 @@ toolwright serve --watch --auto-heal safe           # continuous healing
 
 ## Roadmap
 
-- Transport-agnostic governance (CLI + REST adapters alongside MCP)
+- `toolwright wrap` for CLI tools (govern `gh`, `aws`, any CLI)
+- REST transport adapter (`toolwright serve --transport rest`)
 - Governance maturity scoring (`toolwright score`)
 - GitHub Action for CI governance checks
-- Public toolpack registry
+- Token budget estimator (MCP vs CLI vs REST cost comparison)
 
 ---
 
