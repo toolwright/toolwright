@@ -1,8 +1,0 @@
-{
-  "error": "Command '['vhs', '/Users/thomasallicino/oss/toolwright/demos/outputs/.terminal_demo_studio_runs/20260307T060844Z-hero-scripted_vhs/tapes/scene_0.tape']' returned non-zero exit status 1.",
-  "failure_dir": "/Users/thomasallicino/oss/toolwright/demos/outputs/.terminal_demo_studio_runs/20260307T060844Z-hero-scripted_vhs/failure",
-  "lane": "scripted_vhs",
-  "run_id": "20260307T060844Z-hero-scripted_vhs",
-  "screenplay": "/Users/thomasallicino/oss/toolwright/demos/screenplays/hero.yaml",
-  "status": "failed"
-}

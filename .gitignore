@@ -59,3 +59,17 @@ tests/e2e/results/findings.md
 toolwright-dogfood-playbook.md
 toolwright-spec.md
 venv/
+
+# Internal strategy/audit docs (not public)
+.mcp.json
+DOGFOOD_REPORT.md
+TODOS.md
+docs/positioning.md
+docs/ux-audit-*.md
+findings_*.md
+
+# Build artifacts and lockfiles
+uv.lock
+demos/outputs/.terminal_demo_studio_runs/
+demos/outputs/*.mp4
+demos/outputs/*.webm

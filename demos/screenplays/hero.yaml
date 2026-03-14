@@ -48,7 +48,7 @@ preinstall:
     import pathlib
     pathlib.Path('{{demo_dir}}/with/show.sh').write_text('''#!/bin/bash
     set -e
-    export PATH=/Users/thomasallicino/oss/toolwright/.venv/bin:\$PATH
+    export PATH=.venv/bin:\$PATH
     mkdir -p /tmp/tw_hero_gov && cd /tmp/tw_hero_gov
     toolwright create github --no-interactive 2>/dev/null
     echo ''
@@ -92,7 +92,7 @@ scenarios:
       symbol: "%"
     setup:
       - "cd {{demo_dir}}/with"
-      - "export PATH=/Users/thomasallicino/oss/toolwright/.venv/bin:$PATH"
+      - "export PATH=.venv/bin:$PATH"
     actions:
       - type: "/bin/bash show.sh"
       - wait_for: "continues operating"

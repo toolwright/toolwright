@@ -34,7 +34,7 @@ All notable changes to Toolwright are documented here.
 - CI workflow added (`.github/workflows/ci.yml`)
 
 ### Fixed
-- 33 UX issues fixed across CLI from dogfood audit (error messages, help text, exit codes)
+- 33 UX issues fixed across CLI (error messages, help text, exit codes)
 - Auth setup: `.env` file now loaded before checking credentials (was silently skipping)
 - Dotenv save: secrets written atomically with 0600 permissions (no TOCTOU window)
 - Score command: `status` variable hoisted to prevent UnboundLocalError

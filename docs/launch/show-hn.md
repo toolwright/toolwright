@@ -12,7 +12,7 @@ Why governance? When Claude or GPT calls your tools, things go wrong: schemas ch
 
 The governance engine is transport-agnostic. Same lockfile, same rules, same audit trail -- whether you serve via MCP (for Claude Desktop, Cursor), CLI (JSONL on stdin/stdout, ~30x fewer tokens), or REST. You don't have to pick a side in the MCP debate.
 
-- GitHub: https://github.com/yourusername/toolwright
+- GitHub: https://github.com/toolwright/toolwright
 - PyPI: `pip install toolwright`
 - License: MIT
 - Python 3.11+

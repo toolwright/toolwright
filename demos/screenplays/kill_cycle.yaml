@@ -25,7 +25,7 @@ scenarios:
       symbol: "%"
     setup:
       - "cd {{demo_dir}}"
-      - "export PATH=/Users/thomasallicino/oss/toolwright/.venv/bin:$PATH"
+      - "export PATH=.venv/bin:$PATH"
     actions:
       - type: "toolwright kill search_api --reason 'API returning 500s' --breaker-state .toolwright/state/breakers.json"
       - wait_for: "killed"

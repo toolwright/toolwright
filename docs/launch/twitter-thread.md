@@ -65,7 +65,7 @@ All paths produce the same governed artifacts.
 
 MIT licensed. Python 3.11+.
 
-- GitHub: [link]
+- GitHub: https://github.com/toolwright/toolwright
 - PyPI: pip install toolwright
 - Quickstart: 60 seconds from install to governed tools
 
