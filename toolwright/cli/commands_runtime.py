@@ -27,7 +27,7 @@ def register_runtime_commands(
     )
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolved if not given)",
     )
     @click.option(
@@ -331,7 +331,7 @@ def register_runtime_commands(
     @cli.command()
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolved if not given)",
     )
     @click.option(
