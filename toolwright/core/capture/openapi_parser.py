@@ -425,6 +425,19 @@ class OpenAPIParser:
         # Default to 200
         return 200, None
 
+    @staticmethod
+    def _normalize_type(schema_type: Any) -> str | None:
+        """Normalize OpenAPI 3.1 type arrays to a single type string.
+
+        OpenAPI 3.1 allows type: ["string", "null"]. Extract first non-null type.
+        """
+        if isinstance(schema_type, list):
+            for t in schema_type:
+                if t != "null":
+                    return t
+            return None
+        return schema_type
+
     def _schema_to_example(
         self, schema: dict[str, Any], spec: dict[str, Any]
     ) -> dict[str, Any] | list[Any] | None:
@@ -438,7 +451,7 @@ class OpenAPIParser:
             example: Any = schema["example"]
             return example  # type: ignore[no-any-return]
 
-        schema_type = schema.get("type")
+        schema_type = self._normalize_type(schema.get("type"))
 
         if schema_type == "object":
             properties = schema.get("properties", {})
@@ -499,7 +512,7 @@ class OpenAPIParser:
 
     def _get_default_for_type(self, schema: dict[str, Any]) -> Any:
         """Get a default value for a schema type."""
-        schema_type = schema.get("type", "string")
+        schema_type = self._normalize_type(schema.get("type", "string")) or "string"
         schema_format = schema.get("format", "")
 
         defaults = {
