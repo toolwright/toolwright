@@ -71,6 +71,7 @@ OPERATIONS_COMMANDS = [
     "diff",
     "verify",
     "health",
+    "why",
     "doctor",
     "auth",
     "kill",
@@ -87,6 +88,7 @@ CORE_COMMANDS = [
     "serve",
     "gate",
     "status",
+    "score",
     "drift",
     "repair",
 ]

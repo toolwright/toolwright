@@ -467,6 +467,8 @@ class ToolwrightMCPServer:
             extra={"reason": reason} if reason else None,
         )
 
+    _DESCRIPTION_HARD_CAP = 500
+
     def _build_description(self, action: dict[str, Any]) -> str:
         from toolwright.mcp.description import optimize_description
 
@@ -474,6 +476,10 @@ class ToolwrightMCPServer:
         desc = optimize_description(action, compact=compact)
         if action.get("confirmation_required") == "always":
             desc += " [Requires confirmation]"
+        # Hard cap to prevent token bombs in LLM context windows
+        cap = ToolwrightMCPServer._DESCRIPTION_HARD_CAP
+        if len(desc) > cap:
+            desc = desc[: cap - 3] + "..."
         return desc
 
     def _resolve_auth_for_host(self, host: str) -> str | None:
@@ -657,11 +663,20 @@ class ToolwrightMCPServer:
         if isinstance(raw_allowed, dict):
             app_hosts = raw_allowed.get("app", [])
             if not isinstance(app_hosts, list):
-                return set()
-            return {str(host).lower() for host in app_hosts}
-        if isinstance(raw_allowed, list):
-            return {str(host).lower() for host in raw_allowed}
-        return set()
+                hosts: set[str] = set()
+            else:
+                hosts = {str(host).lower() for host in app_hosts}
+        elif isinstance(raw_allowed, list):
+            hosts = {str(host).lower() for host in raw_allowed}
+        else:
+            hosts = set()
+        # H3: When --base-url is specified, auto-add its host to the allowlist
+        if self.base_url:
+            from urllib.parse import urlparse
+            parsed = urlparse(self.base_url)
+            if parsed.netloc:
+                hosts.add(parsed.netloc.lower())
+        return hosts
 
     async def _execute_request(
         self,

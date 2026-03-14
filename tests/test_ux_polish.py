@@ -430,11 +430,11 @@ def test_diff_without_baseline_gives_actionable_error(tmp_path: Path) -> None:
 # --- Quick Start should contain exactly 6 core commands ---
 
 
-def test_quick_start_has_exactly_six_core_commands() -> None:
-    """Quick Start section should show exactly: create, serve, gate, status, drift, repair."""
+def test_quick_start_has_exactly_seven_core_commands() -> None:
+    """Quick Start section should show exactly: create, serve, gate, status, score, drift, repair."""
     from toolwright.cli.main import CORE_COMMANDS
 
-    expected = ["create", "serve", "gate", "status", "drift", "repair"]
+    expected = ["create", "serve", "gate", "status", "score", "drift", "repair"]
     assert CORE_COMMANDS == expected, (
         f"CORE_COMMANDS should be {expected}, got {CORE_COMMANDS}"
     )

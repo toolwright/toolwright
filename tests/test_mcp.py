@@ -287,6 +287,29 @@ class TestToolwrightMCPServer:
         assert "[Requires confirmation]" in desc
 
 
+    def test_build_description_hard_cap(self, tools_file: Path) -> None:
+        """C1: descriptions must never exceed _DESCRIPTION_HARD_CAP chars."""
+        server = ToolwrightMCPServer(tools_path=tools_file)
+        # Force verbose mode with a very long description
+        server.compact_descriptions = False
+        action = dict(server.actions["get_users"])
+        action["description"] = "A" * 1000
+
+        desc = server._build_description(action)
+
+        assert len(desc) <= server._DESCRIPTION_HARD_CAP
+        assert desc.endswith("...")
+
+    def test_base_url_host_added_to_allowlist(self, tools_file: Path) -> None:
+        """H3: --base-url host must be auto-added to the session allowlist."""
+        server = ToolwrightMCPServer(
+            tools_path=tools_file,
+            base_url="https://petstore3.swagger.io/api/v3",
+        )
+        allowed = server._allowed_app_hosts()
+        assert "petstore3.swagger.io" in allowed
+
+
 class TestMCPServerHandlers:
     """Tests for MCP protocol handlers."""
 

@@ -33,6 +33,68 @@ def _minimal_spec(paths: dict | None = None) -> dict:
     }
 
 
+class TestFallbackHostWarning:
+    """H2: falling back to api.example.com must emit a warning."""
+
+    def test_relative_url_emits_fallback_warning(self, tmp_path: Path) -> None:
+        """Spec with relative server URL should warn about api.example.com fallback."""
+        spec = {
+            "openapi": "3.1.0",
+            "info": {"title": "Test API", "version": "1.0"},
+            "servers": [{"url": "/api/v3"}],
+            "paths": {
+                "/pets": {
+                    "get": {
+                        "operationId": "listPets",
+                        "responses": {"200": {"description": "ok"}},
+                    }
+                }
+            },
+        }
+        spec_path = _write_spec(tmp_path, spec)
+        parser = OpenAPIParser()
+        session = parser.parse_file(spec_path)
+
+        assert any("api.example.com" in w for w in parser.warnings)
+        assert any("--base-url" in w for w in parser.warnings)
+
+    def test_missing_servers_emits_fallback_warning(self, tmp_path: Path) -> None:
+        """Spec with no servers field should warn about api.example.com fallback."""
+        spec = {
+            "openapi": "3.1.0",
+            "info": {"title": "Test API", "version": "1.0"},
+            "paths": {
+                "/pets": {
+                    "get": {
+                        "operationId": "listPets",
+                        "responses": {"200": {"description": "ok"}},
+                    }
+                }
+            },
+        }
+        spec_path = _write_spec(tmp_path, spec)
+        parser = OpenAPIParser()
+        session = parser.parse_file(spec_path)
+
+        assert any("api.example.com" in w for w in parser.warnings)
+
+    def test_valid_host_no_fallback_warning(self, tmp_path: Path) -> None:
+        """Spec with valid absolute server URL should NOT warn about fallback."""
+        spec = _minimal_spec({
+            "/pets": {
+                "get": {
+                    "operationId": "listPets",
+                    "responses": {"200": {"description": "ok"}},
+                }
+            }
+        })
+        spec_path = _write_spec(tmp_path, spec)
+        parser = OpenAPIParser()
+        session = parser.parse_file(spec_path)
+
+        assert not any("api.example.com" in w for w in parser.warnings)
+
+
 class TestSkippedEndpointWarnings:
     """C1: skipped endpoints must produce user-visible warnings."""
 

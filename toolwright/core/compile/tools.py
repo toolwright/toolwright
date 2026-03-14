@@ -470,10 +470,10 @@ class ToolManifestGenerator:
             if source_name not in target_action["depends_on"]:
                 target_action["depends_on"].append(source_name)
 
-            # Add dependency hint to target description
+            # Add dependency hint to target description (cap to avoid token bombs)
             desc = target_action.get("description", "")
             hint = f" (Call {source_name} first to obtain {edge.linking_field})"
-            if hint not in desc:
+            if hint not in desc and len(desc) + len(hint) <= 500:
                 target_action["description"] = desc + hint
 
     # Domain tag -> guidance phrase

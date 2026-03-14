@@ -135,3 +135,38 @@ class TestFlowMetadataInActions:
         detail_action = next(a for a in manifest["actions"] if "{id}" in a["path"])
         # Description should hint at the dependency
         assert "first" in detail_action["description"].lower() or "depends" in detail_action["description"].lower()
+
+    def test_dependency_hints_capped_at_500_chars(self):
+        """C1: descriptions must not grow unbounded from dependency hints."""
+        gen = ToolManifestGenerator()
+        # Create a target endpoint with an already-long description
+        ep_target = _ep(
+            method="GET",
+            path="/api/v1/details/{id}",
+            parameters=[
+                Parameter(name="id", location=ParameterLocation.PATH, required=True),
+            ],
+        )
+        # Create many source endpoints that link to target
+        sources = []
+        edges = []
+        for i in range(20):
+            src = _ep(
+                method="GET",
+                path=f"/api/v1/source_{i}",
+                response_body_schema={
+                    "type": "object",
+                    "properties": {"id": {"type": "integer"}},
+                },
+            )
+            sources.append(src)
+            edges.append(FlowEdge(
+                source_id=src.signature_id,
+                target_id=ep_target.signature_id,
+                linking_field="id",
+                confidence=0.9,
+            ))
+        flow_graph = FlowGraph(edges=edges)
+        manifest = gen.generate(sources + [ep_target], flow_graph=flow_graph)
+        detail_action = next(a for a in manifest["actions"] if "{id}" in a["path"])
+        assert len(detail_action["description"]) <= 500
