@@ -147,7 +147,8 @@ def register_rules_commands(*, cli: click.Group) -> None:
     @click.pass_context
     def rules_remove(ctx: click.Context, rule_id: str, yes: bool) -> None:
         """Remove a behavioral rule by ID."""
-        if not yes:
+        no_interactive = ctx.obj.get("no_interactive_explicit", False) if ctx.obj else False
+        if not yes and not no_interactive:
             click.confirm(f"Remove rule '{rule_id}'?", default=False, abort=True)
 
         rules_path = ctx.obj["rules_path"]

@@ -26,7 +26,8 @@ def register_kill_commands(*, cli: click.Group) -> None:
         help="Path to circuit breaker state file.",
     )
     @click.option("--yes", "-y", is_flag=True, default=False, help="Skip confirmation prompt.")
-    def kill(tool_id: str, reason: str, breaker_state: str, yes: bool) -> None:
+    @click.pass_context
+    def kill(ctx: click.Context, tool_id: str, reason: str, breaker_state: str, yes: bool) -> None:
         """Kill a tool by forcing its circuit breaker open.
 
         The tool will be blocked from execution until manually re-enabled
@@ -38,9 +39,10 @@ def register_kill_commands(*, cli: click.Group) -> None:
           toolwright kill search --reason "rate limiting detected"
         """
         if not tool_id or not tool_id.strip():
-            raise click.ClickException("Tool ID cannot be empty.")
+            raise click.ClickException("Tool ID must not be empty.")
 
-        if not yes:
+        no_interactive = ctx.obj.get("no_interactive_explicit", False) if ctx.obj else False
+        if not yes and not no_interactive:
             click.confirm(f"Kill tool '{tool_id}'?", default=False, abort=True)
 
         from toolwright.core.kill.breaker import CircuitBreakerRegistry
@@ -64,9 +66,16 @@ def register_kill_commands(*, cli: click.Group) -> None:
         Examples:
           toolwright enable dangerous_tool
         """
+        if not tool_id or not tool_id.strip():
+            raise click.ClickException("Tool ID must not be empty.")
+
         from toolwright.core.kill.breaker import CircuitBreakerRegistry
 
         reg = CircuitBreakerRegistry(state_path=Path(breaker_state))
+        breaker = reg.get_breaker(tool_id)
+        if breaker is None or breaker.state == "closed":
+            click.echo(f"Tool '{tool_id}' is not currently killed.")
+            return
         reg.enable_tool(tool_id)
         click.echo(f"Tool '{tool_id}' enabled (circuit breaker closed).")
 

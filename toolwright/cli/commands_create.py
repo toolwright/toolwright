@@ -265,7 +265,7 @@ def run_create(
     # Write toolpack.yaml
     toolpack = Toolpack(
         toolpack_id=toolpack_id,
-        created_at=resolve_generated_at(deterministic=True),
+        created_at=resolve_generated_at(deterministic=False),
         capture_id=session.id,
         artifact_id=compile_result.artifact_id,
         scope="first_party_only",

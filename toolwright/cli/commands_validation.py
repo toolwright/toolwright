@@ -322,11 +322,16 @@ Examples:
     @cli.command()
     @click.option(
         "--tools",
-        required=True,
+        required=False,
         type=click.Path(exists=True),
         help="Path to tools.json manifest.",
     )
-    def health(tools: str) -> None:
+    @click.option(
+        "--toolpack",
+        type=click.Path(exists=True),
+        help="Path to toolpack.yaml (auto-resolves tools.json path)",
+    )
+    def health(tools: str | None, toolpack: str | None) -> None:
         """Probe endpoint health for all tools in a manifest.
 
         Sends non-mutating probes (HEAD/OPTIONS) to each endpoint and
@@ -338,8 +343,19 @@ Examples:
         Examples:
           toolwright health --tools output/tools.json
           toolwright health --tools my-api/tools.json
+          toolwright health --toolpack toolpack.yaml
         """
-        manifest = json.loads(Path(tools).read_text())
+        if not tools and not toolpack:
+            raise click.UsageError("Provide --tools or --toolpack.")
+
+        if toolpack and not tools:
+            from toolwright.core.toolpack import load_toolpack, resolve_toolpack_paths
+
+            tp = load_toolpack(Path(toolpack))
+            resolved = resolve_toolpack_paths(toolpack=tp, toolpack_path=toolpack)
+            tools = str(resolved.tools_path)
+
+        manifest = json.loads(Path(tools).read_text())  # type: ignore[arg-type]
         actions = manifest.get("actions", [])
 
         if not actions:

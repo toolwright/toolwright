@@ -467,7 +467,7 @@ def run_approve_snapshot(
     if not manager.exists():
         click.echo(f"No lockfile found at: {manager.lockfile_path}")
         click.echo("Run 'toolwright gate sync' first.")
-        sys.exit(2)
+        sys.exit(1)
 
     manager.load()
     approvals_passed, message = manager.check_approvals()
@@ -501,7 +501,7 @@ def run_approve_check(
     if not manager.exists():
         click.echo(f"No lockfile found at: {manager.lockfile_path}")
         click.echo("Run 'toolwright gate sync' first.")
-        sys.exit(2)
+        sys.exit(1)
 
     manager.load()
 
@@ -545,7 +545,7 @@ def run_approve_resign(
     if not manager.exists():
         click.echo(f"No lockfile found at: {manager.lockfile_path}")
         click.echo("Run 'toolwright gate sync' first.")
-        sys.exit(2)
+        sys.exit(1)
 
     manager.load()
     assert manager.lockfile is not None

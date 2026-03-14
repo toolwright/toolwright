@@ -215,6 +215,9 @@ def cli(ctx: click.Context, verbose: bool, root: Path, no_interactive: bool) -> 
     ctx.obj["interactive"] = should_interact(
         force=False if no_interactive else None,
     )
+    # Track explicit --no-interactive flag separately from auto-detection.
+    # Commands use this to skip confirmation prompts only when explicitly requested.
+    ctx.obj["no_interactive_explicit"] = no_interactive
 
     if ctx.invoked_subcommand is None:
         if ctx.obj["interactive"]:

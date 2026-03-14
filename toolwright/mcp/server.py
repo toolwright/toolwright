@@ -1018,7 +1018,7 @@ def run_mcp_server(
 
     tool_count = len(server.actions)
     guardrail_warnings, should_block = check_tool_count_guardrails(
-        tool_count, groups_index=groups_index, no_tool_limit=no_tool_limit,
+        tool_count, groups_index=groups_index, no_tool_limit=no_tool_limit, scope=scope,
     )
     for warning in guardrail_warnings:
         _click.echo(f"  {warning}", err=True)

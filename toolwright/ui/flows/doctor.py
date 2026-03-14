@@ -45,8 +45,8 @@ def doctor_flow(
     if toolpack_path is None:
         candidates = find_toolpacks(root)
         if not candidates:
-            con.print("[error]No toolpacks found.[/error]")
-            con.print("Run 'toolwright create' first.")
+            con.print("[error]No toolpack found.[/error]")
+            con.print("Create one with: [command]toolwright create <recipe-name>[/command]")
             return
         if len(candidates) == 1:
             toolpack_path = str(candidates[0])

@@ -26,15 +26,15 @@ def run_repair(
 
     tp_path = Path(toolpack_path)
     if not tp_path.exists():
-        click.echo(f"Error: Toolpack not found: {tp_path}", err=True)
-        sys.exit(2)
+        click.echo(f"Error: Toolpack not found: {tp_path}. Create one with: toolwright create <recipe-name>", err=True)
+        sys.exit(1)
 
     try:
         toolpack = load_toolpack(tp_path)
         resolved = resolve_toolpack_paths(toolpack=toolpack, toolpack_path=tp_path)
     except Exception as exc:
         click.echo(f"Error loading toolpack: {exc}", err=True)
-        sys.exit(2)
+        sys.exit(1)
 
     engine = RepairEngine(
         toolpack=toolpack,

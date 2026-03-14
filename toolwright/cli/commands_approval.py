@@ -164,7 +164,8 @@ def register_approval_commands(
             toolsets = toolsets or resolved["toolsets"]
             lockfile = lockfile or resolved["lockfile"]
 
-        if prune_removed and not yes:
+        no_interactive = ctx.obj.get("no_interactive_explicit", False) if ctx.obj else False
+        if prune_removed and not yes and not no_interactive:
             click.echo("This will remove approval records for tools no longer in the manifest.")
             if not click.confirm("Proceed?", default=False):
                 click.echo("Aborted.")
@@ -394,7 +395,8 @@ def register_approval_commands(
             )
             return
 
-        if all_pending and not yes:
+        no_interactive = ctx.obj.get("no_interactive_explicit", False) if ctx.obj else False
+        if all_pending and not yes and not no_interactive:
             click.echo("This will approve ALL pending tools.")
             if not click.confirm("Proceed?", default=False):
                 click.echo("Aborted.")
