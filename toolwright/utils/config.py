@@ -12,12 +12,27 @@ import yaml
 
 
 def _resolve_toolwright_command() -> str:
-    """Return the short ``toolwright`` command name.
+    """Return the absolute path to the ``toolwright`` binary.
 
-    Users install toolwright via ``pip install toolwright`` which places
-    ``toolwright`` on PATH.  Emitting an absolute path (especially a
-    virtualenv path) makes the config non-portable and confusing.
+    MCP clients (Claude Desktop, Cursor) launch the command directly
+    without activating a virtualenv, so a bare ``toolwright`` often
+    fails.  We resolve the full path from the running Python's
+    environment so the config works out-of-the-box.
     """
+    import shutil
+    import sys
+
+    # 1. shutil.which respects PATH
+    full_path = shutil.which("toolwright")
+    if full_path:
+        return full_path
+
+    # 2. Derive from sys.executable (handles venv case)
+    bin_dir = Path(sys.executable).parent
+    candidate = bin_dir / "toolwright"
+    if candidate.exists():
+        return str(candidate)
+
     return "toolwright"
 
 

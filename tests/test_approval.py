@@ -141,6 +141,26 @@ class TestLockfileManager:
         assert manager2.lockfile.tools["sig123"].signature_id == "sig123"
         assert manager2.lockfile.schema_version == "1.0"
 
+    def test_sync_generated_at_never_epoch_zero(
+        self, tmp_lockfile: Path, sample_manifest: dict
+    ) -> None:
+        """M16: generated_at must never be epoch zero, even with deterministic=True."""
+        from datetime import UTC, datetime
+
+        manager = LockfileManager(tmp_lockfile)
+        manager.load()
+
+        manager.sync_from_manifest(sample_manifest, deterministic=True)
+
+        epoch_zero = datetime(1970, 1, 1, tzinfo=UTC)
+        assert manager.lockfile.generated_at != epoch_zero, (
+            "Lockfile generated_at should be a real timestamp, not epoch zero"
+        )
+        # Should be recent (within last minute)
+        now = datetime.now(UTC)
+        delta = (now - manager.lockfile.generated_at).total_seconds()
+        assert delta < 60, f"generated_at is {delta}s old, expected recent"
+
     def test_sync_from_manifest_new_tools(
         self, tmp_lockfile: Path, sample_manifest: dict
     ) -> None:

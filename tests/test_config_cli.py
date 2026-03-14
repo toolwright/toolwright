@@ -30,6 +30,27 @@ def test_config_outputs_snippet_to_stdout(tmp_path: Path) -> None:
     assert "--toolpack" in server["args"]
 
 
+def test_config_uses_full_binary_path(tmp_path: Path) -> None:
+    """M13: config output should use full binary path so it works without venv activation."""
+    toolpack_file = write_demo_toolpack(tmp_path)
+    runner = CliRunner()
+
+    result = runner.invoke(
+        cli,
+        ["config", "--toolpack", str(toolpack_file), "--format", "json"],
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    server = payload["mcpServers"]["app-example-com"]
+    command = server["command"]
+    # Must be an absolute path, not bare "toolwright"
+    assert command != "toolwright", (
+        f"Config should use full binary path, got bare 'toolwright'"
+    )
+    assert "/" in command, f"Expected absolute path, got: {command}"
+
+
 def test_config_outputs_codex_toml(tmp_path: Path) -> None:
     toolpack_file = write_demo_toolpack(tmp_path)
     runner = CliRunner()

@@ -38,6 +38,14 @@ def register_onboarding_commands(*, cli: click.Group) -> None:
         from toolwright.ui.flows.ship import ship_secure_agent_flow
 
         root: Path = ctx.obj.get("root", resolve_root())
+        no_interactive = ctx.obj.get("no_interactive_explicit", False) if ctx.obj else False
+
+        if no_interactive and not url:
+            raise click.ClickException(
+                "In non-interactive mode, a URL argument is required. "
+                "Usage: toolwright --no-interactive ship <URL> -a <host>"
+            )
+
         ship_secure_agent_flow(
             root=root,
             verbose=ctx.obj.get("verbose", False),

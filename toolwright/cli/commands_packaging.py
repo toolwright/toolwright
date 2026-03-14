@@ -112,9 +112,18 @@ Examples:
         """Package a toolpack into a signed .twp bundle for sharing."""
         from toolwright.core.share.bundler import create_bundle
 
-        toolpack_dir = Path(toolpack_path)
+        tp = Path(toolpack_path)
+        # Resolve directory to toolpack.yaml inside it
+        if tp.is_dir():
+            yaml_path = tp / "toolpack.yaml"
+            if not yaml_path.exists():
+                raise click.ClickException(
+                    f"No toolpack.yaml found in {tp}. "
+                    "Pass the path to toolpack.yaml or a directory containing one."
+                )
+            tp = yaml_path
         output_dir = Path(output) if output else None
-        result_path = create_bundle(toolpack_dir, output_dir=output_dir)
+        result_path = create_bundle(tp, output_dir=output_dir)
         size = result_path.stat().st_size
         size_human = (
             f"{size / 1024:.1f} KB"

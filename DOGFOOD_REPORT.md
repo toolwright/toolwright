@@ -211,22 +211,22 @@ Comprehensive dogfooding across all 5 pillars (CONNECT, GOVERN, CORRECT, HEAL, K
 
 ## Recommended Fix Priority
 
-### Sprint 1 (Ship Blockers — do these before any release)
-1. **C1**: Cap tool descriptions at ~500 chars by default
-2. **H2**: Warn/fail on `api.example.com` fallback for OpenAPI specs
-3. **H5**: Fix `status` to suggest `gate allow --all`
-4. **H3**: Auto-add `--base-url` host to session allowlist
-5. **H6**: Fix `enforce --mode evaluate` to not start HTTP server
-6. **H7**: Catch duplicate rule ID error in CLI layer
+### Sprint 1 (Ship Blockers — do these before any release) ✅ ALL FIXED
+1. ~~**C1**: Cap tool descriptions at ~500 chars by default~~ — Fixed: 500-char hard cap in `_build_description` + compile-time hint cap
+2. ~~**H2**: Warn/fail on `api.example.com` fallback for OpenAPI specs~~ — Fixed: warning emitted with `--base-url` guidance
+3. ~~**H5**: Fix `status` to suggest `gate allow --all`~~ — Fixed: next-steps engine now includes `--all` flag
+4. ~~**H3**: Auto-add `--base-url` host to session allowlist~~ — Fixed: `_allowed_app_hosts()` auto-adds base-url host
+5. ~~**H6**: Fix `enforce --mode evaluate` to not start HTTP server~~ — Fixed: evaluate mode exits after evaluation
+6. ~~**H7**: Catch duplicate rule ID error in CLI layer~~ — Fixed: clean error message, no traceback
 
-### Sprint 2 (User Experience — critical for adoption)
-7. **H4**: Validate kill tool IDs against lockfile
-8. **H1**: Make `ship` respect `--no-interactive`
-9. **M14**: Fix share/install directory nesting
-10. **M13**: Use full binary path in config output
-11. **M12**: Catch wrap connection errors, fix help examples
-12. **M15**: Fix status `[OK]` indicator when tools are blocked
-13. **M16**: Fix lockfile `generated_at` epoch zero timestamp
+### Sprint 2 (User Experience — critical for adoption) ✅ ALL FIXED
+7. ~~**H4**: Validate kill tool IDs against lockfile~~ — Already implemented with `_validate_tool_in_lockfile`
+8. ~~**H1**: Make `ship` respect `--no-interactive`~~ — Fixed: clear error when URL missing in non-interactive mode
+9. ~~**M14**: Fix share/install directory nesting~~ — Fixed: `share` resolves directory args to `toolpack.yaml`
+10. ~~**M13**: Use full binary path in config output~~ — Fixed: `_resolve_toolwright_command()` uses `sys.executable` venv path
+11. ~~**M12**: Catch wrap connection errors, fix help examples~~ — Fixed: `ignore_unknown_options=True`, discovery error handling
+12. ~~**M15**: Fix status `[OK]` indicator when tools are blocked~~ — Fixed: `_lockfile_icon_state()` returns warning for blocked tools
+13. ~~**M16**: Fix lockfile `generated_at` epoch zero timestamp~~ — Fixed: lockfiles always use `datetime.now(UTC)`
 
 ### Sprint 3 (Polish — quality of life)
 14. **M1-M11, M17**: Various medium-priority UX fixes

@@ -130,6 +130,49 @@ class TestShareErrors:
             assert "KB" in result.output or "MB" in result.output
 
 
+class TestShareWithDirectoryArg:
+    """M14: share must work correctly when given a directory instead of toolpack.yaml."""
+
+    def test_share_directory_uses_correct_name(self) -> None:
+        """Passing a directory to share should name the bundle after the directory, not its parent."""
+        runner = CliRunner()
+        with tempfile.TemporaryDirectory() as td:
+            tp_dir = _make_toolpack(Path(td))
+            # Pass the directory, not toolpack.yaml
+            result = runner.invoke(cli, ["share", str(tp_dir)])
+            assert result.exit_code == 0, result.output
+            twp_files = list(Path(td).glob("*.twp"))
+            assert len(twp_files) == 1
+            # Bundle should be named after the toolpack dir, not its parent
+            assert twp_files[0].stem == "my-toolpack"
+
+    def test_share_directory_install_no_nesting(self) -> None:
+        """M14: share a directory, install the bundle — no toolpacks/toolpacks/ nesting."""
+        runner = CliRunner()
+        with tempfile.TemporaryDirectory() as td:
+            tp_dir = _make_toolpack(Path(td))
+            # Share using directory path
+            runner.invoke(cli, ["share", str(tp_dir)])
+            twp_files = list(Path(td).glob("*.twp"))
+            assert len(twp_files) == 1
+
+            # Install with custom root
+            custom_root = Path(td) / "project"
+            custom_root.mkdir()
+            result = runner.invoke(
+                cli,
+                ["--root", str(custom_root), "install", str(twp_files[0])],
+            )
+            assert result.exit_code == 0, result.output
+            # Should be at project/toolpacks/my-toolpack, NOT project/toolpacks/toolpacks
+            expected = custom_root / "toolpacks" / "my-toolpack"
+            assert expected.exists(), (
+                f"Expected install at {expected}. "
+                f"Contents: {list((custom_root / 'toolpacks').iterdir()) if (custom_root / 'toolpacks').exists() else 'toolpacks dir missing'}"
+            )
+            assert (expected / "toolpack.yaml").exists()
+
+
 class TestInstallDefaultPath:
     """Install should default to {root}/.toolwright/toolpacks/{stem}."""
 

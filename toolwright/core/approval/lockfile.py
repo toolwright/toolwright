@@ -297,8 +297,9 @@ class LockfileManager:
 
         assert self.lockfile is not None
 
-        # Update metadata
-        sync_time = resolve_generated_at(deterministic=deterministic)
+        # Update metadata — lockfiles always use real timestamps since they
+        # record when approval events happened, not build reproducibility
+        sync_time = datetime.now(UTC)
         self.lockfile.generated_at = sync_time
         if capture_id:
             self.lockfile.capture_id = capture_id

@@ -10,8 +10,8 @@ from typing import Any
 import click
 
 
-@click.command("wrap")
-@click.argument("command_args", nargs=-1)
+@click.command("wrap", context_settings={"ignore_unknown_options": True})
+@click.argument("command_args", nargs=-1, type=click.UNPROCESSED)
 @click.option("--name", default=None, help="Server name (auto-derived from command if omitted)")
 @click.option("--url", default=None, help="Streamable HTTP target URL")
 @click.option(
@@ -43,9 +43,9 @@ def wrap_command(
 
     \b
     Examples:
-      toolwright wrap npx -y @modelcontextprotocol/server-github
+      toolwright wrap -- npx -y @modelcontextprotocol/server-github
       toolwright wrap --url https://mcp.sentry.dev/mcp --header "Authorization: Bearer xxx"
-      toolwright wrap --name github --auto-approve npx -y @modelcontextprotocol/server-github
+      toolwright wrap --name github --auto-approve -- npx -y @modelcontextprotocol/server-github
       toolwright wrap                    # Uses saved .toolwright/wrap/<name>/wrap.yaml
     """
     from toolwright.models.overlay import TargetType, WrapConfig
@@ -159,7 +159,12 @@ async def _async_run_wrap(
 
     # 2. Discover tools
     click.echo("Discovering tools...", err=True)
-    discovery = await discover_tools(connection, config)
+    try:
+        discovery = await discover_tools(connection, config)
+    except Exception as e:
+        click.echo(f"Error: Failed to discover tools from upstream: {e}", err=True)
+        await connection.close()
+        sys.exit(1)
     click.echo(f"Found {len(discovery.tools)} tools", err=True)
 
     # Show risk breakdown

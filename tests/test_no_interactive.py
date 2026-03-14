@@ -48,6 +48,15 @@ class TestNoInteractiveAfterSubcommand:
         assert "No such option" not in (result.output + (result.stderr or ""))
 
 
+    def test_ship_no_interactive_without_url_fails(self, runner: CliRunner) -> None:
+        """H1: ship --no-interactive without URL should fail with clear error."""
+        from toolwright.cli.main import cli
+
+        result = runner.invoke(cli, ["--no-interactive", "ship"])
+        assert result.exit_code != 0
+        assert "url" in result.output.lower() or "url" in (result.stderr or "").lower()
+
+
 class TestNoInteractiveSuppressesAllPrompts:
     """H2: --no-interactive suppresses prompts that only check isatty()."""
 

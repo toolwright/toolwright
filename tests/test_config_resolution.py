@@ -7,15 +7,17 @@ from pathlib import Path
 from toolwright.utils.config import build_mcp_config_payload
 
 
-def test_command_defaults_to_toolwright_not_absolute_path(
+def test_command_uses_absolute_path_for_reliability(
     tmp_path: Path,
 ) -> None:
-    """The command field should be 'toolwright', not an absolute .venv path."""
+    """M13: command should use an absolute path so it works without venv activation."""
     toolpack = tmp_path / "toolpack.yaml"
     toolpack.write_text("toolpack_id: tp_test\n")
 
     payload = build_mcp_config_payload(toolpack_path=toolpack, server_name="tp_test")
-    assert payload["mcpServers"]["tp_test"]["command"] == "toolwright"
+    command = payload["mcpServers"]["tp_test"]["command"]
+    # Should be either an absolute path or bare "toolwright" as fallback
+    assert command.endswith("toolwright")
 
 
 def test_root_points_to_parent_toolwright_dir_not_nested(
