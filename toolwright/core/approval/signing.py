@@ -181,6 +181,7 @@ class ApprovalSigner:
         toolsets = ",".join(sorted(set(tool.toolsets)))
         approved_toolsets = ",".join(sorted(set(tool.approved_toolsets)))
         status = tool.status.value if hasattr(tool.status, "value") else str(tool.status)
+        risk_tier = getattr(tool, "risk_tier", "low") or "low"
         return "|".join(
             [
                 tool.signature_id or tool.tool_id,
@@ -192,6 +193,7 @@ class ApprovalSigner:
                 toolsets,
                 approved_toolsets,
                 status,
+                risk_tier,
                 approved_by,
                 approved_at.isoformat(),
                 reason or "",
