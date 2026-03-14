@@ -4,6 +4,8 @@ All notable changes to Toolwright are documented here.
 
 ## [Unreleased]
 
+## [1.0.0a3] - 2026-03-14
+
 ### Added
 
 **Transport-Agnostic Governance**
@@ -12,17 +14,34 @@ All notable changes to Toolwright are documented here.
 - Transport conformance test suite ensuring identical governance across MCP + CLI
 - `--transport` option for `toolwright serve` (stdio, http, cli)
 
-**CEO Review Sprint**
+**New Commands**
 - `toolwright score`: governance maturity grading (A-F) with actionable suggestions
 - `toolwright why <tool>`: explain governance decisions for any tool
-- Dogfood audit: 33 UX issues found, 23 fixed across CLI, help screens, error messages
-- GovernanceEngine parameterized with transport_type for transport-aware audit traces
+- `toolwright estimate-tokens`: token cost comparison across transports
+- Auth setup wizard: interactive credential setup for toolpack auth requirements
+
+**Launch Materials**
+- Show HN post and first comment draft (`docs/launch/show-hn.md`)
+- Twitter/X launch thread (`docs/launch/twitter-thread.md`)
 
 ### Changed
 - ToolwrightMCPServer refactored to delegate to GovernanceRuntime (~300 lines removed)
+- GovernanceEngine parameterized with transport_type for transport-aware audit traces
 - `toolwright wrap` connection lifecycle hardened (timeout, retry, clean errors)
-- README rewritten for transport-agnostic positioning
+- README rewritten for transport-agnostic positioning ("Any transport. Same governance.")
+- Architecture docs updated for transport-agnostic governance
 - PyPI keywords updated for discoverability (cli, governance, lockfile, security)
+- CI workflow added (`.github/workflows/ci.yml`)
+
+### Fixed
+- 33 UX issues fixed across CLI from dogfood audit (error messages, help text, exit codes)
+- Auth setup: `.env` file now loaded before checking credentials (was silently skipping)
+- Dotenv save: secrets written atomically with 0600 permissions (no TOCTOU window)
+- Score command: `status` variable hoisted to prevent UnboundLocalError
+- CLI transport: removed dead `asyncio.get_event_loop()` call
+- Bare toolpack name resolution extended to all CLI commands
+- OpenAPI parser handles 3.1 type arrays
+- Ed25519 signature verification enforced in gate check and serve
 
 ## [1.0.0a2] - 2026-03-09
 
