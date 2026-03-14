@@ -221,8 +221,10 @@ def _split_by_depth(
 
 def _describe(name: str, count: int) -> str:
     """Generate a human-readable group description."""
+    from toolwright.utils.text import pluralize
+
     display = name.replace("/", " ").strip().capitalize()
-    return f"{display} endpoints ({count} tools)"
+    return f"{display} endpoints ({pluralize(count, 'tool')})"
 
 
 def filter_by_scope(

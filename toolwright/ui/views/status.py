@@ -124,7 +124,7 @@ def render_rich(model: StatusModel) -> RenderableType:
     table.add_column("Value")
 
     rows = [
-        ("Toolpack", f"{model.toolpack_id or 'unknown'}  ({model.tool_count} tools)", "sealed"),
+        ("Toolpack", f"{model.toolpack_id or 'unknown'}  ({model.tool_count} {'tool' if model.tool_count == 1 else 'tools'})", "sealed"),
         ("Lockfile", _lockfile_label(model), model.lockfile_state),
         ("Baseline", _baseline_label(model), "current" if model.has_baseline else "missing"),
         ("Drift", _drift_label(model), model.drift_state),
@@ -187,7 +187,7 @@ def render_plain(model: StatusModel) -> str:
     }
 
     rows = [
-        ("Toolpack", f"{model.toolpack_id or 'unknown'}  ({model.tool_count} tools)", "sealed"),
+        ("Toolpack", f"{model.toolpack_id or 'unknown'}  ({model.tool_count} {'tool' if model.tool_count == 1 else 'tools'})", "sealed"),
         ("Lockfile", _lockfile_label(model).replace("\u00b7", "-"), model.lockfile_state),
         ("Baseline", _baseline_label(model), "current" if model.has_baseline else "missing"),
         ("Drift", _drift_label(model), model.drift_state),

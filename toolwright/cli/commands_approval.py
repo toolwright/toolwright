@@ -295,7 +295,9 @@ def register_approval_commands(
                     parts.append(f"{rejected} rejected")
 
                 status_str = ", ".join(parts) if parts else "unknown"
-                click.echo(f"  {group.name} ({len(group.tools)} tools)    {status_str}")
+                from toolwright.utils.text import pluralize
+
+                click.echo(f"  {group.name} ({pluralize(len(group.tools), 'tool')})    {status_str}")
 
             if groups_index.ungrouped:
                 click.echo(f"\n  Ungrouped: {len(groups_index.ungrouped)} tools")
