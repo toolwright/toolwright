@@ -58,13 +58,9 @@ def _fetch_or_cache_spec(
             cache_file.write_text(content)
 
         # Write to temp file for parser
-        tmp = tempfile.NamedTemporaryFile(
-            suffix=".json" if spec_url.endswith(".json") else ".yaml",
-            delete=False,
-            mode="w",
-        )
-        tmp.write(content)
-        tmp.close()
+        suffix = ".json" if spec_url.endswith(".json") else ".yaml"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False, mode="w") as tmp:
+            tmp.write(content)
         return Path(tmp.name)
 
     except (httpx.HTTPError, OSError) as exc:
@@ -133,9 +129,8 @@ def run_create(
             raise click.ClickException(str(exc)) from exc
 
         content = json.dumps(spec_dict)
-        tmp = tempfile.NamedTemporaryFile(suffix=".json", delete=False, mode="w")
-        tmp.write(content)
-        tmp.close()
+        with tempfile.NamedTemporaryFile(suffix=".json", delete=False, mode="w") as tmp:
+            tmp.write(content)
         url_spec_path = Path(tmp.name)
 
         # Auto-derive name from URL hostname if not provided

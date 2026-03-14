@@ -40,7 +40,7 @@ def install_bundle(
         ValueError: If the bundle is corrupt or tampered
     """
     try:
-        tf = tarfile.open(str(twp_path), "r:gz")
+        tf = tarfile.open(str(twp_path), "r:gz")  # noqa: SIM115 — opened here, used as context manager below
     except (tarfile.TarError, EOFError) as exc:
         raise ValueError(f"corrupt or invalid bundle: {exc}") from exc
 

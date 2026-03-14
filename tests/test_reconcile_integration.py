@@ -68,7 +68,7 @@ def _make_actions(*tool_ids: str) -> list[dict]:
 
 
 def _make_risk_tiers(*tool_ids: str) -> dict[str, str]:
-    return {tid: "medium" for tid in tool_ids}
+    return dict.fromkeys(tool_ids, "medium")
 
 
 def _additive_drift_endpoints() -> list[Endpoint]:

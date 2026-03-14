@@ -9,11 +9,11 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class WorkItemKind(str, Enum):
+class WorkItemKind(StrEnum):
     TOOL_APPROVAL = "tool_approval"
     CONFIRMATION = "confirmation"
     REPAIR_PATCH = "repair_patch"
@@ -22,7 +22,7 @@ class WorkItemKind(str, Enum):
     CAPABILITY_REQUEST = "capability_request"
 
 
-class WorkItemStatus(str, Enum):
+class WorkItemStatus(StrEnum):
     OPEN = "open"
     APPROVED = "approved"
     DENIED = "denied"
