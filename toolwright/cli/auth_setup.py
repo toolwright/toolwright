@@ -6,6 +6,7 @@ import getpass
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -14,7 +15,7 @@ from toolwright.utils.auth import host_to_env_var
 from toolwright.utils.dotenv import DotenvFile
 
 
-def _find_recipe_auth_guide(host: str) -> dict | None:
+def _find_recipe_auth_guide(host: str) -> dict[str, Any] | None:
     """Try to find a recipe auth_guide matching the given host."""
     try:
         from toolwright.recipes.loader import list_recipes, load_recipe
@@ -23,7 +24,7 @@ def _find_recipe_auth_guide(host: str) -> dict | None:
             for pattern in meta.get("hosts", []):
                 if host in pattern or pattern in host:
                     recipe = load_recipe(meta["name"])
-                    guide = recipe.get("auth_guide")
+                    guide: dict[str, Any] | None = recipe.get("auth_guide")
                     if guide and guide.get("host") == host:
                         return guide
     except Exception:

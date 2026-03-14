@@ -14,6 +14,8 @@ from typing import Any
 
 from toolwright.models.groups import ToolGroup, ToolGroupIndex
 
+__all__ = ["ToolGroup", "ToolGroupIndex", "filter_by_scope"]
+
 # Noise segments stripped during path cleaning (case-insensitive).
 _NOISE_SEGMENTS: set[str] = {
     "admin",

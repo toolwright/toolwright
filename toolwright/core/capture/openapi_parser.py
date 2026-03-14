@@ -439,9 +439,9 @@ class OpenAPIParser:
         if isinstance(schema_type, list):
             for t in schema_type:
                 if t != "null":
-                    return t
+                    return str(t)
             return None
-        return schema_type
+        return str(schema_type) if schema_type is not None else None
 
     def _schema_to_example(
         self, schema: dict[str, Any], spec: dict[str, Any]

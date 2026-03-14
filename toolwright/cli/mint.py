@@ -1009,7 +1009,7 @@ def _render_probe_results(
     """Render structured advisory messages from probe results. Never blocks."""
     from urllib.parse import urlparse
 
-    from toolwright.cli.commands_auth import _host_to_env_var
+    from toolwright.utils.auth import host_to_env_var as _host_to_env_var
 
     CHECK = "\u2713"
     WARN = "\u26A0"

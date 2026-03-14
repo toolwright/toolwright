@@ -57,7 +57,7 @@ def resolve_toolpack_path(
         if default:
             p = resolved_root / "toolpacks" / default / "toolpack.yaml"
             if p.exists():
-                return p
+                return Path(p)
 
     # 4. Auto-detect single toolpack
     toolpacks_dir = resolved_root / "toolpacks"

@@ -390,7 +390,7 @@ def run_create(
 
     # Section 2: Auth Required
     if recipe_data and recipe_data.get("hosts"):
-        from toolwright.cli.commands_auth import _host_to_env_var
+        from toolwright.utils.auth import host_to_env_var as _host_to_env_var
 
         click.echo(click.style("\n  Auth:", fg="cyan"))
         for host_info in recipe_data["hosts"]:

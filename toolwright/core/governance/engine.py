@@ -153,7 +153,7 @@ class GovernanceEngine:
         input_schema = action.get("input_schema")
         if input_schema and isinstance(input_schema, dict):
             try:
-                import jsonschema  # type: ignore[import-untyped]
+                import jsonschema
 
                 jsonschema.validate(instance=ctx.call_args, schema=input_schema)
             except jsonschema.ValidationError as ve:

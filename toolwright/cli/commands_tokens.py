@@ -83,8 +83,6 @@ def register_tokens_commands(*, cli: click.Group) -> None:
         # Render output
         _render_estimate(estimator)
 
-    return estimate_tokens
-
 
 def _render_estimate(estimator: TokenEstimator) -> None:
     """Render the token estimate table to stdout."""

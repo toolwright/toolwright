@@ -157,10 +157,10 @@ def register_approval_commands(
 
         if toolpack:
             resolved = _resolve_gate_paths(toolpack)
-            tools = resolved["tools"]  # type: ignore[assignment]
-            policy = policy or resolved["policy"]
-            toolsets = toolsets or resolved["toolsets"]
-            lockfile = lockfile or resolved["lockfile"]
+            tools = resolved.get("tools")
+            policy = policy or resolved.get("policy")
+            toolsets = toolsets or resolved.get("toolsets")
+            lockfile = lockfile or resolved.get("lockfile")
 
         no_interactive = ctx.obj.get("no_interactive_explicit", False) if ctx.obj else False
         if prune_removed and not yes and not no_interactive:
@@ -309,8 +309,8 @@ def register_approval_commands(
         if not lockfile:
             toolpack = _auto_resolve_toolpack(toolpack, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
-            resolved = _resolve_gate_paths(toolpack)
-            lockfile = resolved["lockfile"]
+            gate_paths = _resolve_gate_paths(toolpack)
+            lockfile = gate_paths.get("lockfile")
 
         from toolwright.cli.approve import run_approve_list
 

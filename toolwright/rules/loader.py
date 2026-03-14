@@ -38,7 +38,8 @@ def load_template(name: str) -> dict[str, Any]:
             f"Available: {', '.join(available)}"
         )
     with open(path) as f:
-        return yaml.safe_load(f)
+        result: dict[str, Any] = yaml.safe_load(f)
+        return result
 
 
 def apply_template(
