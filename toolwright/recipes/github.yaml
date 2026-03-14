@@ -11,6 +11,12 @@ rate_limit_hints: "5000 req/hr for authenticated requests"
 usage_notes: "Uses Bearer token authentication. Paginated responses use Link headers."
 rule_templates:
   - crud-safety
+auth_guide:
+  host: api.github.com
+  scheme: bearer
+  create_url: https://github.com/settings/tokens/new
+  scopes_hint: "repo, issues, pull_requests"
+  instructions: "Create a fine-grained personal access token with the scopes listed above"
 probe_hints:
   expect_auth: true
   expect_openapi: true

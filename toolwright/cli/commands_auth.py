@@ -3,23 +3,13 @@
 from __future__ import annotations
 
 import os
-import re
 import urllib.error
 import urllib.request
 
 import click
 
 from toolwright.cli.command_helpers import cli_root
-
-
-def _host_to_env_var(host: str) -> str:
-    """Convert a hostname to the per-host env var name.
-
-    api.stripe.com  ->  TOOLWRIGHT_AUTH_API_STRIPE_COM
-    localhost:8080  ->  TOOLWRIGHT_AUTH_LOCALHOST_8080
-    """
-    normalized = re.sub(r"[^A-Za-z0-9]", "_", host).upper()
-    return f"TOOLWRIGHT_AUTH_{normalized}"
+from toolwright.utils.auth import host_to_env_var as _host_to_env_var
 
 
 def _probe_host(host: str, auth_value: str | None) -> tuple[int | None, str]:
