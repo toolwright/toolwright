@@ -84,13 +84,13 @@ By the end of vNext, Toolwright must support:
 * `toolwright drift` detects changes in tool surface and verification contract behavior.
 * Drift fails CI by default for high-risk changes or contract breaks.
 
-5. **Runtime parity for enforcement decisions**
+5. **Runtime parity for enforcement decisions** [SHIPPED]
 
-* The same policy evaluation and scope enforcement is used across all serve modes:
+* The same policy evaluation and scope enforcement is used across all serve modes
+  via `GovernanceRuntime` (§4.1). Currently shipped transports:
 
-  * MCP (stdio/SSE)
-  * HTTP gateway/proxy
-  * future transport integrations
+  * MCP (stdio/SSE) — `toolwright/mcp/server.py`
+  * CLI (JSONL stdin/stdout) — `toolwright/cli_transport/adapter.py`
 
 6. **Safe defaults**
 
@@ -202,28 +202,46 @@ See §10.2.6 for the formal definition of autonomous capability growth and where
 
 ## 4. Architecture [SHIPPED]
 
-### 4.1 Core runtime engine
+### 4.1 Core governance engine (transport-agnostic) [SHIPPED]
 
-Keep the “single runtime package” approach. 
-It is the cleanest way to guarantee parity between serve modes.
+The governance pipeline is transport-agnostic. All transports (MCP, CLI, future REST)
+share the same policy evaluation, approval checks, and decision tracing through a
+single factory and engine.
 
 Package layout:
 
+* `toolwright/core/governance/`
+
+  * `runtime.py` — `GovernanceRuntime`: transport-agnostic factory that wires all
+    governance subsystems (lockfile, policy, audit, rules, circuit breakers) and
+    produces a configured `GovernanceEngine`. Every transport adapter instantiates
+    `GovernanceRuntime` with its `transport_type` and an `execute_request_fn` callback.
+  * `engine.py` — `GovernanceEngine`: the pipeline that evaluates approval, behavioral
+    rules, circuit breakers, and confirmation gates before executing any tool call.
+    Parameterized with `transport_type` so `DecisionRequest.source` reflects the
+    originating transport.
+  * `actions.py` — action lookup and filtering
+  * `event_store.py` — console event storage
+
 * `toolwright/core/runtime/`
 
-  * `engine.py` execution orchestration + policy checks
-  * `decision.py` decision trace models
-  * `network_guard.py` allowlists, SSRF, redirect controls
-  * `confirmation.py` confirmation requests and grants
-  * `auth/` auth providers interface
-  * `audit/` evidence bundle writing
-  * `redaction.py` shared runtime redaction rules
-  * `errors.py` canonical error codes
+  * `container.py` — runtime container utilities
+
+Transport adapters:
+
+* `toolwright/mcp/server.py` — `ToolwrightMCPServer` delegates to `GovernanceRuntime`
+  with `transport_type=”mcp”` and provides the MCP-specific `execute_request_fn`.
+* `toolwright/cli_transport/adapter.py` — `CLITransportAdapter` reads JSONL from stdin,
+  executes tool calls through `GovernanceRuntime` with `transport_type=”cli”`, and
+  writes JSONL responses to stdout.
+* `toolwright/cli_transport/serve.py` — entry point for `toolwright serve --transport cli`.
 
 Acceptance criteria:
 
-* same inputs yield same DecisionTrace in MCP serve and HTTP proxy
-* conformance suite runs both frontends against shared fixtures
+* same inputs yield same DecisionTrace regardless of transport
+* `tests/test_transport_conformance.py` runs all governance scenarios parameterized
+  across `[“mcp”, “cli”]` transports, verifying approve, deny, dry-run, and
+  source-field parity
 
 ### 4.2 Control plane (reframed)
 
@@ -1164,9 +1182,12 @@ Entry points: `toolwright/core/drift/probe_executor.py`, `toolwright/core/drift/
   * optional OpenAPI fixture
 * golden digests for core artifacts
 
-### 13.2 Runtime parity suite
+### 13.2 Transport conformance suite [SHIPPED]
 
-* MCP serve and HTTP proxy produce identical DecisionTrace for the same request.
+* `tests/test_transport_conformance.py` verifies that `GovernanceEngine` produces
+  identical governance behavior across all transports (`mcp`, `cli`).
+* Scenarios: approved tool executes, unknown tool denied, dry-run short-circuits,
+  `DecisionRequest.source` matches `transport_type`.
 
 ### 13.3 Security regression suite
 
