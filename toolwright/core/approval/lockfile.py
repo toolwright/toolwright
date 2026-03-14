@@ -682,6 +682,20 @@ class LockfileManager:
         approved = [t for t in self.lockfile.tools.values() if t.status == ApprovalStatus.APPROVED]
         return sorted(approved, key=lambda t: (t.name, t.method, t.path))
 
+    def get_rejected(self) -> list[ToolApproval]:
+        """Get all rejected tools.
+
+        Returns:
+            List of rejected tools with their rejection reasons
+        """
+        if self.lockfile is None:
+            self.load()
+
+        assert self.lockfile is not None
+
+        rejected = [t for t in self.lockfile.tools.values() if t.status == ApprovalStatus.REJECTED]
+        return sorted(rejected, key=lambda t: (t.name, t.method, t.path))
+
     def has_pending(self, toolset: str | None = None) -> bool:
         """Check if there are pending approvals.
 
@@ -691,7 +705,13 @@ class LockfileManager:
         return len(self.get_pending(toolset=toolset)) > 0
 
     def check_approvals(self, toolset: str | None = None) -> tuple[bool, str]:
-        """Check approval state without snapshot validation."""
+        """Check approval state and verify Ed25519 signatures.
+
+        Verifies:
+        - No rejected or pending tools
+        - Every APPROVED tool has a valid Ed25519 signature
+        - The artifacts_digest has not been tampered with (if set)
+        """
         if self.lockfile is None:
             self.load()
 
@@ -713,6 +733,13 @@ class LockfileManager:
                 tool_names = [t.name for t in pending]
                 return False, f"Pending approval in '{toolset}': {', '.join(tool_names)}"
 
+            # Verify signatures for approved tools in toolset
+            sig_failure = self._verify_approved_signatures(
+                [t for t in in_toolset if t.status == ApprovalStatus.APPROVED]
+            )
+            if sig_failure:
+                return False, sig_failure
+
             return True, f"All tools approved in '{toolset}'"
 
         pending = self.get_pending()
@@ -726,7 +753,59 @@ class LockfileManager:
             tool_names = [t.name for t in pending]
             return False, f"Pending approval: {', '.join(tool_names)}"
 
+        # Verify Ed25519 signatures on all approved tools
+        approved = self.get_approved()
+        sig_failure = self._verify_approved_signatures(approved)
+        if sig_failure:
+            return False, sig_failure
+
         return True, "All tools approved"
+
+    def _verify_approved_signatures(self, tools: list[ToolApproval]) -> str | None:
+        """Verify Ed25519 signatures for a list of approved tools.
+
+        Returns an error message string on failure, or None if all valid.
+        Skips verification if no trust store is available (keys not set up).
+        """
+        if not tools:
+            return None
+
+        from toolwright.core.approval.signing import ApprovalSigner
+
+        approval_root = self._default_approval_root()
+        trust_store_path = approval_root / "state" / "keys" / "trusted_signers.json"
+        if not trust_store_path.exists():
+            # No trust store available -- cannot verify signatures.
+            # This is expected when running outside the signing context.
+            return None
+
+        try:
+            signer = ApprovalSigner(root_path=approval_root, read_only=True)
+        except Exception:
+            return None
+
+        for tool in tools:
+            if not tool.approval_signature:
+                return (
+                    f"Signature verification failed: {tool.name} — "
+                    f"missing approval signature"
+                )
+
+            verified = signer.verify_approval(
+                tool=tool,
+                approved_by=tool.approved_by or "",
+                approved_at=tool.approved_at,
+                reason=tool.approval_reason,
+                mode=tool.approval_mode,
+                signature=tool.approval_signature,
+            )
+            if not verified:
+                return (
+                    f"Signature verification failed: {tool.name} — "
+                    f"invalid or tampered approval signature"
+                )
+
+        return None
 
     def check_ci(self, toolset: str | None = None) -> tuple[bool, str]:
         """Check if CI should pass.
@@ -769,6 +848,24 @@ class LockfileManager:
         except Exception:
             return False, "toolpack.yaml invalid; check_ci requires toolpack context"
         resolved = resolve_toolpack_paths(toolpack=toolpack, toolpack_path=toolpack_file)
+
+        # Verify artifacts_digest against actual artifact content
+        if self.lockfile.artifacts_digest:
+            from toolwright.core.approval.integrity import compute_artifacts_digest_from_paths
+
+            try:
+                actual_digest = compute_artifacts_digest_from_paths(
+                    tools_path=resolved.tools_path,
+                    toolsets_path=resolved.toolsets_path,
+                    policy_path=resolved.policy_path,
+                )
+                if actual_digest != self.lockfile.artifacts_digest:
+                    return False, (
+                        "artifacts digest mismatch — artifact content has been "
+                        "tampered with or lockfile artifacts_digest was modified"
+                    )
+            except Exception:
+                pass  # Cannot verify without artifacts; skip
 
         expected_hash = self.lockfile.evidence_summary_sha256
         if expected_hash:

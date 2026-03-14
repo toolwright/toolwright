@@ -17,8 +17,9 @@ STALENESS_THRESHOLD_SECONDS = 3600
 def register_repair_commands(*, cli: click.Group) -> None:
     """Register the top-level repair command group."""
 
-    @cli.group()
-    def repair() -> None:
+    @cli.group(invoke_without_command=True)
+    @click.pass_context
+    def repair(ctx: click.Context) -> None:
         """Diagnose, plan, and apply fixes for a governed toolpack.
 
         \b
@@ -27,6 +28,8 @@ def register_repair_commands(*, cli: click.Group) -> None:
           plan      Show the current repair plan (Terraform-style)
           apply     Apply patches from the repair plan
         """
+        if ctx.invoked_subcommand is None:
+            click.echo(ctx.get_help())
 
     @repair.command(
         epilog="""\b
@@ -112,7 +115,7 @@ def register_repair_plan_apply(*, repair_group: click.Group) -> None:
         Reads the repair plan from .toolwright/state/repair_plan.json and
         displays patches grouped by safety level: SAFE, APPROVAL_REQUIRED, MANUAL.
 
-        \\b
+        \b
         Examples:
           toolwright repair plan
           toolwright repair plan --root /path/to/project
@@ -199,7 +202,7 @@ def register_repair_plan_apply(*, repair_group: click.Group) -> None:
 
         Warns if the plan is stale (older than 1 hour).
 
-        \\b
+        \b
         Examples:
           toolwright repair apply
           toolwright repair apply --root /path/to/project

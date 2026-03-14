@@ -4,22 +4,13 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
-from typing import TypedDict
 
 import click
 
 from toolwright.utils.state import resolve_root
-from toolwright.utils.text import pluralize
 
 
-class GatePaths(TypedDict):
-    tools: str
-    policy: str | None
-    toolsets: str | None
-    lockfile: str
-
-
-def _resolve_gate_paths(toolpack_path: str) -> GatePaths:
+def _resolve_gate_paths(toolpack_path: str) -> dict[str, str | None]:
     """Resolve gate paths (tools, lockfile, policy, toolsets) from a toolpack.yaml."""
     import sys
 
@@ -167,11 +158,11 @@ def register_approval_commands(
                 resolve_toolpack_path(root=ctx.obj.get("root"))
 
         if toolpack:
-            gate_paths = _resolve_gate_paths(toolpack)
-            tools = gate_paths["tools"]
-            policy = policy or gate_paths["policy"]
-            toolsets = toolsets or gate_paths["toolsets"]
-            lockfile = lockfile or gate_paths["lockfile"]
+            resolved = _resolve_gate_paths(toolpack)
+            tools = resolved["tools"]  # type: ignore[assignment]
+            policy = policy or resolved["policy"]
+            toolsets = toolsets or resolved["toolsets"]
+            lockfile = lockfile or resolved["lockfile"]
 
         if prune_removed and not yes:
             click.echo("This will remove approval records for tools no longer in the manifest.")
@@ -181,12 +172,11 @@ def register_approval_commands(
 
         from toolwright.cli.approve import run_approve_sync
 
-        assert tools is not None
         run_with_lock(
             ctx,
             "gate sync",
             lambda: run_approve_sync(
-                tools_path=tools,
+                tools_path=tools,  # type: ignore[arg-type]
                 policy_path=policy,
                 toolsets_path=toolsets,
                 lockfile_path=lockfile,
@@ -246,16 +236,10 @@ def register_approval_commands(
 
                 try:
                     tp = load_toolpack(resolved_toolpack)
-                    resolved_paths = resolve_toolpack_paths(
-                        toolpack=tp,
-                        toolpack_path=resolved_toolpack,
-                    )
-                    groups_path = resolved_paths.groups_path
+                    resolved = resolve_toolpack_paths(toolpack=tp, toolpack_path=resolved_toolpack)
+                    groups_path = resolved.groups_path
                     if not lockfile:
-                        lockfile = str(
-                            resolved_paths.approved_lockfile_path
-                            or resolved_paths.pending_lockfile_path
-                        )
+                        lockfile = str(resolved.approved_lockfile_path or resolved.pending_lockfile_path)
                 except Exception:
                     pass
 
@@ -310,18 +294,18 @@ def register_approval_commands(
                     parts.append(f"{rejected} rejected")
 
                 status_str = ", ".join(parts) if parts else "unknown"
-                click.echo(f"  {group.name} ({pluralize(len(group.tools), 'tool')})    {status_str}")
+                click.echo(f"  {group.name} ({len(group.tools)} tools)    {status_str}")
 
             if groups_index.ungrouped:
-                click.echo(f"\n  Ungrouped: {pluralize(len(groups_index.ungrouped), 'tool')}")
+                click.echo(f"\n  Ungrouped: {len(groups_index.ungrouped)} tools")
 
             return
 
         if not toolpack and not lockfile:
             toolpack = _auto_resolve_toolpack(None, root=ctx.obj.get("root"))
         if toolpack and not lockfile:
-            gate_paths = _resolve_gate_paths(toolpack)
-            lockfile = gate_paths["lockfile"]
+            resolved = _resolve_gate_paths(toolpack)
+            lockfile = resolved["lockfile"]
 
         from toolwright.cli.approve import run_approve_list
 
@@ -366,6 +350,11 @@ def register_approval_commands(
         "--reason",
         help="Approval reason (recorded in lockfile signature metadata)",
     )
+    @click.option(
+        "--include-rejected",
+        is_flag=True,
+        help="Also approve rejected tools when using --all",
+    )
     @click.pass_context
     def gate_allow(
         ctx: click.Context,
@@ -377,6 +366,7 @@ def register_approval_commands(
         toolset: str | None,
         approved_by: str | None,
         reason: str | None,
+        include_rejected: bool,
     ) -> None:
         """Approve one or more tools for use.
 
@@ -424,6 +414,7 @@ def register_approval_commands(
                 reason=reason,
                 root_path=str(ctx.obj.get("root", resolve_root())),
                 verbose=ctx.obj.get("verbose", False),
+                include_rejected=include_rejected,
             ),
         )
 

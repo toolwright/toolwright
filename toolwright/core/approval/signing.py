@@ -188,6 +188,7 @@ class ApprovalSigner:
                 tool.method.upper(),
                 tool.path,
                 tool.host.lower(),
+                tool.risk_tier,
                 toolsets,
                 approved_toolsets,
                 status,

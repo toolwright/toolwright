@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any
 
 import click
 import yaml
@@ -28,9 +27,16 @@ def resolve_toolpack_path(
     # 1. Explicit flag
     if explicit:
         p = Path(explicit)
-        if not p.exists():
-            raise FileNotFoundError(f"Toolpack not found: {p}")
-        return p
+        if p.exists():
+            return p
+
+        # Try as a bare name under .toolwright/toolpacks/{name}/toolpack.yaml
+        resolved_root = root if root is not None else DEFAULT_ROOT
+        name_path = resolved_root / "toolpacks" / explicit / "toolpack.yaml"
+        if name_path.exists():
+            return name_path
+
+        raise FileNotFoundError(f"Toolpack not found: {p}")
 
     # 2. Env var
     env_val = os.environ.get("TOOLWRIGHT_TOOLPACK")
@@ -46,10 +52,9 @@ def resolve_toolpack_path(
     resolved_root = root if root is not None else DEFAULT_ROOT
     config_path = resolved_root / "config.yaml"
     if config_path.exists():
-        cfg_raw = yaml.safe_load(config_path.read_text()) or {}
-        cfg: dict[str, Any] = cfg_raw if isinstance(cfg_raw, dict) else {}
+        cfg = yaml.safe_load(config_path.read_text()) or {}
         default = cfg.get("default_toolpack")
-        if isinstance(default, str) and default:
+        if default:
             p = resolved_root / "toolpacks" / default / "toolpack.yaml"
             if p.exists():
                 return p
@@ -71,8 +76,8 @@ def resolve_toolpack_path(
     # 5. Nothing found
     raise click.UsageError(
         "No toolpack found. Create one with:\n"
-        "  toolwright create <recipe>          # e.g. toolwright create github\n"
-        "  toolwright create --spec <path>     # from an OpenAPI spec"
+        "  toolwright create <recipe>          # e.g. github, stripe\n"
+        "  toolwright create --spec <spec>     # from OpenAPI spec"
     )
 
 

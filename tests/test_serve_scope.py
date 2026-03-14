@@ -74,7 +74,7 @@ class TestStdioTransportWarning:
 
         msg = stdio_transport_warning()
         assert msg is not None
-        assert "--use-http" in msg
+        assert "--http" in msg
 
     def test_http_no_warning(self):
         """HTTP transport should not emit a stdio warning."""

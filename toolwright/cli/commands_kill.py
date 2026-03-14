@@ -37,6 +37,9 @@ def register_kill_commands(*, cli: click.Group) -> None:
           toolwright kill dangerous_tool --reason "broken endpoint"
           toolwright kill search --reason "rate limiting detected"
         """
+        if not tool_id or not tool_id.strip():
+            raise click.ClickException("Tool ID cannot be empty.")
+
         if not yes:
             click.confirm(f"Kill tool '{tool_id}'?", default=False, abort=True)
 

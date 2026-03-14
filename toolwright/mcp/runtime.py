@@ -23,6 +23,7 @@ def check_tool_count_guardrails(
     *,
     groups_index: Any | None,
     no_tool_limit: bool,
+    scope: str | None = None,
 ) -> tuple[list[str], bool]:
     """Check tool count against safety thresholds.
 
@@ -37,9 +38,11 @@ def check_tool_count_guardrails(
     if tool_count <= TOOL_COUNT_WARN_THRESHOLD:
         return warnings, block
 
-    # Build group suggestion text
+    # Build group suggestion text (suppress if scope already specified)
     group_hint = ""
-    if groups_index is not None:
+    if scope:
+        pass  # Don't suggest --scope when it's already in use
+    elif groups_index is not None:
         from toolwright.models.groups import ToolGroupIndex
 
         if isinstance(groups_index, ToolGroupIndex) and groups_index.groups:
@@ -85,7 +88,7 @@ def stdio_transport_warning() -> str:
     """Return a one-line warning about stdio mode being local-only."""
     return (
         "Running in stdio mode (local only). "
-        "Use --use-http for networked/production deployments."
+        "Use --http for networked/production deployments."
     )
 
 
@@ -426,6 +429,16 @@ def run_mcp_serve(
                 _display_actions = filter_by_scope(_tool_actions, scope, _groups_index)
             except (json.JSONDecodeError, OSError, ValueError, ImportError):
                 pass  # Fall back to showing all tools
+
+    # M1: Filter by max_risk before computing banner counts
+    if max_risk:
+        _risk_order = ["low", "medium", "high", "critical"]
+        _max_idx = _risk_order.index(max_risk) if max_risk in _risk_order else len(_risk_order) - 1
+        _display_actions = [
+            a for a in _display_actions
+            if _risk_order.index(a.get("risk_tier", "low")) <= _max_idx
+            if a.get("risk_tier", "low") in _risk_order
+        ]
 
     _tool_categories: dict[str, int] = {}
     _risk_counts: dict[str, int] = {}

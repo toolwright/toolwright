@@ -10,6 +10,7 @@ from typing import Any
 
 import click
 import httpx
+import yaml
 
 from toolwright.cli.approve import sync_lockfile
 from toolwright.cli.compile import compile_capture_session
@@ -19,7 +20,6 @@ from toolwright.cli.mint import (
     apply_default_rules,
     auto_approve_lockfile,
     build_mcp_integration_output,
-    build_scope_warning,
     format_example_tool,
 )
 from toolwright.core.capture.openapi_parser import OpenAPIParser
@@ -31,16 +31,6 @@ from toolwright.core.toolpack import (
     write_toolpack,
 )
 from toolwright.utils.schema_version import resolve_generated_at
-
-
-def _cleanup_temp_spec(spec_path: Path) -> None:
-    """Remove a temp spec file if it lives in the system temp directory."""
-    try:
-        temp_dir = Path(tempfile.gettempdir()).resolve()
-        if spec_path.resolve().parent == temp_dir:
-            spec_path.unlink(missing_ok=True)
-    except OSError:
-        pass
 
 
 def _fetch_or_cache_spec(
@@ -101,25 +91,14 @@ def _resolve_spec_path(
         spec_path = Path(spec)
         if spec_path.exists():
             return spec_path
-        # If it looks like a local file path (not a URL), give a clear error
-        if not spec.startswith(("http://", "https://")) and (
-            "/" in spec or "\\" in spec or spec.endswith((".json", ".yaml", ".yml"))
-        ):
-            raise click.ClickException(f"File not found: {spec}")
         # Treat as URL
         return _fetch_or_cache_spec(spec, api_name, root)
 
     if recipe_data and recipe_data.get("openapi_spec_url"):
         return _fetch_or_cache_spec(recipe_data["openapi_spec_url"], api_name, root)
 
-    recipe_name = recipe_data.get("name", "this API") if recipe_data else "this API"
     raise click.ClickException(
-        f"The {recipe_name} recipe does not include a public OpenAPI spec.\n"
-        f"  Options:\n"
-        f"    toolwright create {recipe_name} --spec <path-or-url>   # provide your own spec\n"
-        f"    toolwright mint https://{recipe_name}.com               # capture from browser traffic\n"
-        f"\n"
-        f"  Recipes with built-in specs: github, stripe"
+        "No OpenAPI spec available. Use --spec <path-or-url> or choose a recipe with an OpenAPI spec URL."
     )
 
 
@@ -157,14 +136,8 @@ def run_create(
 
     # Need either api_name or spec
     if not api_name and not spec:
-        from toolwright.recipes.loader import list_recipes
-
-        available = list_recipes()
-        names = [r["name"] for r in available]
-        recipes_line = f"  Available recipes: {', '.join(names)}\n" if names else ""
         raise click.ClickException(
             "Provide an API name or --spec.\n"
-            f"{recipes_line}"
             "  Example: toolwright create github\n"
             "  Example: toolwright create --spec ./openapi.json"
         )
@@ -180,10 +153,38 @@ def run_create(
         allowed_hosts = [h["pattern"] for h in recipe_data.get("hosts", [])]
 
     parser = OpenAPIParser(allowed_hosts=allowed_hosts)
-    session = parser.parse_file(spec_path, name=name or api_name)
 
-    # Clean up temp spec file (created by _fetch_or_cache_spec for URL fetches)
-    _cleanup_temp_spec(spec_path)
+    try:
+        session = parser.parse_file(spec_path, name=name or api_name)
+    except yaml.scanner.ScannerError as exc:
+        raise click.ClickException(f"Invalid YAML syntax in spec file: {exc}") from exc
+    except yaml.parser.ParserError as exc:
+        raise click.ClickException(f"Invalid YAML syntax in spec file: {exc}") from exc
+    except KeyError as exc:
+        raise click.ClickException(f"Missing required field in OpenAPI spec: {exc}") from exc
+    except AttributeError as exc:
+        raise click.ClickException(f"Malformed OpenAPI spec: expected object structure — {exc}") from exc
+    except ValueError as exc:
+        raise click.ClickException(f"Failed to parse spec: {exc}") from exc
+    except Exception as exc:
+        raise click.ClickException(f"Failed to parse spec: {exc}") from exc
+
+    # Surface skipped endpoint warnings (C1)
+    skipped = parser.stats.get("skipped", 0)
+    total = parser.stats.get("total_operations", 0)
+    if skipped > 0 and not session.exchanges:
+        # ALL endpoints skipped
+        details = "\n".join(f"  - {w}" for w in parser.warnings)
+        raise click.ClickException(
+            f"All {skipped} of {total} endpoints were skipped during parsing.\n{details}"
+        )
+    if skipped > 0:
+        click.echo(
+            f"  WARNING: {skipped} of {total} endpoints were skipped during parsing.",
+            err=True,
+        )
+        for w in parser.warnings:
+            click.echo(f"    - {w}", err=True)
 
     if not session.exchanges:
         raise click.ClickException(
@@ -218,23 +219,11 @@ def run_create(
 
     effective_hosts = sorted(set(session.allowed_hosts or allowed_hosts))
     toolpack_id = generate_toolpack_slug(allowed_hosts=effective_hosts, root=root)
-    # Compute the base slug (without collision suffix) for warning detection
-    base_slug = generate_toolpack_slug(allowed_hosts=effective_hosts, root=None)
     if name:
         # Use name as slug base
         import re
         slug = re.sub(r"[^a-z0-9-]", "-", name.lower()).strip("-")
-        base_slug = slug or base_slug
         toolpack_id = slug or toolpack_id
-
-    # Detect collision: if the slug was bumped (e.g. github -> github-2), warn the user
-    if toolpack_id != base_slug:
-        click.echo(
-            click.style("\u26a0", fg="yellow")
-            + f" Toolpack '{base_slug}' already exists. Creating '{toolpack_id}'.\n"
-            + f"  To overwrite, delete the existing one first: toolwright delete {base_slug}",
-            err=True,
-        )
 
     toolpack_dir = root / "toolpacks" / toolpack_id
     artifact_dir = toolpack_dir / "artifact"
@@ -365,18 +354,6 @@ def run_create(
     if rules_result and rules_result.rule_count > 0:
         click.echo(f"  Rules: {rules_result.template_name} ({rules_result.rule_count} rules)")
 
-    # Scope warning for large toolpacks
-    from toolwright.core.compile.grouper import load_groups_index
-
-    groups_index = load_groups_index(copied_groups if copied_groups.exists() else None)
-    scope_warning = build_scope_warning(
-        tool_count=len(actions),
-        groups_index=groups_index,
-        toolpack_id=toolpack_id,
-    )
-    if scope_warning:
-        click.echo(scope_warning)
-
     # Example tool
     if actions:
         example = next((a for a in actions if a.get("method") == "GET"), actions[0])
@@ -396,14 +373,12 @@ def run_create(
     click.echo(build_mcp_integration_output(toolpack_path=toolpack_file))
 
     # Section 4: Next Steps
-    step = 1
     click.echo("  Next steps:")
     if recipe_data and recipe_data.get("hosts"):
-        click.echo(f"    {step}. Set your auth token (see above)")
-        step += 1
-    click.echo(f"    {step}. Run: toolwright config --toolpack " + str(toolpack_file))
-    click.echo(f"    {step + 1}. Paste config into Claude Desktop and restart")
-    click.echo(f"    {step + 2}. Ask Claude about your API!")
+        click.echo("    1. Set your auth token (see above)")
+    click.echo("    2. Run: toolwright config --toolpack " + str(toolpack_file))
+    click.echo("    3. Paste config into Claude Desktop and restart")
+    click.echo("    4. Ask Claude about your API!")
 
 
 def register_create_commands(*, cli: click.Group, run_with_lock: Any) -> None:

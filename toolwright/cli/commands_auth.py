@@ -58,9 +58,12 @@ def _resolve_auth_root(ctx: click.Context, root: str | None) -> str:
 def register_auth_commands(*, cli: click.Group) -> None:
     """Register the auth command group and its subcommands."""
 
-    @cli.group()
-    def auth() -> None:
+    @cli.group(invoke_without_command=True)
+    @click.pass_context
+    def auth(ctx: click.Context) -> None:
         """Manage authentication profiles and check auth configuration."""
+        if ctx.invoked_subcommand is None:
+            click.echo(ctx.get_help())
 
     register_auth_check_command(auth_group=auth)
 
@@ -132,7 +135,7 @@ def register_auth_check_command(*, auth_group: click.Group) -> None:
         toolpack's allowed_hosts list. By default, also probes each host
         with a lightweight GET to verify the token works.
 
-        \\b
+        \b
         Examples:
           toolwright auth check                  # Check auth + probe
           toolwright auth check --no-probe       # Check env vars only

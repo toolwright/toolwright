@@ -107,7 +107,7 @@ Examples:
         from toolwright.core.share.installer import install_bundle
 
         twp_path = Path(bundle_path)
-        install_dir = Path(target) if target else twp_path.parent / twp_path.stem
+        install_dir = Path(target) if target else Path(".toolwright/toolpacks") / twp_path.stem
         result = install_bundle(twp_path, install_dir=install_dir)
         if result.verified:
             click.echo(f"Installed '{result.name}' to {install_dir}")
