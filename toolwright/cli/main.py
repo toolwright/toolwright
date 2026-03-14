@@ -29,6 +29,7 @@ from toolwright.cli.commands_rules import register_rules_commands
 from toolwright.cli.commands_runtime import register_runtime_commands
 from toolwright.cli.commands_snapshots import register_snapshot_commands
 from toolwright.cli.commands_status import register_status_commands
+from toolwright.cli.commands_tokens import register_tokens_commands
 from toolwright.cli.commands_use import register_use_command
 from toolwright.cli.commands_validation import register_validation_commands
 from toolwright.cli.commands_watch import register_watch_commands
@@ -268,6 +269,7 @@ register_auth_commands(cli=cli)
 register_validation_commands(cli=cli, run_with_lock=_run_with_lock)
 register_repair_commands(cli=cli)
 register_governance_commands(cli=cli, run_with_lock=_run_with_lock)
+register_tokens_commands(cli=cli)
 
 # Register wrap (overlay) command
 from toolwright.cli.commands_wrap import wrap_command as _wrap_cmd  # noqa: E402
