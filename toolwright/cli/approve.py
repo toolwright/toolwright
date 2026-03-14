@@ -206,8 +206,8 @@ def run_approve_list(
     manager = LockfileManager(lockfile_path)
 
     if not manager.exists():
-        click.echo(f"No lockfile found at: {manager.lockfile_path}")
-        click.echo("Run 'toolwright gate sync' first to create one.")
+        click.echo(f"No lockfile found at: {manager.lockfile_path}", err=True)
+        click.echo("Run 'toolwright gate sync' first to create one.", err=True)
         sys.exit(1)
 
     manager.load()
@@ -294,6 +294,7 @@ def run_approve_tool(
 
     if not manager.exists():
         click.echo(f"No lockfile found at: {manager.lockfile_path}", err=True)
+        click.echo("Run 'toolwright gate sync' first to create one.", err=True)
         sys.exit(1)
 
     manager.load()
@@ -432,12 +433,13 @@ def run_approve_reject(
 
     if not manager.exists():
         click.echo(f"No lockfile found at: {manager.lockfile_path}", err=True)
+        click.echo("Run 'toolwright gate sync' first to create one.", err=True)
         sys.exit(1)
 
     manager.load()
 
     if not tool_ids:
-        click.echo("Error: Specify tool IDs to reject", err=True)
+        click.echo("Error: Specify tool IDs to block", err=True)
         sys.exit(1)
 
     rejected = []
@@ -469,8 +471,8 @@ def run_approve_snapshot(
     manager = LockfileManager(lockfile_path)
 
     if not manager.exists():
-        click.echo(f"No lockfile found at: {manager.lockfile_path}")
-        click.echo("Run 'toolwright gate sync' first.")
+        click.echo(f"No lockfile found at: {manager.lockfile_path}", err=True)
+        click.echo("Run 'toolwright gate sync' first to create one.", err=True)
         sys.exit(1)
 
     manager.load()
@@ -506,8 +508,8 @@ def run_approve_check(
     manager = LockfileManager(lockfile_path)
 
     if not manager.exists():
-        click.echo(f"No lockfile found at: {manager.lockfile_path}")
-        click.echo("Run 'toolwright gate sync' first.")
+        click.echo(f"No lockfile found at: {manager.lockfile_path}", err=True)
+        click.echo("Run 'toolwright gate sync' first to create one.", err=True)
         sys.exit(1)
 
     manager.load()
@@ -550,8 +552,8 @@ def run_approve_resign(
     manager = LockfileManager(lockfile_path)
 
     if not manager.exists():
-        click.echo(f"No lockfile found at: {manager.lockfile_path}")
-        click.echo("Run 'toolwright gate sync' first.")
+        click.echo(f"No lockfile found at: {manager.lockfile_path}", err=True)
+        click.echo("Run 'toolwright gate sync' first to create one.", err=True)
         sys.exit(1)
 
     manager.load()
