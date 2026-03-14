@@ -183,7 +183,7 @@ class TestTemplateListCLI:
         result = _invoke_template(runner, ["list"], tmp_path)
         assert "3 rules" in result.output  # crud-safety
         assert "2 rules" in result.output  # rate-control
-        assert "1 rules" in result.output  # retry-safety
+        assert "1 rule)" in result.output  # retry-safety
 
 
 class TestTemplateShowCLI:
@@ -214,7 +214,7 @@ class TestTemplateApplyCLI:
         runner = CliRunner()
         result = _invoke_template(runner, ["apply", "retry-safety"], tmp_path)
         assert result.exit_code == 0
-        assert "1 rules created as DRAFT" in result.output
+        assert "1 rule created as DRAFT" in result.output
 
     def test_apply_with_activate(self, tmp_path):
         runner = CliRunner()

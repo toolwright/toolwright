@@ -524,5 +524,5 @@ def _stage_serve(
     con.print()
     con.print("  [heading]Add to your CI pipeline:[/heading]")
     con.print(f"    [command]toolwright verify --toolpack {toolpack_path}[/command]")
-    con.print(f"    [command]toolwright drift --toolpack {toolpack_path}[/command]")
+    con.print("    [command]toolwright drift[/command]")
     con.print("  [muted]These commands exit non-zero on failure, suitable for CI checks.[/muted]")

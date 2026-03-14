@@ -260,7 +260,7 @@ def register_rules_commands(*, cli: click.Group) -> None:
             return
         for t in templates:
             click.echo(
-                f"  {t['name']:<20} {t['description']} ({t['rule_count']} rules)"
+                f"  {t['name']:<20} {t['description']} ({t['rule_count']} {'rule' if t['rule_count'] == 1 else 'rules'})"
             )
 
     @rules_template.command("show")
@@ -302,7 +302,7 @@ def register_rules_commands(*, cli: click.Group) -> None:
             raise SystemExit(1) from e
         status = "ACTIVE" if activate else "DRAFT"
         click.echo(
-            f"Applied template '{name}': {len(created)} rules created as {status}."
+            f"Applied template '{name}': {len(created)} {'rule' if len(created) == 1 else 'rules'} created as {status}."
         )
         for r in created:
             click.echo(f"  {r.rule_id}: {r.description}")

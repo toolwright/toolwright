@@ -260,7 +260,7 @@ def run_shape_drift(
         for name, bl in sorted(index.baselines.items()):
             fields = len(bl.shape.fields)
             samples = bl.shape.sample_count
-            click.echo(f"  {name:<40} {fields} fields, {samples} samples")
+            click.echo(f"  {name:<40} {pluralize(fields, 'field')}, {pluralize(samples, 'sample')}")
         click.echo("\nCheck a tool: toolwright drift --shape-baselines ... --tool <name> --response-file <file>")
         return
 

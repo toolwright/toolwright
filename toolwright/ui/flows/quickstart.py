@@ -483,7 +483,7 @@ def _dispatch(
         else:
             con.print("  [warning]No toolpacks found.[/warning]")
     elif choice == "drift":
-        con.print("  [muted]Run:[/muted] [command]toolwright drift --toolpack <path>[/command]")
+        con.print("  [muted]Run:[/muted] [command]toolwright drift[/command]")
     else:
         con.print(f"[warning]Unknown option: {choice}[/warning]")
 

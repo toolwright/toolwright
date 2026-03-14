@@ -386,7 +386,7 @@ def run_create(
         click.echo(f"  Pending approvals: {sync_result.pending_count}")
 
     if rules_result and rules_result.rule_count > 0:
-        click.echo(f"  Rules: {rules_result.template_name} ({rules_result.rule_count} rules)")
+        click.echo(f"  Rules: {rules_result.template_name} ({pluralize(rules_result.rule_count, 'rule')})")
 
     # Example tool
     if actions:

@@ -211,7 +211,7 @@ def register_repair_plan_apply(*, repair_group: click.Group) -> None:
         plan_file = project_root / ".toolwright" / "state" / "repair_plan.json"
 
         if not plan_file.exists():
-            click.echo("No repair plan found. Run `toolwright repair plan` first.")
+            click.echo("No repair plan found. Run `toolwright repair diagnose` first.")
             return
 
         try:
