@@ -8,16 +8,34 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 import click
 
 from toolwright.core.correct.engine import RuleEngine
-from toolwright.models.rule import BehavioralRule, RuleKind, RuleStatus
+from toolwright.models.rule import (
+    ApprovalConfig,
+    BehavioralRule,
+    ParameterConfig,
+    PrerequisiteConfig,
+    ProhibitionConfig,
+    RuleConfig,
+    RuleKind,
+    RuleStatus,
+    SequenceConfig,
+    SessionRateConfig,
+)
 
 
 def _default_rules_path() -> str:
-    return str(Path(".toolwright") / "rules.json")
+    """Auto-discover rules from toolpack directory, falling back to global."""
+    root = Path(".toolwright")
+    # Check for rules.json inside any toolpack directory
+    toolpack_rules = sorted(root.glob("toolpacks/*/rules.json"))
+    if toolpack_rules:
+        return str(toolpack_rules[0])
+    return str(root / "rules.json")
 
 
 def register_rules_commands(*, cli: click.Group) -> None:
@@ -85,7 +103,15 @@ def register_rules_commands(*, cli: click.Group) -> None:
             target_tool_ids=list(target),
             config=config,
         )
-        engine.add_rule(rule)
+        existing = engine.find_duplicate(rule)
+        if existing is not None:
+            click.echo(f"Rule already exists ({existing.rule_id}), skipping.")
+            return
+        try:
+            engine.add_rule(rule)
+        except ValueError:
+            click.echo(f"Error: Rule ID '{rid}' already exists. Use a different --rule-id.", err=True)
+            raise SystemExit(1) from None
         click.echo(f"Rule '{rid}' added ({kind}).")
 
     @rules.command("list")
@@ -98,7 +124,7 @@ def register_rules_commands(*, cli: click.Group) -> None:
         all_rules = engine.list_rules()
 
         if kind:
-            all_rules = [r for r in all_rules if r.kind == kind]
+            all_rules = [r for r in all_rules if r.kind.value == kind]
 
         if not all_rules:
             click.echo("No rules configured.")
@@ -129,7 +155,8 @@ def register_rules_commands(*, cli: click.Group) -> None:
     @click.pass_context
     def rules_remove(ctx: click.Context, rule_id: str, yes: bool) -> None:
         """Remove a behavioral rule by ID."""
-        if not yes:
+        no_interactive = ctx.obj.get("no_interactive_explicit", False) if ctx.obj else False
+        if not yes and not no_interactive:
             click.confirm(f"Remove rule '{rule_id}'?", default=False, abort=True)
 
         rules_path = ctx.obj["rules_path"]
@@ -241,7 +268,7 @@ def register_rules_commands(*, cli: click.Group) -> None:
             return
         for t in templates:
             click.echo(
-                f"  {t['name']:<20} {t['description']} ({t['rule_count']} rules)"
+                f"  {t['name']:<20} {t['description']} ({t['rule_count']} {'rule' if t['rule_count'] == 1 else 'rules'})"
             )
 
     @rules_template.command("show")
@@ -271,23 +298,30 @@ def register_rules_commands(*, cli: click.Group) -> None:
     @click.pass_context
     def template_apply(ctx: click.Context, name: str, activate: bool) -> None:
         """Apply a rule template to the active toolpack."""
-        from toolwright.rules.loader import apply_template
+        from toolwright.rules.loader import apply_template_verbose
 
         rules_path = ctx.obj["rules_path"]
         try:
-            created = apply_template(
+            created, skipped = apply_template_verbose(
                 name, rules_path=rules_path, activate=activate
             )
         except ValueError as e:
             click.echo(f"Error: {e}", err=True)
             raise SystemExit(1) from e
         status = "ACTIVE" if activate else "DRAFT"
-        click.echo(
-            f"Applied template '{name}': {len(created)} rules created as {status}."
-        )
-        for r in created:
-            click.echo(f"  {r.rule_id}: {r.description}")
-        if not activate:
+        if created:
+            click.echo(
+                f"Applied template '{name}': {len(created)} {'rule' if len(created) == 1 else 'rules'} created as {status}."
+            )
+            for r in created:
+                click.echo(f"  {r.rule_id}: {r.description}")
+        if skipped:
+            click.echo(
+                f"{skipped} {'rule' if skipped == 1 else 'rules'} already exist, skipping."
+            )
+        if not created and not skipped:
+            click.echo(f"Template '{name}' has no rules.")
+        if created and not activate:
             click.echo("\nActivate with: toolwright rules activate <rule-id>")
 
 
@@ -300,25 +334,25 @@ def _build_config(
     allowed_values: str | None,
     blocked_values: str | None,
     pattern: str | None,
-) -> dict:
-    """Build the config dict based on rule kind and CLI options."""
+) -> RuleConfig:
+    """Build the config model based on rule kind and CLI options."""
     if kind == RuleKind.PREREQUISITE:
-        return {"required_tool_ids": requires or []}
-    elif kind == RuleKind.PROHIBITION:
-        return {"always": True}
-    elif kind == RuleKind.PARAMETER:
-        config: dict = {"param_name": param_name or ""}
+        return PrerequisiteConfig(required_tool_ids=requires or [])
+    if kind == RuleKind.PROHIBITION:
+        return ProhibitionConfig(always=True)
+    if kind == RuleKind.PARAMETER:
+        config: dict[str, Any] = {"param_name": param_name or ""}
         if allowed_values:
             config["allowed_values"] = [v.strip() for v in allowed_values.split(",")]
         if blocked_values:
             config["blocked_values"] = [v.strip() for v in blocked_values.split(",")]
         if pattern:
             config["pattern"] = pattern
-        return config
-    elif kind == RuleKind.RATE:
-        return {"max_calls": max_calls or 10, "per_tool": True}
-    elif kind == RuleKind.SEQUENCE:
-        return {"required_order": requires or []}
-    elif kind == RuleKind.APPROVAL:
-        return {"approval_message": "Approval required."}
-    return {}
+        return ParameterConfig(**config)
+    if kind == RuleKind.RATE:
+        return SessionRateConfig(max_calls=max_calls or 10, per_tool=True)
+    if kind == RuleKind.SEQUENCE:
+        return SequenceConfig(required_order=requires or [])
+    if kind == RuleKind.APPROVAL:
+        return ApprovalConfig(approval_message="Approval required.")
+    raise ValueError(f"Unsupported rule kind: {kind}")

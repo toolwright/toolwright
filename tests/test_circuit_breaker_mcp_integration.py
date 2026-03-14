@@ -6,14 +6,10 @@ and records successes/failures after execution.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-import pytest
-
-from toolwright.core.kill.breaker import BreakerState, CircuitBreakerRegistry
+from toolwright.core.kill.breaker import CircuitBreakerRegistry
 from toolwright.models.decision import ReasonCode
-
 
 # ---------------------------------------------------------------------------
 # Tests: ReasonCode enum has new entry
@@ -109,6 +105,7 @@ class TestRunMcpServer:
     def test_run_mcp_server_signature_includes_circuit_breaker_path(self):
         """Verify the function signature includes the new parameter."""
         import inspect
+
         from toolwright.mcp.server import run_mcp_server
 
         sig = inspect.signature(run_mcp_server)

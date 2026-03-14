@@ -183,7 +183,9 @@ def run_approve_sync(
 
     # Exit code based on pending status
     if result.has_pending:
-        click.echo(f"\nWARNING: {result.pending_count} tools pending approval")
+        from toolwright.utils.text import pluralize
+
+        click.echo(f"\nWARNING: {pluralize(result.pending_count, 'tool')} pending approval")
         sys.exit(1)
     else:
         click.echo("\nOK: All tools approved")
@@ -204,8 +206,8 @@ def run_approve_list(
     manager = LockfileManager(lockfile_path)
 
     if not manager.exists():
-        click.echo(f"No lockfile found at: {manager.lockfile_path}")
-        click.echo("Run 'toolwright gate sync' first to create one.")
+        click.echo(f"No lockfile found at: {manager.lockfile_path}", err=True)
+        click.echo("Run 'toolwright gate sync' first to create one.", err=True)
         sys.exit(1)
 
     manager.load()
@@ -273,6 +275,7 @@ def run_approve_tool(
     reason: str | None,
     root_path: str,
     verbose: bool,  # noqa: ARG001
+    include_rejected: bool = False,
 ) -> None:
     """Approve one or more tools.
 
@@ -285,11 +288,13 @@ def run_approve_tool(
         reason: Optional reason recorded in approval metadata
         root_path: Canonical state root used for signing key storage
         verbose: Enable verbose output
+        include_rejected: Also approve rejected tools when using --all
     """
     manager = LockfileManager(lockfile_path)
 
     if not manager.exists():
         click.echo(f"No lockfile found at: {manager.lockfile_path}", err=True)
+        click.echo("Run 'toolwright gate sync' first to create one.", err=True)
         sys.exit(1)
 
     manager.load()
@@ -302,9 +307,26 @@ def run_approve_tool(
         sys.exit(1)
 
     if all_pending:
+        # Check for rejected tools and handle them
+        rejected = manager.get_rejected()
+        if rejected and not include_rejected:
+            click.echo("WARNING: The following tools are REJECTED and will NOT be approved:")
+            for tool in rejected:
+                reason_text = f" — {tool.rejection_reason}" if tool.rejection_reason else ""
+                click.echo(f"  [REJECTED] {tool.name}{reason_text}")
+            click.echo(
+                "\nUse --include-rejected to also approve rejected tools."
+            )
+            sys.exit(1)
+
+        # Build list of tools to approve
         pending = manager.get_pending(toolset=toolset)
+        tools_to_approve = list(pending)
+        if include_rejected and rejected:
+            tools_to_approve.extend(rejected)
+
         count = 0
-        for tool in pending:
+        for tool in tools_to_approve:
             approval_time = datetime.now(UTC)
             if manager.approve(
                 tool.signature_id or tool.tool_id,
@@ -328,7 +350,9 @@ def run_approve_tool(
                 tool.approval_key_id = signer.key_id
                 count += 1
         manager.save()
-        click.echo(f"Approved {count} tools")
+        from toolwright.utils.text import pluralize
+
+        click.echo(f"Approved {pluralize(count, 'tool')}")
         click.echo(f"Lockfile: {manager.lockfile_path}")
         snapshot_ok = _maybe_materialize_snapshot(manager, root_path=Path(root_path))
         if not snapshot_ok and count > 0:
@@ -409,12 +433,13 @@ def run_approve_reject(
 
     if not manager.exists():
         click.echo(f"No lockfile found at: {manager.lockfile_path}", err=True)
+        click.echo("Run 'toolwright gate sync' first to create one.", err=True)
         sys.exit(1)
 
     manager.load()
 
     if not tool_ids:
-        click.echo("Error: Specify tool IDs to reject", err=True)
+        click.echo("Error: Specify tool IDs to block", err=True)
         sys.exit(1)
 
     rejected = []
@@ -429,7 +454,7 @@ def run_approve_reject(
     manager.save()
 
     if rejected:
-        click.echo(f"Rejected: {', '.join(rejected)}")
+        click.echo(f"Blocked: {', '.join(rejected)}")
 
     if not_found:
         click.echo(f"Not found: {', '.join(not_found)}", err=True)
@@ -446,9 +471,9 @@ def run_approve_snapshot(
     manager = LockfileManager(lockfile_path)
 
     if not manager.exists():
-        click.echo(f"No lockfile found at: {manager.lockfile_path}")
-        click.echo("Run 'toolwright gate sync' first.")
-        sys.exit(2)
+        click.echo(f"No lockfile found at: {manager.lockfile_path}", err=True)
+        click.echo("Run 'toolwright gate sync' first to create one.", err=True)
+        sys.exit(1)
 
     manager.load()
     approvals_passed, message = manager.check_approvals()
@@ -463,6 +488,9 @@ def run_approve_snapshot(
         root_path=Path(root_path),
         snapshot_dir_override=Path(snapshot_dir) if snapshot_dir else None,
     )
+
+    if not verbose:
+        click.echo("Baseline snapshot created.")
 
 
 def run_approve_check(
@@ -480,9 +508,9 @@ def run_approve_check(
     manager = LockfileManager(lockfile_path)
 
     if not manager.exists():
-        click.echo(f"No lockfile found at: {manager.lockfile_path}")
-        click.echo("Run 'toolwright gate sync' first.")
-        sys.exit(2)
+        click.echo(f"No lockfile found at: {manager.lockfile_path}", err=True)
+        click.echo("Run 'toolwright gate sync' first to create one.", err=True)
+        sys.exit(1)
 
     manager.load()
 
@@ -524,9 +552,9 @@ def run_approve_resign(
     manager = LockfileManager(lockfile_path)
 
     if not manager.exists():
-        click.echo(f"No lockfile found at: {manager.lockfile_path}")
-        click.echo("Run 'toolwright gate sync' first.")
-        sys.exit(2)
+        click.echo(f"No lockfile found at: {manager.lockfile_path}", err=True)
+        click.echo("Run 'toolwright gate sync' first to create one.", err=True)
+        sys.exit(1)
 
     manager.load()
     assert manager.lockfile is not None

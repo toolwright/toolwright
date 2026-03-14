@@ -3,23 +3,13 @@
 from __future__ import annotations
 
 import os
-import re
 import urllib.error
 import urllib.request
 
 import click
 
 from toolwright.cli.command_helpers import cli_root
-
-
-def _host_to_env_var(host: str) -> str:
-    """Convert a hostname to the per-host env var name.
-
-    api.stripe.com  ->  TOOLWRIGHT_AUTH_API_STRIPE_COM
-    localhost:8080  ->  TOOLWRIGHT_AUTH_LOCALHOST_8080
-    """
-    normalized = re.sub(r"[^A-Za-z0-9]", "_", host).upper()
-    return f"TOOLWRIGHT_AUTH_{normalized}"
+from toolwright.utils.auth import host_to_env_var as _host_to_env_var
 
 
 def _probe_host(host: str, auth_value: str | None) -> tuple[int | None, str]:
@@ -58,9 +48,12 @@ def _resolve_auth_root(ctx: click.Context, root: str | None) -> str:
 def register_auth_commands(*, cli: click.Group) -> None:
     """Register the auth command group and its subcommands."""
 
-    @cli.group()
-    def auth() -> None:
+    @cli.group(invoke_without_command=True)
+    @click.pass_context
+    def auth(ctx: click.Context) -> None:
         """Manage authentication profiles and check auth configuration."""
+        if ctx.invoked_subcommand is None:
+            click.echo(ctx.get_help())
 
     register_auth_check_command(auth_group=auth)
 
@@ -111,7 +104,7 @@ def register_auth_check_command(*, auth_group: click.Group) -> None:
     @auth_group.command("check")
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolves if omitted)",
     )
     @click.option(
@@ -132,7 +125,7 @@ def register_auth_check_command(*, auth_group: click.Group) -> None:
         toolpack's allowed_hosts list. By default, also probes each host
         with a lightweight GET to verify the token works.
 
-        \\b
+        \b
         Examples:
           toolwright auth check                  # Check auth + probe
           toolwright auth check --no-probe       # Check env vars only
@@ -162,6 +155,11 @@ def register_auth_check_command(*, auth_group: click.Group) -> None:
         click.echo(f"Auth Check for toolpack: {display}")
         click.echo(f"Hosts: {', '.join(hosts)}")
         click.echo()
+
+        # Load .toolwright/.env tokens so auth check sees them
+        from toolwright.mcp.runtime import inject_dotenv_auth
+
+        inject_dotenv_auth(root=cli_root(ctx))
 
         all_ok = True
 

@@ -284,29 +284,25 @@ def diff_shapes(
         if (
             b_field.array_item_types_seen is not None
             and o_field.array_item_types_seen is not None
+            and path not in meta.empty_array_paths
+            and path not in meta.truncated_array_paths
+            and b_field.array_item_types_seen
+            != o_field.array_item_types_seen
         ):
-            if (
-                path not in meta.empty_array_paths
-                and path not in meta.truncated_array_paths
-            ):
-                if (
-                    b_field.array_item_types_seen
-                    != o_field.array_item_types_seen
-                ):
-                    changes.append(
-                        DriftChange(
-                            path=path,
-                            change_type=DriftChangeType.ARRAY_ITEM_TYPE_CHANGED,
-                            severity=DriftSeverity.APPROVAL_REQUIRED,
-                            description=(
-                                f"Array item types changed at {path}: "
-                                f"{b_field.array_item_types_seen} -> "
-                                f"{o_field.array_item_types_seen}"
-                            ),
-                            baseline_value=str(b_field.array_item_types_seen),
-                            observed_value=str(o_field.array_item_types_seen),
-                        )
-                    )
+            changes.append(
+                DriftChange(
+                    path=path,
+                    change_type=DriftChangeType.ARRAY_ITEM_TYPE_CHANGED,
+                    severity=DriftSeverity.APPROVAL_REQUIRED,
+                    description=(
+                        f"Array item types changed at {path}: "
+                        f"{b_field.array_item_types_seen} -> "
+                        f"{o_field.array_item_types_seen}"
+                    ),
+                    baseline_value=str(b_field.array_item_types_seen),
+                    observed_value=str(o_field.array_item_types_seen),
+                )
+            )
 
     return changes
 

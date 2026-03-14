@@ -7,6 +7,7 @@ and repeated signals do not create duplicates.
 from __future__ import annotations
 
 import time
+from typing import Any
 
 from toolwright.models.work_item import (
     WorkItem,
@@ -50,7 +51,7 @@ def create_tool_approval_item(
 def create_confirmation_item(
     token_id: str,
     tool_id: str,
-    arguments: dict,
+    arguments: dict[str, Any],
     risk_tier: str,
     session_id: str | None = None,
     session_context: str | None = None,
@@ -141,7 +142,7 @@ def create_rule_draft_item(
     kind: str,
     description: str,
     target_tool_ids: list[str] | None,
-    config: dict,
+    config: dict[str, Any],
     created_by: str,
 ) -> WorkItem:
     targets = target_tool_ids or []

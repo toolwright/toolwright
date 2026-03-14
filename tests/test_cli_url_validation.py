@@ -15,7 +15,6 @@ import pytest
 
 from toolwright.cli.mint import run_mint
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -23,26 +22,26 @@ from toolwright.cli.mint import run_mint
 
 def _mint_kwargs(**overrides: object) -> dict:
     """Return minimal run_mint kwargs with sensible defaults."""
-    defaults: dict = dict(
-        start_url="https://example.com",
-        allowed_hosts=["example.com"],
-        name=None,
-        scope_name="default",
-        headless=True,
-        script_path=None,
-        duration_seconds=10,
-        output_root="/tmp/tw-test",
-        deterministic=False,
-        print_mcp_config=False,
-        runtime_mode="local",
-        runtime_build=False,
-        runtime_tag=None,
-        runtime_version_pin=None,
-        auth_profile=None,
-        webmcp=False,
-        redaction_profile=None,
-        verbose=False,
-    )
+    defaults: dict = {
+        "start_url": "https://example.com",
+        "allowed_hosts": ["example.com"],
+        "name": None,
+        "scope_name": "default",
+        "headless": True,
+        "script_path": None,
+        "duration_seconds": 10,
+        "output_root": "/tmp/tw-test",
+        "deterministic": False,
+        "print_mcp_config": False,
+        "runtime_mode": "local",
+        "runtime_build": False,
+        "runtime_tag": None,
+        "runtime_version_pin": None,
+        "auth_profile": None,
+        "webmcp": False,
+        "redaction_profile": None,
+        "verbose": False,
+    }
     defaults.update(overrides)
     return defaults
 
@@ -90,12 +89,14 @@ class TestURLValidation:
         """
         mock_capture = MagicMock()
         mock_capture.side_effect = RuntimeError("stop-after-validation")
-        with patch.dict(
-            "sys.modules",
-            {"toolwright.core.capture.playwright_capture": MagicMock(PlaywrightCapture=mock_capture)},
+        with (
+            patch.dict(
+                "sys.modules",
+                {"toolwright.core.capture.playwright_capture": MagicMock(PlaywrightCapture=mock_capture)},
+            ),
+            pytest.raises((SystemExit, RuntimeError)),
         ):
-            with pytest.raises((SystemExit, RuntimeError)):
-                run_mint(**_mint_kwargs(start_url="https://example.com"))
+            run_mint(**_mint_kwargs(start_url="https://example.com"))
         captured = capsys.readouterr()
         assert "Invalid URL" not in captured.err
 
@@ -117,14 +118,13 @@ class TestAllowedHostsCleaning:
         with patch.dict(
             "sys.modules",
             {"toolwright.core.capture.playwright_capture": mock_module},
-        ):
-            with pytest.raises((SystemExit, RuntimeError)):
-                run_mint(
-                    **_mint_kwargs(
-                        start_url="https://app.example.com",
-                        allowed_hosts=["https://api.example.com"],
-                    )
+        ), pytest.raises((SystemExit, RuntimeError)):
+            run_mint(
+                **_mint_kwargs(
+                    start_url="https://app.example.com",
+                    allowed_hosts=["https://api.example.com"],
                 )
+            )
         # PlaywrightCapture should have been called with cleaned hosts
         mock_cls.assert_called_once()
         call_kwargs = mock_cls.call_args
@@ -144,14 +144,13 @@ class TestAllowedHostsCleaning:
         with patch.dict(
             "sys.modules",
             {"toolwright.core.capture.playwright_capture": mock_module},
-        ):
-            with pytest.raises((SystemExit, RuntimeError)):
-                run_mint(
-                    **_mint_kwargs(
-                        start_url="https://app.example.com",
-                        allowed_hosts=["api.example.com"],
-                    )
+        ), pytest.raises((SystemExit, RuntimeError)):
+            run_mint(
+                **_mint_kwargs(
+                    start_url="https://app.example.com",
+                    allowed_hosts=["api.example.com"],
                 )
+            )
         mock_cls.assert_called_once()
         call_kwargs = mock_cls.call_args
         hosts = call_kwargs.kwargs.get("allowed_hosts") or call_kwargs[1].get(

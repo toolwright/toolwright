@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from toolwright.ui.views.next_steps import (
     NextStepsInput,
     NextStepsOutput,
@@ -29,8 +27,17 @@ class TestComputeNextSteps:
             pending_count=3,
             verification_state="not_run",
         ))
-        assert "gate allow" in result.primary.command
+        assert "gate allow --all" in result.primary.command
         assert "3 tools" in result.primary.why
+
+    def test_pending_approvals_includes_all_flag(self) -> None:
+        """H5: gate allow suggestion must include --all so users don't get an error."""
+        result = compute_next_steps(NextStepsInput(
+            command="status",
+            lockfile_state="pending",
+            pending_count=1,
+        ))
+        assert "--all" in result.primary.command
 
     def test_single_pending_tool_uses_singular(self) -> None:
         result = compute_next_steps(NextStepsInput(

@@ -18,8 +18,8 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from toolwright.cli.main import cli
 from tests.helpers import write_demo_toolpack
+from toolwright.cli.main import cli
 
 # --- 1. init next steps should tell user mint prints the exact commands ---
 
@@ -33,9 +33,8 @@ def test_init_next_steps_show_all_entry_paths(tmp_path: Path) -> None:
     assert result.exit_code == 0
     output = result.output.lower()
     # All 3 entry paths must be visible
-    assert "toolwright mint" in output
-    assert "toolwright capture import" in output
-    assert "openapi" in output
+    assert "toolwright create" in output
+    assert "toolwright create --spec" in output
     # Follow-up commands shown directly
     assert "gate allow" in output
     assert "serve" in output
@@ -133,7 +132,7 @@ def test_doctor_success_on_stdout(tmp_path: Path) -> None:
 
     assert result.exit_code == 0
     # Success should be on stdout (not exclusively stderr)
-    assert "Doctor check passed" in result.stdout
+    assert "All checks passed" in result.stdout
 
 
 def test_doctor_errors_still_on_stderr(tmp_path: Path) -> None:
@@ -177,11 +176,11 @@ def test_bundle_success_on_stdout(tmp_path: Path) -> None:
 # --- 6. config should be a core command ---
 
 
-def test_config_in_core_commands() -> None:
-    """config should be listed in CORE_COMMANDS for discoverability."""
-    from toolwright.cli.main import CORE_COMMANDS
+def test_config_in_operations_commands() -> None:
+    """config should be listed in OPERATIONS_COMMANDS (setup step, not daily use)."""
+    from toolwright.cli.main import OPERATIONS_COMMANDS
 
-    assert "config" in CORE_COMMANDS
+    assert "config" in OPERATIONS_COMMANDS
 
 
 # --- 7. auth.py should not catch ImportError on asyncio (stdlib) ---
@@ -254,7 +253,7 @@ def test_verify_baseline_check_mode_no_deprecation_warning(tmp_path: Path) -> No
 
 def test_help_core_commands_in_workflow_order() -> None:
     """Core commands in --help should follow user workflow order:
-    create -> mint -> serve -> gate -> ... -> config."""
+    create -> serve -> gate -> status -> drift -> repair."""
     runner = CliRunner()
     result = runner.invoke(cli, ["--help"])
 
@@ -267,15 +266,17 @@ def test_help_core_commands_in_workflow_order() -> None:
 
     # Find positions within the quick start section only
     create_pos = core_section.find("\n  create ")
-    mint_pos = core_section.find("\n  mint ")
     serve_pos = core_section.find("\n  serve ")
     gate_pos = core_section.find("\n  gate ")
-    config_pos = core_section.find("\n  config ")
+    status_pos = core_section.find("\n  status ")
+    drift_pos = core_section.find("\n  drift ")
+    repair_pos = core_section.find("\n  repair ")
 
-    assert create_pos < mint_pos, "create should appear before mint in help"
-    assert mint_pos < serve_pos, "mint should appear before serve in help"
+    assert create_pos < serve_pos, "create should appear before serve in help"
     assert serve_pos < gate_pos, "serve should appear before gate in help"
-    assert gate_pos < config_pos, "gate should appear before config in help"
+    assert gate_pos < status_pos, "gate should appear before status in help"
+    assert status_pos < drift_pos, "status should appear before drift in help"
+    assert drift_pos < repair_pos, "drift should appear before repair in help"
 
 
 def test_help_has_operations_section() -> None:
@@ -347,11 +348,10 @@ def test_serve_pending_lockfile_no_stack_trace(tmp_path: Path) -> None:
 def test_serve_mismatched_lockfile_no_stack_trace(tmp_path: Path) -> None:
     """serve with lockfile synced against different tools.json should not stack trace (F-007)."""
     toolpack_file = write_demo_toolpack(tmp_path)
-    tp_dir = toolpack_file.parent
 
     # Create a lockfile synced against DIFFERENT tools (wrong tool names)
     import json
-    import yaml
+
 
     different_tools = {
         "version": "1.0.0",
@@ -425,3 +425,40 @@ def test_diff_without_baseline_gives_actionable_error(tmp_path: Path) -> None:
     assert "--baseline" in output, (
         f"Error should mention '--baseline' option. Got: {result.output!r}"
     )
+
+
+# --- Quick Start should contain exactly 6 core commands ---
+
+
+def test_quick_start_has_exactly_seven_core_commands() -> None:
+    """Quick Start section should show exactly: create, serve, gate, status, score, drift, repair."""
+    from toolwright.cli.main import CORE_COMMANDS
+
+    expected = ["create", "serve", "gate", "status", "score", "drift", "repair"]
+    assert expected == CORE_COMMANDS, (
+        f"CORE_COMMANDS should be {expected}, got {CORE_COMMANDS}"
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--help"])
+    assert result.exit_code == 0
+    output = result.output
+
+    # Extract the Quick Start section only
+    qs_start = output.find("Quick Start:")
+    assert qs_start != -1
+    ops_start = output.find("Operations:", qs_start)
+    assert ops_start != -1
+    qs_section = output[qs_start:ops_start]
+
+    # All 6 expected commands must be present
+    for cmd in expected:
+        assert f"  {cmd} " in qs_section or f"  {cmd}\n" in qs_section, (
+            f"'{cmd}' should be in Quick Start section"
+        )
+
+    # These should NOT be in Quick Start (moved to Operations)
+    for cmd in ["mint", "rules", "groups", "config"]:
+        assert f"  {cmd} " not in qs_section, (
+            f"'{cmd}' should NOT be in Quick Start section"
+        )

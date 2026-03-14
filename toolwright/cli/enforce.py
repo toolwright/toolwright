@@ -985,6 +985,25 @@ def run_enforce(
         click.echo(f"Error initializing gateway: {e}", err=True)
         sys.exit(1)
 
+    # H6: evaluate mode should evaluate and exit, not start a server
+    if mode == "evaluate":
+        click.echo(f"Evaluating policy against {len(gateway.actions)} tools...")
+        allowed = 0
+        denied = 0
+        for action_name in sorted(gateway.actions):
+            result = gateway.evaluate_action(action_name, emit_trace=False)
+            result.get("decision", "unknown")
+            if result.get("allowed"):
+                allowed += 1
+            else:
+                denied += 1
+                reason = result.get("error") or result.get("reason_code", "")
+                click.echo(f"  DENY  {action_name}: {reason}", err=True)
+        click.echo(f"\nEvaluation complete: {allowed} allowed, {denied} denied out of {len(gateway.actions)} tools.")
+        if denied > 0:
+            sys.exit(1)
+        return
+
     handler = create_handler(gateway)
     server = HTTPServer(("0.0.0.0", port), handler)
 
@@ -1001,14 +1020,11 @@ def run_enforce(
     click.echo(f"  Confirmation store: {confirmation_store_path}")
     if audit_log:
         click.echo(f"  Audit log: {audit_log}")
-    if mode == "proxy":
-        click.echo("  Mode: PROXY (requests forwarded to upstream)")
-        if base_url:
-            click.echo(f"  Base URL: {base_url}")
-        if auth_header:
-            click.echo("  Auth: [configured]")
-    else:
-        click.echo("  Mode: EVALUATE (policy only)")
+    click.echo("  Mode: PROXY (requests forwarded to upstream)")
+    if base_url:
+        click.echo(f"  Base URL: {base_url}")
+    if auth_header:
+        click.echo("  Auth: [configured]")
     if dry_run:
         click.echo("  Dry run: ON (no actual execution)")
 
@@ -1018,8 +1034,7 @@ def run_enforce(
     click.echo("  GET  /policy     - Policy info")
     click.echo("  GET  /pending    - Pending local confirmations")
     click.echo("  POST /evaluate   - Evaluate action request")
-    if mode == "proxy":
-        click.echo("  POST /execute    - Execute action (evaluate + proxy)")
+    click.echo("  POST /execute    - Execute action (evaluate + proxy)")
     click.echo("\nPress Ctrl+C to stop")
 
     try:

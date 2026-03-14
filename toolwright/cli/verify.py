@@ -51,6 +51,12 @@ def run_verify(
     if mode not in VERIFY_MODES:
         click.echo(f"Error: unsupported verify mode '{mode}'", err=True)
         sys.exit(3)
+    if mode in ("all", "provenance") and not playbook_path:
+        click.echo(
+            "Error: --playbook is required when --mode is 'all' or 'provenance'",
+            err=True,
+        )
+        sys.exit(1)
     if mode == "replay":
         click.echo(
             "Warning: --mode replay is deprecated. Use --mode baseline-check instead.",
@@ -154,7 +160,7 @@ def _build_report(
         for action in actions
     ]
 
-    active_modes = _expand_modes(mode)
+    active_modes = _expand_modes(mode, has_playbook=playbook_path is not None)
     contract_result = _contracts_result(contract_path, strict=strict) if "contracts" in active_modes else None
     replay_result = _replay_result(baseline_path, tools_path) if "replay" in active_modes else None
     outcome_result = _outcomes_result() if "outcomes" in active_modes else None
@@ -196,9 +202,12 @@ def _build_report(
     }
 
 
-def _expand_modes(mode: str) -> set[str]:
+def _expand_modes(mode: str, *, has_playbook: bool = True) -> set[str]:
     if mode == "all":
-        return {"contracts", "replay", "outcomes", "provenance"}
+        modes = {"contracts", "replay", "outcomes", "provenance"}
+        if not has_playbook:
+            modes.discard("provenance")
+        return modes
     if mode == "baseline-check":
         return {"replay"}
     return {mode}

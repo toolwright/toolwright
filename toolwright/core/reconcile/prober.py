@@ -59,7 +59,7 @@ class HealthProber:
         elapsed = (datetime.now(UTC) - last_probe).total_seconds()
         return elapsed >= effective_interval
 
-    async def probe_tool(self, action: dict) -> HealthResult:
+    async def probe_tool(self, action: dict[str, Any]) -> HealthResult:
         """Probe a single tool by delegating to HealthChecker.
 
         Args:
@@ -81,7 +81,7 @@ class HealthProber:
 
     async def probe_due_tools(
         self,
-        actions: list[dict],
+        actions: list[dict[str, Any]],
         states: dict[str, ToolReconcileState],
         risk_tiers: dict[str, str],
     ) -> dict[str, HealthResult]:
@@ -95,7 +95,7 @@ class HealthProber:
         Returns:
             Dict mapping tool_id → HealthResult for tools that were probed.
         """
-        due: list[dict] = []
+        due: list[dict[str, Any]] = []
         for action in actions:
             tool_id = action.get("name", "unknown")
             state = states.get(tool_id, ToolReconcileState(tool_id=tool_id))
@@ -108,7 +108,7 @@ class HealthProber:
 
         semaphore = asyncio.Semaphore(self.config.max_concurrent_probes)
 
-        async def bounded_probe(action: dict) -> HealthResult:
+        async def bounded_probe(action: dict[str, Any]) -> HealthResult:
             async with semaphore:
                 return await self.probe_tool(action)
 

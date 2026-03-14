@@ -2,18 +2,13 @@
 
 import asyncio
 import json
-import time
-
-import pytest
 
 from toolwright.mcp.event_store import EventStore
 from toolwright.models.work_item import (
     WorkItem,
     WorkItemAction,
     WorkItemKind,
-    WorkItemStatus,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers / Mocks
@@ -31,10 +26,12 @@ class MockLockfileManager:
         self.saved = 0
 
     def approve(self, tool_id, approved_by=None):
+        _ = approved_by
         self.approved.append(tool_id)
         return True
 
     def reject(self, tool_id, reason=None):
+        _ = reason
         self.rejected.append(tool_id)
         return True
 
@@ -52,6 +49,7 @@ class MockConfirmationStore:
         return True
 
     def deny(self, token_id, reason=None):
+        _ = reason
         self.denied.append(token_id)
         return True
 
@@ -62,6 +60,7 @@ class MockCircuitBreaker:
         self.enabled = []
 
     def kill_tool(self, tool_id, reason=""):
+        _ = reason
         self.killed.append(tool_id)
 
     def enable_tool(self, tool_id):

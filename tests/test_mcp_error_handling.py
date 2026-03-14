@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from unittest.mock import AsyncMock, patch
 
 import mcp.types as mcp_types
 import pytest
@@ -57,7 +56,7 @@ class TestMCPErrorHandling:
         server = ToolwrightMCPServer(tools_path=minimal_tools_json)
 
         # Replace pipeline.execute with a function that always raises
-        async def failing_execute(*args, **kwargs):
+        async def failing_execute(*_args, **_kwargs):
             raise RuntimeError("simulated crash")
 
         server.pipeline.execute = failing_execute  # type: ignore[assignment]
@@ -83,7 +82,7 @@ class TestMCPErrorHandling:
         """Error message should contain the exception class name."""
         server = ToolwrightMCPServer(tools_path=minimal_tools_json)
 
-        async def failing_execute(*args, **kwargs):
+        async def failing_execute(*_args, **_kwargs):
             raise ValueError("bad argument")
 
         server.pipeline.execute = failing_execute  # type: ignore[assignment]
@@ -109,7 +108,7 @@ class TestMCPErrorHandling:
 
         call_count = 0
 
-        async def failing_then_ok(*args, **kwargs):
+        async def failing_then_ok(*_args, **_kwargs):
             nonlocal call_count
             call_count += 1
             if call_count == 1:

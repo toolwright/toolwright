@@ -123,4 +123,33 @@ def auth_list(root: str) -> None:
 
     for p in profiles:
         status = "ready" if p.get("has_storage_state") else "incomplete"
-        click.echo(f"  {p['name']}  ({status})  target={p.get('target_url', '?')}")
+        click.echo(
+            f"  {p['name']}  ({status})  target={p.get('target_url', '?')}"
+        )
+
+
+@auth_group.command("setup")
+@click.option(
+    "--toolpack",
+    type=click.Path(),
+    default=None,
+    help="Path to toolpack.yaml",
+)
+@click.option(
+    "--no-probe",
+    is_flag=True,
+    default=False,
+    help="Skip host probing after token entry",
+)
+@click.option("--root", default=".", help="Project root directory")
+def auth_setup(
+    toolpack: str | None, no_probe: bool, root: str
+) -> None:
+    """Interactive auth setup — configure credentials for all hosts."""
+    from pathlib import Path
+
+    from toolwright.cli.auth_setup import auth_setup_flow
+
+    auth_setup_flow(
+        root=Path(root), toolpack_path=toolpack, no_probe=no_probe
+    )

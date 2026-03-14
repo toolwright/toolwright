@@ -141,32 +141,36 @@ class TestRunHTTPMethod:
 class TestServeHTTPFlags:
     """The serve command should accept --http, --host, --port flags."""
 
-    def test_serve_help_shows_http_flag(self) -> None:
+    def test_serve_accepts_http_flag(self) -> None:
+        """HTTP flag is hidden but accepted by serve command."""
         from click.testing import CliRunner
 
         from toolwright.cli.main import cli
 
         runner = CliRunner()
-        result = runner.invoke(cli, ["serve", "--help"])
-        assert "--http" in result.output
+        # Verify --http is a valid option (combine with --help to avoid starting server)
+        result = runner.invoke(cli, ["serve", "--http", "--help"])
+        assert result.exit_code == 0
 
-    def test_serve_help_shows_port_flag(self) -> None:
+    def test_serve_accepts_port_flag(self) -> None:
+        """Port flag is hidden but accepted by serve command."""
         from click.testing import CliRunner
 
         from toolwright.cli.main import cli
 
         runner = CliRunner()
-        result = runner.invoke(cli, ["serve", "--help"])
-        assert "--port" in result.output
+        result = runner.invoke(cli, ["serve", "--port", "9999", "--help"])
+        assert result.exit_code == 0
 
-    def test_serve_help_shows_host_flag(self) -> None:
+    def test_serve_accepts_host_flag(self) -> None:
+        """Host flag is hidden but accepted by serve command."""
         from click.testing import CliRunner
 
         from toolwright.cli.main import cli
 
         runner = CliRunner()
-        result = runner.invoke(cli, ["serve", "--help"])
-        assert "--host" in result.output
+        result = runner.invoke(cli, ["serve", "--host", "0.0.0.0", "--help"])
+        assert result.exit_code == 0
 
 
 # ---------------------------------------------------------------------------

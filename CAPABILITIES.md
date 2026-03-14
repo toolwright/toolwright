@@ -47,7 +47,6 @@ Automatically detect and extract auth patterns (Bearer, OAuth, API keys) from ca
 
 - `toolwright/core/auth/detector.py` -> `detect_auth_requirements()`
 - `toolwright/core/toolpack.py` -> `ToolpackAuthRequirement`, `build_auth_requirements()`
-- `toolwright/core/auth/provider.py` -> `TokenProvider` (protocol)
 - `toolwright/core/auth/profiles.py` -> Auth profiles
 - CLI: `toolwright auth`, `toolwright auth check`
 - Auth display: shown in `mint` output after compile, with env var export suggestions
@@ -62,6 +61,13 @@ Create draft toolpacks from discovered `CaptureSession` data (e.g., from OpenAPI
 - Action generation: deduplicates by method+path, auto-names (e.g., `get_users`), assigns risk tiers
 - Tests: `tests/test_draft_toolpack.py`
 
+### CAP-CONNECT-013: One-Command Recipe-Based Creation (Create)
+
+Instant toolpack from OpenAPI specs or bundled recipes (GitHub, etc.).
+
+- `toolwright/cli/commands_create.py` -> `run_create()`
+- CLI: `toolwright create <recipe-name>` or `toolwright create --spec <path>`
+
 ### CAP-CONNECT-006: One-Command API Onboarding (Mint)
 
 Single command to capture API traffic via browser, compile tools, and publish a toolpack.
@@ -74,7 +80,7 @@ Single command to capture API traffic via browser, compile tools, and publish a 
 Start a governed MCP server on stdio transport serving compiled tools. Supports auth via env vars, per-host auth, and CLI flag. Toolpack path auto-resolves when omitted.
 
 - `toolwright/mcp/server.py` -> `ToolwrightMCPServer`, `_resolve_auth_for_host()`
-- `toolwright/cli/commands_mcp.py` -> `run_mcp_serve()`, auto-resolution via `resolve_toolpack_path()`
+- `toolwright/mcp/runtime.py` -> `run_serve()`, auto-resolution via `resolve_toolpack_path()`
 - CLI: `toolwright serve [--toolpack <path>] [--auth "Bearer <token>"] [--toolset <name>] [--max-risk <tier>] [--extra-header "Name: value"] [--schema-validation strict|warn|off]`
 - Auth priority: `--auth` flag > `TOOLWRIGHT_AUTH_<NORMALIZED_HOST>` env var > `TOOLWRIGHT_AUTH_HEADER` env var > None
 - Per-host env var naming: replace dots/hyphens with underscores, uppercase (e.g., `api.github.com` -> `TOOLWRIGHT_AUTH_API_GITHUB_COM`)
@@ -312,6 +318,32 @@ Programmatic patch application with three-tier auto-heal policy. Snapshots befor
 - CLI: `toolwright serve --watch --auto-heal <off|safe|all>`
 - Config: `.toolwright/watch.yaml` -> `auto_heal` field
 - Tests: `tests/test_repair_applier.py`
+
+### CAP-HEAL-012: Variant-Aware Baseline Store
+
+Ring buffer storage, freeze/unfreeze, atomic writes for heal baselines.
+
+- `toolwright/core/heal/baseline_store.py` -> `BaselineStore`, `VariantStore`
+
+### CAP-HEAL-013: Confidence-Aware Schema Inference
+
+Schema inference with tiered optionality. JSON body to typed shape conversion. ResponseSample factory from probe results.
+
+- `toolwright/core/heal/schema_inference.py` -> schema inference with tiered optionality
+- `toolwright/core/heal/typed_shape.py` -> JSON body to typed shape conversion
+- `toolwright/core/heal/sample_factory.py` -> ResponseSample factory from probe results
+
+### CAP-HEAL-014: Shape Probe Loop
+
+Schedule-aware shape-based drift probing in `serve --watch` mode.
+
+- `toolwright/core/drift/shape_probe_loop.py` -> `ShapeProbeLoop`
+
+### CAP-HEAL-015: Drift Action Handler
+
+Severity-to-action mapping: SAFE auto-merge, APPROVAL_REQUIRED/MANUAL escalation.
+
+- `toolwright/core/drift/drift_handler.py` -> `DriftAction`, `handle_drift()`
 
 ---
 
@@ -599,6 +631,14 @@ Agent-facing meta-tools for reconciliation status and pending repairs. Return co
 - Optional filters: `filter_status` (for status), `filter_kind` (for repairs)
 - Tests: `tests/test_reconcile_meta_tools.py`
 
+### CAP-CROSS-017: Shell Completions
+
+Print shell completion activation scripts for bash, zsh, and fish. Uses Click 8.x native completion support.
+
+- `toolwright/cli/main.py` -> `completions()` command
+- CLI: `toolwright completions bash|zsh|fish`
+- Tests: `tests/test_completions.py`
+
 ### CAP-CROSS-013: Schema Version Migration
 
 Migrate artifacts between schema versions.
@@ -668,31 +708,67 @@ Block `toolwright serve` when the toolpack contains 0 tools. Prints actionable e
 
 ### CAP-UX-008: API Recipes
 
-Bundled API recipes (github, shopify, notion, stripe, slack) that pre-fill mint settings — hosts, auth headers, extra headers, rule template references, and probe hints. Recipes reduce setup friction, not governance decisions.
+Bundled API recipes (github, stripe) that pre-fill mint settings — hosts, auth headers, extra headers, rule template references, and probe hints. Recipes reduce setup friction, not governance decisions. Only recipes with working OpenAPI spec URLs are shipped.
 
 - `toolwright/recipes/*.yaml` -> Recipe definitions
 - `toolwright/recipes/loader.py` -> `list_recipes()`, `load_recipe()`
 - `toolwright/cli/commands_recipes.py` -> `recipes list|show`
 - `toolwright/cli/main.py` -> `mint --recipe <name>`
-- CLI: `toolwright recipes list`, `toolwright recipes show shopify`, `toolwright mint --recipe shopify`
+- CLI: `toolwright recipes list`, `toolwright recipes show github`, `toolwright mint --recipe github`
+
+### CAP-UX-009: Guided Ship Lifecycle
+
+End-to-end guided workflow: capture -> review -> approve -> snapshot -> verify -> serve.
+
+- `toolwright/cli/commands_onboarding.py` -> `ship` command
+- `toolwright/ui/flows/ship.py` -> `ship_flow()`
+
+### CAP-UX-010: Terminal TUI Dashboard
+
+Full-screen read-only Textual dashboard (distinct from web dashboard in CAP-CROSS-021).
+
+- `toolwright/ui/dashboard/app.py` -> Textual-based TUI
+- `toolwright/cli/commands_status.py` -> `dashboard` command
 
 ---
 
 ## SERVE -- HTTP Transport & Dashboard
 
-### CAP-CROSS-017: Request Pipeline Abstraction
+### CAP-SERVE-001: GovernanceEngine (Transport-Agnostic Pipeline)
 
-Extracted tool-call lifecycle as a reusable pipeline that both stdio and HTTP transports invoke.
+Transport-agnostic request governance pipeline. Any transport adapter (MCP, CLI, REST) can invoke it.
 
-- `toolwright/mcp/pipeline.py` -> `RequestPipeline`, `PipelineContext`, `PipelineResult`
-- Stages: action lookup, decision engine, confirmation gate, rule check, breaker check, dry-run, HTTP execution, response processing
-- Wired into: `toolwright/mcp/server.py` -> `handle_call_tool` delegates to pipeline
+- `toolwright/core/governance/engine.py` -> `GovernanceEngine`, `PipelineContext`, `PipelineResult`, `ExecuteRequestFn`
+- `toolwright/mcp/pipeline.py` -> backward-compat re-export (`RequestPipeline = GovernanceEngine`)
+- Stages: action lookup, schema validation, decision engine, confirmation gate, rule check, breaker check, dry-run, execution, response processing
+- `transport_type` parameter propagated to `DecisionRequest.source` for per-transport audit trails
 
-### CAP-CROSS-018: HTTP Transport (StreamableHTTP)
+### CAP-SERVE-002: GovernanceRuntime (Transport-Agnostic Factory)
+
+Factory class that wires all governance subsystems (manifest, lockfile, policy, audit, decision engine, rules, circuit breaker) into a ready-to-use GovernanceEngine. Transport adapters instantiate this instead of duplicating wiring logic.
+
+- `toolwright/core/governance/runtime.py` -> `GovernanceRuntime`
+- Accepts `transport_type` (mcp/cli/rest) to parameterize audit traces
+- Accepts pluggable `execute_request_fn` callback for transport-specific execution
+- `ToolwrightMCPServer` delegates to `GovernanceRuntime` internally
+- Tests: `tests/test_governance_runtime.py` (19 tests), `tests/test_transport_conformance.py` (4 tests)
+
+### CAP-SERVE-003: CLI Transport (JSONL)
+
+Governed tool execution via JSONL on stdin/stdout. Same governance guarantees as MCP at ~1/30th the token cost. No MCP dependency required.
+
+- `toolwright/cli_transport/adapter.py` -> `CLITransportAdapter`, `run_cli_transport`
+- `toolwright/cli_transport/serve.py` -> `run_cli_serve` (path resolution + adapter startup)
+- Protocol: `{"tool": "name", "args": {...}}` in, `{"ok": true, "result": ...}` out
+- Special methods: `list_tools`, `exit`/`quit`
+- CLI: `toolwright serve --transport cli`
+- Tests: `tests/test_cli_transport.py` (14 tests), `tests/test_transport_conformance.py` (8 tests across MCP+CLI)
+
+### CAP-SERVE-004: HTTP Transport (StreamableHTTP)
 
 MCP server over HTTP with Starlette + StreamableHTTPSessionManager. Default port 8745.
 
-- `toolwright/mcp/http_transport.py` -> `create_toolwright_http_app()`
+- `toolwright/mcp/http_transport.py` -> `ToolwrightHTTPApp`
 - Routes: `/health`, `/mcp`, `/api/*`, `/` (static dashboard)
 - CLI: `toolwright serve --http [--host HOST] [--port PORT]`
 
@@ -988,6 +1064,13 @@ Drift is classified before any baseline mutation. SAFE changes auto-merge; other
 - `toolwright/models/baseline.py` -> `BaselineIndex`, `ToolBaseline` with atomic save + threading lock
 - `toolwright/core/toolpack.py` -> `ToolpackPaths.baselines`, `ResolvedToolpackPaths.baselines_path`
 
+### CAP-CROSS-041: Plan Report Engine
+
+Generate structured plan reports from toolpack analysis.
+
+- `toolwright/core/plan/engine.py` -> plan report generation
+- `toolwright/models/plan.py` -> plan models
+- `toolwright/cli/plan.py` -> CLI command
 
 ---
 
@@ -998,7 +1081,7 @@ Drift is classified before any baseline mutation. SAFE changes auto-merge; other
 `toolwright wrap` connects to any existing MCP server (stdio or Streamable HTTP) and exposes a governed proxy. Supports auto-derived server names, saved configs, and header passthrough.
 
 - `toolwright/cli/commands_wrap.py` -> `wrap_command()` Click command
-- `toolwright/cli/main.py` -> registered in `CORE_COMMANDS`
+- `toolwright/cli/main.py` -> registered in `ADVANCED_COMMANDS` (visible via `--help-all`)
 - Subcommands: `--url` (HTTP target), `--auto-approve` (low-risk), `--dry-run`, `--rules`, `--circuit-breaker`
 
 ### CAP-OVERLAY-002: Upstream Connection (stdio + HTTP)

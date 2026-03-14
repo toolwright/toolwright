@@ -26,7 +26,6 @@ from toolwright.models.repair import (
     RepairPatchPlan,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -142,7 +141,7 @@ def state_dir(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def server_with_state(tmp_path: Path, state_dir: Path) -> ToolwrightMetaMCPServer:
+def server_with_state(state_dir: Path) -> ToolwrightMetaMCPServer:
     """Create a meta server with state_dir configured."""
     state = _make_state_with_tools()
     _write_reconcile_state(state_dir, state)

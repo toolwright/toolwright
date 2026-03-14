@@ -81,6 +81,12 @@ def register_mcp_commands(*, cli: click.Group) -> None:
             }
           }
         """
+        if not any([artifacts, tools, policy, lockfile, rules_path, circuit_breaker_path]):
+            raise click.ClickException(
+                "No toolpack or artifacts provided. Use --artifacts, --tools, or other options.\n"
+                "  Example: toolwright inspect --tools tools.json"
+            )
+
         from toolwright.utils.deps import require_mcp_dependency
 
         require_mcp_dependency()

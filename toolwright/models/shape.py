@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass
@@ -66,15 +67,15 @@ class ShapeModel:
         canonical = json.dumps(self.to_dict(), sort_keys=True)
         return hashlib.sha256(canonical.encode()).hexdigest()[:16]
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to JSON-safe dict for storage."""
-        result: dict = {
+        result: dict[str, Any] = {
             "sample_count": self.sample_count,
             "last_updated": self.last_updated,
             "fields": {},
         }
         for path, fs in sorted(self.fields.items()):
-            entry: dict = {
+            entry: dict[str, Any] = {
                 "types_seen": sorted(fs.types_seen),
                 "nullable": fs.nullable,
                 "seen_count": fs.seen_count,
@@ -88,16 +89,21 @@ class ShapeModel:
         return result
 
     @classmethod
-    def from_dict(cls, data: dict) -> ShapeModel:
+    def from_dict(cls, data: dict[str, Any]) -> ShapeModel:
         """Deserialize from stored dict."""
         model = cls(
             sample_count=data.get("sample_count", 0),
             last_updated=data.get("last_updated", ""),
         )
-        for path, entry in data.get("fields", {}).items():
+        fields = data.get("fields", {})
+        if not isinstance(fields, dict):
+            return model
+        for path, entry in fields.items():
+            if not isinstance(path, str) or not isinstance(entry, dict):
+                continue
             model.fields[path] = FieldShape(
-                types_seen=set(entry["types_seen"]),
-                nullable=entry["nullable"],
+                types_seen=set(entry.get("types_seen", [])),
+                nullable=bool(entry.get("nullable", False)),
                 object_keys_seen=(
                     set(entry["object_keys_seen"])
                     if "object_keys_seen" in entry

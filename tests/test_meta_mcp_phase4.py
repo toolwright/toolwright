@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+
 class TestMetaServerReadOnlyTools:
     """`mcp inspect` must remain introspection-only."""
 

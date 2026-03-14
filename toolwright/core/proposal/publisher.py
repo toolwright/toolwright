@@ -19,15 +19,16 @@ from typing import Any
 import yaml
 
 from toolwright.core.compile.toolsets import ToolsetGenerator
+from toolwright.core.risk_keywords import RISK_ORDER
 from toolwright.models.proposal import (
     ProposalParamSource,
     ToolProposalParameter,
     ToolProposalSet,
     ToolProposalSpec,
 )
-from toolwright.core.risk_keywords import RISK_ORDER
 from toolwright.utils.naming import resolve_collision
 from toolwright.utils.schema_version import CURRENT_SCHEMA_VERSION, resolve_generated_at
+
 CONFIRMATION_MAP = {
     "safe": "never",
     "low": "never",

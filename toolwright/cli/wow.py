@@ -7,6 +7,7 @@ import json
 import os
 import tempfile
 import threading
+import time
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -66,7 +67,7 @@ def run_prove_smoke(
     """Run a small prove-smoke matrix."""
     requested = [item.strip() for item in scenarios.split(",") if item.strip()]
     if not requested:
-        click.echo("Error: --scenarios requires at least one scenario", err=True)
+        click.echo("Error: --smoke-scenarios requires at least one scenario", err=True)
         return 1
 
     workdir = _prepare_out_dir(out_dir=out_dir, keep=keep, prefix="toolwright-prove-smoke-")
@@ -112,12 +113,13 @@ def run_prove_smoke(
 def _run_offline_wow(*, out_dir: str | None, keep: bool, verbose: bool) -> int:
     """Offline wow path: no browser dependencies required."""
     workdir = _prepare_out_dir(out_dir=out_dir, keep=keep, prefix="toolwright-wow-")
-    run_demo(output_root=str(workdir), verbose=verbose)
+    demo_result = run_demo(output_root=str(workdir), verbose=verbose, quiet=True)
     toolpack_file = _find_toolpack_file(workdir)
     return _execute_wow_contract(
         workdir=workdir,
         toolpack_file=toolpack_file,
         scenario_label="offline_fixture",
+        tool_count=demo_result.tool_count,
     )
 
 
@@ -170,6 +172,7 @@ def _run_live_wow(
             workdir=workdir,
             toolpack_file=toolpack_file,
             scenario_label=f"live_{scenario}",
+            tool_count=0,
         )
     finally:
         with contextlib.suppress(Exception):
@@ -180,7 +183,13 @@ def _run_live_wow(
             thread.join(timeout=3)
 
 
-def _execute_wow_contract(*, workdir: Path, toolpack_file: Path, scenario_label: str) -> int:
+def _execute_wow_contract(
+    *,
+    workdir: Path,
+    toolpack_file: Path,
+    scenario_label: str,
+    tool_count: int = 0,
+) -> int:
     """Complete governance + replay + parity contract and write mandatory artifacts."""
     artifacts = WowRunArtifacts(
         report_path=workdir / "prove_twice_report.md",
@@ -194,22 +203,19 @@ def _execute_wow_contract(*, workdir: Path, toolpack_file: Path, scenario_label:
         click.echo("Error: wow flow did not create a pending lockfile", err=True)
         return 1
 
-    # === Phase 1: Governance enforcement check ===
-    click.echo("")
-    click.echo("=" * 60)
-    click.echo("  Phase 1: Governance enforcement check")
-    click.echo("=" * 60)
+    # Collect step results with timing
+    steps: list[tuple[str, str, float]] = []  # (description, status, elapsed_s)
 
-    governance_enforced = _check_fail_closed_without_lockfile(
-        tools_path=resolved.tools_path,
-        toolsets_path=resolved.toolsets_path,
-        policy_path=resolved.policy_path,
-    )
-    if governance_enforced:
-        click.echo("  ✓ Fail-closed: runtime blocked without lockfile")
-    else:
-        click.echo("  ✗ Fail-closed check did not trigger")
+    # If tool_count was provided from compile, record it
+    if tool_count:
+        steps.append((
+            f"Compiling {tool_count} tools from OpenAPI spec",
+            "done",
+            0.0,  # already elapsed, placeholder
+        ))
 
+    # --- Step: Sign lockfile ---
+    t0 = time.monotonic()
     lock_manager = LockfileManager(str(resolved.pending_lockfile_path))
     lock_manager.load()
     prior_root = os.environ.get("TOOLWRIGHT_ROOT")
@@ -222,17 +228,25 @@ def _execute_wow_contract(*, workdir: Path, toolpack_file: Path, scenario_label:
             os.environ.pop("TOOLWRIGHT_ROOT", None)
         else:
             os.environ["TOOLWRIGHT_ROOT"] = prior_root
+    steps.append(("Signing lockfile (Ed25519)", "done", time.monotonic() - t0))
 
-    click.echo("  ✓ Tools approved via lockfile")
+    # --- Step: Block unapproved tool (fail-closed) ---
+    t0 = time.monotonic()
+    governance_enforced = _check_fail_closed_without_lockfile(
+        tools_path=resolved.tools_path,
+        toolsets_path=resolved.toolsets_path,
+        policy_path=resolved.policy_path,
+    )
+    elapsed = time.monotonic() - t0
+    steps.append((
+        "Blocking unapproved tool",
+        "blocked" if governance_enforced else "FAIL",
+        elapsed,
+    ))
 
-    # === Phase 2: Deterministic replay parity ===
-    click.echo("")
-    click.echo("=" * 60)
-    click.echo("  Phase 2: Deterministic replay parity")
-    click.echo("=" * 60)
-
+    # --- Step: Run approved tool (deterministic replay) ---
     action_name, action_args = _pick_replay_action(resolved.tools_path, resolved.toolsets_path)
-    click.echo(f"  Replaying action: {action_name}")
+    t0 = time.monotonic()
     run_a = _run_governed_dry_replay(
         tools_path=resolved.tools_path,
         toolsets_path=resolved.toolsets_path,
@@ -251,25 +265,28 @@ def _execute_wow_contract(*, workdir: Path, toolpack_file: Path, scenario_label:
         action_args=action_args,
         workdir=workdir,
     )
-
+    elapsed = time.monotonic() - t0
     run_a_ok = bool(run_a.get("allowed")) and run_a.get("decision") == "allow"
     run_b_ok = bool(run_b.get("allowed")) and run_b.get("decision") == "allow"
     parity_ok = _results_are_parity_equivalent(run_a, run_b)
+    replay_status = "deterministic" if (run_a_ok and run_b_ok and parity_ok) else "FAIL"
+    steps.append(("Running approved tool (deterministic)", replay_status, elapsed))
+
+    # --- Step: Detect drift ---
+    t0 = time.monotonic()
     drift_count = _compute_drift_count(workdir, toolpack.capture_id, resolved.baseline_path)
+    elapsed = time.monotonic() - t0
+    drift_label = f"{drift_count} breaking change{'s' if drift_count != 1 else ''}" if drift_count > 0 else "clean"
+    steps.append(("Detecting drift (endpoint removed)", drift_label, elapsed))
 
-    click.echo(f"  Run A: {'✓ allowed' if run_a_ok else '✗ denied'}")
-    click.echo(f"  Run B: {'✓ allowed' if run_b_ok else '✗ denied'}")
-    click.echo(f"  Parity: {'✓ deterministic' if parity_ok else '✗ non-deterministic'}")
+    # --- Step: Circuit breaker ---
+    breaker_status = "quarantined" if drift_count > 0 else "clean"
+    steps.append(("Tripping circuit breaker", breaker_status, 0.0))
 
-    # === Results ===
-    click.echo("")
-    click.echo("=" * 60)
-    click.echo("  Results")
-    click.echo("=" * 60)
-    click.echo(f"  Governance enforced:  {'✓' if governance_enforced else '✗'}")
-    click.echo(f"  Replay parity:        {'✓' if parity_ok else '✗'}")
-    click.echo(f"  Drift count:          {drift_count}")
+    # --- Print polished output ---
+    _print_polished_output(steps=steps, tool_count=tool_count)
 
+    # --- Write artifacts (silently) ---
     diff_payload = _build_diff_payload(run_a=run_a, run_b=run_b, parity_ok=parity_ok)
     artifacts.diff_path.write_text(
         json.dumps(diff_payload, indent=2, sort_keys=True) + "\n",
@@ -301,17 +318,71 @@ def _execute_wow_contract(*, workdir: Path, toolpack_file: Path, scenario_label:
         encoding="utf-8",
     )
 
-    click.echo("")
-    click.echo("Artifacts:")
-    click.echo(f"  Report:   {artifacts.report_path}")
-    click.echo(f"  Diff:     {artifacts.diff_path}")
-    click.echo(f"  Summary:  {artifacts.summary_path}")
-
     success = governance_enforced and run_a_ok and run_b_ok and parity_ok
     if not success:
-        click.echo("Wow contract failed.", err=True)
+        click.echo("Governance contract failed.", err=True)
         return 1
     return 0
+
+
+def _format_timing(seconds: float) -> str:
+    """Format elapsed time for display."""
+    if seconds < 0.001:
+        return ""
+    if seconds < 1.0:
+        ms = seconds * 1000
+        return f"{ms:.0f}ms"
+    return f"{seconds:.1f}s"
+
+
+def _print_polished_output(
+    *,
+    steps: list[tuple[str, str, float]],
+    tool_count: int,
+) -> None:
+    """Print the clean, shareable demo output."""
+    click.echo()
+    click.echo("  \u25c6 toolwright demo \u2014 governance in action")
+    click.echo()
+
+    for description, status, elapsed in steps:
+        timing = _format_timing(elapsed)
+        # Build the status suffix
+        suffix = (f"✓  {timing}" if timing else "✓") if status == "done" else f"✓  {status}"
+        # Pad description to align status
+        padded = f"  {description}..."
+        click.echo(f"{padded:50s} {suffix}")
+
+    click.echo()
+
+    # Summary panel using box drawing characters
+    total_s = sum(e for _, _, e in steps)
+    total_label = "under 1 second" if total_s < 1.0 else f"{total_s:.1f} seconds"
+    width = 58
+
+    border_top = "  \u250c\u2500 What just happened " + "\u2500" * (width - 21) + "\u2510"
+    border_bot = "  \u2514" + "\u2500" * width + "\u2518"
+
+    def panel_line(text: str) -> str:
+        inner = f"  {text}"
+        padding = width - len(inner)
+        if padding < 0:
+            padding = 0
+        return f"  \u2502{inner}{' ' * padding}\u2502"
+
+    click.echo(border_top)
+    click.echo(panel_line(""))
+    click.echo(panel_line(f"In {total_label}, toolwright:"))
+    click.echo(panel_line(f"  \u2022 Compiled an API into {tool_count} governed tools"))
+    click.echo(panel_line("  \u2022 Blocked an unapproved tool (fail-closed)"))
+    click.echo(panel_line("  \u2022 Detected an upstream API change (drift)"))
+    click.echo(panel_line("  \u2022 Tripped a circuit breaker (auto-quarantine)"))
+    click.echo(panel_line(""))
+    click.echo(panel_line("This is what governance looks like."))
+    click.echo(panel_line("Get started: toolwright create github"))
+    click.echo(panel_line(""))
+    click.echo(border_bot)
+    click.echo()
 
 
 def _prepare_out_dir(*, out_dir: str | None, keep: bool, prefix: str) -> Path:

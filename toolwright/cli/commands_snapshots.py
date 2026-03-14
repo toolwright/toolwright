@@ -58,7 +58,8 @@ def register_snapshot_commands(*, cli: click.Group) -> None:
         help="Toolpack directory (default: current directory)",
     )
     @click.option("--yes", "-y", is_flag=True, default=False, help="Skip confirmation prompt.")
-    def rollback(snapshot_id: str, root: str | None, yes: bool) -> None:
+    @click.pass_context
+    def rollback(ctx: click.Context, snapshot_id: str, root: str | None, yes: bool) -> None:
         """Rollback to a toolpack snapshot.
 
         Restores toolpack files from the specified snapshot.
@@ -68,7 +69,8 @@ def register_snapshot_commands(*, cli: click.Group) -> None:
           toolwright rollback 20260227T100000-abc12345
           toolwright rollback 20260227T100000-abc12345 --root /path/to/toolpack
         """
-        if not yes:
+        no_interactive = ctx.obj.get("no_interactive_explicit", False) if ctx.obj else False
+        if not yes and not no_interactive:
             click.confirm(f"Rollback to snapshot '{snapshot_id}'?", default=False, abort=True)
 
         toolpack_dir = Path(root) if root else Path.cwd()

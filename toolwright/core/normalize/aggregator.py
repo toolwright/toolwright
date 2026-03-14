@@ -212,26 +212,43 @@ class EndpointAggregator:
         # Extract path parameters
         path_params = self._extract_path_params(path)
 
+        # Check for OpenAPI parameter schemas from the representative exchange
+        openapi_param_schemas: dict[str, dict[str, Any]] = representative.notes.get(
+            "openapi_parameter_schemas", {}
+        )
+
         # Build parameters list
         parameters: list[Parameter] = []
 
         for param_name in path_params:
+            schema_meta = openapi_param_schemas.get(param_name, {})
             parameters.append(
                 Parameter(
                     name=param_name,
                     location=ParameterLocation.PATH,
                     required=True,
+                    param_type=schema_meta.get("type", "string"),
+                    json_schema=schema_meta if schema_meta else None,
                 )
             )
 
         for param_name, values in all_query_params.items():
-            param_type = self._infer_param_type(values)
+            schema_meta = openapi_param_schemas.get(param_name, {})
+            if schema_meta and "type" in schema_meta:
+                # Use OpenAPI schema type (authoritative)
+                param_type = schema_meta["type"]
+            else:
+                # Fall back to inference from observed values
+                param_type = self._infer_param_type(values)
+            # Use non-empty example values; empty strings are noise
+            example_val = next((v for v in values if v), None)
             parameters.append(
                 Parameter(
                     name=param_name,
                     location=ParameterLocation.QUERY,
                     param_type=param_type,
-                    example=next(iter(values), None),
+                    example=example_val,
+                    json_schema=schema_meta if schema_meta else None,
                 )
             )
 
@@ -247,18 +264,31 @@ class EndpointAggregator:
         # Determine if first-party
         is_first_party = self._is_first_party(host, session.allowed_hosts)
 
+        # Check for OpenAPI request body metadata
+        openapi_body_meta: dict[str, Any] = representative.notes.get(
+            "openapi_request_body_meta", {}
+        )
+
         # Infer request schema
         request_schema = None
         if request_root_types:
             if request_root_types == {"array"}:
                 request_schema = self._infer_array_schema(request_array_elements)
             elif request_root_types == {"object"} and request_body_samples:
-                request_schema = self._infer_schema(request_body_samples)
+                request_schema = self._infer_schema(
+                    request_body_samples,
+                    openapi_required=openapi_body_meta.get("required_fields"),
+                    openapi_field_schemas=openapi_body_meta.get("field_schemas"),
+                )
             else:
                 request_oneof: list[dict[str, Any]] = []
                 for root_type in sorted(request_root_types):
                     if root_type == "object" and request_body_samples:
-                        request_oneof.append(self._infer_schema(request_body_samples))
+                        request_oneof.append(self._infer_schema(
+                            request_body_samples,
+                            openapi_required=openapi_body_meta.get("required_fields"),
+                            openapi_field_schemas=openapi_body_meta.get("field_schemas"),
+                        ))
                     elif root_type == "array":
                         request_oneof.append(self._infer_array_schema(request_array_elements))
                     else:
@@ -457,12 +487,19 @@ class EndpointAggregator:
         return "string"
 
     def _infer_schema(
-        self, samples: list[dict[str, Any]], _depth: int = 0
+        self,
+        samples: list[dict[str, Any]],
+        _depth: int = 0,
+        openapi_required: list[str] | None = None,
+        openapi_field_schemas: dict[str, dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         """Infer JSON schema from multiple samples via multi-sample merge.
 
         Tracks all observed types per field across samples, computes required
         from field presence, and emits oneOf for mixed-type fields.
+
+        When OpenAPI metadata is available (openapi_required, openapi_field_schemas),
+        uses it as authoritative source for required fields and field types.
         """
         if not samples or _depth > 20:
             return {"type": "object"}
@@ -525,10 +562,24 @@ class EndpointAggregator:
                         oneof_items.append({"type": t})
                 properties[key] = {"oneOf": oneof_items}
 
+        # Apply OpenAPI field type overrides when available
+        if openapi_field_schemas:
+            for field_name, field_meta in openapi_field_schemas.items():
+                if field_name in properties:
+                    prop = properties[field_name]
+                    if isinstance(prop, dict) and "type" in field_meta:
+                        prop["type"] = field_meta["type"]
+                    if isinstance(prop, dict) and "enum" in field_meta:
+                        prop["enum"] = field_meta["enum"]
+
         schema: dict[str, Any] = {"type": "object", "properties": properties}
 
-        # Compute required: fields present in every sample
-        required = sorted(k for k, count in field_presence.items() if count == total)
+        # Use OpenAPI required fields when available (authoritative),
+        # otherwise infer from field presence across samples
+        if openapi_required is not None:
+            required = sorted(r for r in openapi_required if r in properties)
+        else:
+            required = sorted(k for k, count in field_presence.items() if count == total)
         if required:
             schema["required"] = required
 

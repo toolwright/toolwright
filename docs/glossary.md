@@ -108,5 +108,9 @@ Property that two independent compilation runs from the same inputs produce iden
 
 ## Workflow
 
-**Tide**
-Structured multi-step verification workflow engine integrated with Toolwright. Supports shell, HTTP, browser, and MCP step types. Each run produces an evidence bundle.
+**Demo / Prove Smoke**
+Toolwright-native proof flows exposed by `toolwright demo` and `toolwright demo --smoke`. They generate governed demo toolpacks and write the release-readiness proof artifacts:
+
+- `prove_twice_report.md`
+- `prove_twice_diff.json`
+- `prove_summary.json`

@@ -8,13 +8,19 @@ import click
 def register_recipes_commands(*, cli: click.Group) -> None:
     """Register the recipes command group."""
 
-    @cli.group()
-    def recipes():
+    @cli.group(invoke_without_command=True)
+    @click.pass_context
+    def recipes(ctx: click.Context) -> None:
         """Browse and use bundled API recipes."""
-        pass
+        if ctx.invoked_subcommand is None:
+            from toolwright.recipes.loader import list_recipes
+
+            for r in list_recipes():
+                hosts = ", ".join(r["hosts"])
+                click.echo(f"  {r['name']:<15} {r['description']:<40} [{hosts}]")
 
     @recipes.command("list")
-    def recipes_list():
+    def recipes_list() -> None:
         """List available API recipes."""
         from toolwright.recipes.loader import list_recipes
 
@@ -24,7 +30,7 @@ def register_recipes_commands(*, cli: click.Group) -> None:
 
     @recipes.command("show")
     @click.argument("name")
-    def recipes_show(name: str):
+    def recipes_show(name: str) -> None:
         """Show details of an API recipe."""
         from toolwright.recipes.loader import load_recipe
 

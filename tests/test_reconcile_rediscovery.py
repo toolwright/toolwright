@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from toolwright.models.endpoint import Endpoint
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -54,7 +52,7 @@ class TestRediscoverEndpoints:
     """Tests for async endpoint re-discovery."""
 
     @pytest.mark.asyncio
-    async def test_returns_endpoints_from_openapi_spec(self, tmp_path):
+    async def test_returns_endpoints_from_openapi_spec(self):
         """When host has an OpenAPI spec, return parsed endpoints."""
         from toolwright.core.reconcile.rediscovery import rediscover_endpoints
 
@@ -276,9 +274,9 @@ class TestRediscoverEndpoints:
     @pytest.mark.asyncio
     async def test_parses_yaml_spec(self):
         """Should handle YAML-format OpenAPI specs."""
-        from toolwright.core.reconcile.rediscovery import rediscover_endpoints
-
         import yaml
+
+        from toolwright.core.reconcile.rediscovery import rediscover_endpoints
 
         spec = _make_openapi_spec()
         spec_yaml = yaml.dump(spec)

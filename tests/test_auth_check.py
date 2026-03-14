@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 from unittest.mock import patch
 
@@ -192,7 +191,6 @@ class TestAuthCheckProbe:
 
     def test_probe_success(self, tw_root: Path) -> None:
         """Mock a successful probe (200 response)."""
-        import urllib.request
 
         runner = CliRunner()
         with (
@@ -203,7 +201,7 @@ class TestAuthCheckProbe:
             ),
             patch("urllib.request.urlopen") as mock_urlopen,
         ):
-            mock_response = type("Response", (), {"status": 200, "close": lambda self: None})()
+            mock_response = type("Response", (), {"status": 200, "close": lambda _self: None})()
             mock_urlopen.return_value = mock_response
             result = runner.invoke(
                 cli,

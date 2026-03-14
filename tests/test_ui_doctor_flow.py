@@ -57,7 +57,7 @@ class TestDoctorFlowPrompts:
             doctor_flow(root=tmp_path)
 
         output = mock_console.file.getvalue()  # type: ignore[attr-defined]
-        assert "No toolpacks found" in output
+        assert "No toolpack found" in output
 
     def test_skips_when_user_declines_confirm(
         self, tmp_path: Path, mock_console: Console

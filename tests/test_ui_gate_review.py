@@ -74,6 +74,48 @@ class TestGateReviewNoPending:
         output = mock_console.file.getvalue()  # type: ignore[attr-defined]
         assert "No pending tools" in output
 
+    def test_multiple_lockfiles_use_friendly_labels(self, tmp_path: Path, mock_console: Console) -> None:
+        from toolwright.ui.flows.gate_review import gate_review_flow
+
+        root = tmp_path / ".toolwright"
+        first = root / "toolpacks" / "github"
+        second = root / "toolpacks" / "tp_demo"
+        (first / "lockfile").mkdir(parents=True)
+        (second / "lockfile").mkdir(parents=True)
+        (first / "toolpack.yaml").write_text(
+            "toolpack_id: github\n"
+            "allowed_hosts:\n"
+            "  - api.github.com\n"
+        )
+        (second / "toolpack.yaml").write_text(
+            "toolpack_id: tp_demo\n"
+            "display_name: Toolwright Demo\n"
+        )
+        first_lockfile = first / "lockfile" / "toolwright.lock.pending.yaml"
+        second_lockfile = second / "lockfile" / "toolwright.lock.pending.yaml"
+        first_lockfile.write_text("version: 1")
+        second_lockfile.write_text("version: 1")
+
+        tools = [_make_tool(status=ApprovalStatus.APPROVED)]
+        lockfile = MagicMock()
+        lockfile.tools = {"get_users": tools[0]}
+
+        with (
+            patch("toolwright.ui.flows.gate_review.err_console", mock_console),
+            patch("toolwright.ui.flows.gate_review.select_one", return_value=str(first_lockfile)) as mock_select,
+            patch(
+                "toolwright.ui.flows.gate_review.load_lockfile_tools",
+                return_value=(lockfile, tools),
+            ),
+        ):
+            gate_review_flow(root_path=str(root))
+
+        assert mock_select.call_args.args[0] == [str(first_lockfile), str(second_lockfile)]
+        assert mock_select.call_args.kwargs["labels"] == [
+            "github pending lockfile",
+            "Toolwright Demo pending lockfile",
+        ]
+
 
 class TestGateReviewDirectoryValidation:
     """gate_review_flow rejects directory paths."""

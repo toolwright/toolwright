@@ -22,6 +22,8 @@ from toolwright.mcp._compat import (
     NotificationOptions,
     Server,
     mcp_stdio,
+)
+from toolwright.mcp._compat import (
     mcp_types as types,
 )
 from toolwright.mcp.pipeline import PipelineResult, RequestPipeline
@@ -164,7 +166,7 @@ class OverlayServer:
         """Create MCP Server and register list_tools/call_tool handlers."""
         self._mcp_server = Server(f"toolwright-overlay-{self.config.server_name}")
 
-        @self._mcp_server.list_tools()  # type: ignore[misc]
+        @self._mcp_server.list_tools()  # type: ignore
         async def handle_list_tools() -> list[types.Tool]:
             tools = []
             for action in self.actions.values():
@@ -178,13 +180,15 @@ class OverlayServer:
                 tools.append(tool)
             return tools
 
-        @self._mcp_server.call_tool()  # type: ignore[misc]
+        @self._mcp_server.call_tool()  # type: ignore
         async def handle_call_tool(
             name: str,
             arguments: dict[str, Any] | None,
         ) -> Any:
             try:
-                result = await self._pipeline.execute(
+                pipeline = self._pipeline
+                assert pipeline is not None
+                result = await pipeline.execute(
                     name,
                     arguments or {},
                     toolset_name=None,
@@ -228,15 +232,17 @@ class OverlayServer:
         """Run the overlay server using stdio transport."""
         if self._mcp_server is None:
             self._register_handlers()
+        mcp_server = self._mcp_server
+        assert mcp_server is not None
 
         async with mcp_stdio.stdio_server() as (read_stream, write_stream):
-            await self._mcp_server.run(
+            await mcp_server.run(
                 read_stream,
                 write_stream,
                 InitializationOptions(
                     server_name=f"toolwright-overlay-{self.config.server_name}",
                     server_version="1.0.0",
-                    capabilities=self._mcp_server.get_capabilities(
+                    capabilities=mcp_server.get_capabilities(
                         notification_options=NotificationOptions(),
                         experimental_capabilities={},
                     ),

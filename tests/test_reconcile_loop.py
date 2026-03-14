@@ -4,9 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from datetime import UTC, datetime
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -48,7 +46,7 @@ def _make_actions(*tool_ids: str) -> list[dict]:
 
 
 def _make_risk_tiers(*tool_ids: str) -> dict[str, str]:
-    return {tid: "medium" for tid in tool_ids}
+    return dict.fromkeys(tool_ids, "medium")
 
 
 class TestReconcileLoopInit:

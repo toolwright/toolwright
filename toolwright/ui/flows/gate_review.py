@@ -21,7 +21,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from toolwright.ui.console import err_console, get_symbols
-from toolwright.ui.discovery import find_lockfiles
+from toolwright.ui.discovery import find_lockfiles, lockfile_labels
 from toolwright.ui.ops import (
     load_lockfile_tools,
     run_gate_approve,
@@ -85,9 +85,11 @@ def gate_review_flow(
         if len(candidates) == 1:
             lockfile_path = str(candidates[0])
         else:
-            labels = [str(p) for p in candidates]
+            choices = [str(p) for p in candidates]
+            labels = lockfile_labels(candidates, root=root)
             lockfile_path = select_one(
-                labels,
+                choices,
+                labels=labels,
                 prompt="Select lockfile",
                 console=con,
                 input_stream=input_stream,
@@ -259,7 +261,9 @@ def gate_review_flow(
                 lockfile_path=lockfile_path,
                 root_path=str(root),
             )
-            con.print(f"\n  [success]{sym.ok} Approved {len(result.approved_ids)} tools.[/success]")
+            from toolwright.utils.text import pluralize
+
+            con.print(f"\n  [success]{sym.ok} Approved {pluralize(len(result.approved_ids), 'tool')}.[/success]")
             if result.promoted:
                 con.print(f"  [seal]{sym.ok} Lockfile promoted to approved.[/seal]")
         except Exception as exc:

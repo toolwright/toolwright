@@ -2,10 +2,7 @@
 
 import asyncio
 import json
-import os
 import time
-
-import pytest
 
 from toolwright.models.work_item import (
     WorkItem,
@@ -13,7 +10,6 @@ from toolwright.models.work_item import (
     WorkItemKind,
     WorkItemStatus,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -387,7 +383,7 @@ class TestExpiration:
         # Mock confirmation_store
         class MockConfirmationStore:
             denied = []
-            def deny(self, token_id, reason=None):
+            def deny(self, token_id, _reason=None):
                 self.denied.append(token_id)
                 return True
 
@@ -409,7 +405,7 @@ class TestExpiration:
 
         class MockConfirmationStore:
             denied = []
-            def deny(self, token_id, reason=None):
+            def deny(self, token_id, _reason=None):
                 self.denied.append(token_id)
 
         mock_store = MockConfirmationStore()

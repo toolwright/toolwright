@@ -434,7 +434,9 @@ class TestOpenAPICLI:
     def test_cli_import_url(self, simple_openapi_spec: dict, tmp_path: Path) -> None:
         """Test CLI openapi import from URL (F-003)."""
         from unittest.mock import patch
+
         from click.testing import CliRunner
+
         from toolwright.cli.main import cli
 
         spec_json = json.dumps(simple_openapi_spec).encode("utf-8")

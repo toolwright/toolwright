@@ -13,44 +13,43 @@ Give Claude access to GitHub's API through governed MCP tools.
 ## Quick path (60 seconds)
 
 ```bash
-pip install "toolwright[all]"
+pip install toolwright
 toolwright create github
 ```
 
-`create` fetches GitHub's OpenAPI spec, compiles tools, auto-approves low/medium risk, and applies behavioral rules. The output shows everything you need:
+`create` fetches GitHub's OpenAPI spec, compiles tools, auto-approves low/medium risk, and applies behavioral rules. The output will look like this:
 
 ```
-Tools Created (github-api)
-  125 tools · 89 approved · 36 pending
-  Risk: 62 safe · 27 med · 24 high · 12 crit
+Create complete: github
 
-  Example tool: get_repos_owner_repo
-    GET /repos/{owner}/{repo}
-    Parameters: owner (string), repo (string)
+  Tools: <many> endpoints compiled
+  Auto-approved: <many> (low/medium risk)
+  Pending review: <many> (high/critical risk)
+  Rules: crud-safety (3 rules)
 
-Auth Required
-  export TOOLWRIGHT_AUTH_API_GITHUB_COM="Bearer <your-token>"
+  Example tool:
+    get  GET /
 
-Connect to Claude Desktop
-  {
-    "mcpServers": {
-      "github-api": {
-        "command": "toolwright",
-        "args": ["serve", "--toolpack", ".toolwright/toolpacks/github-api/toolpack.yaml"]
-      }
-    }
-  }
+  Auth:
+    export TOOLWRIGHT_AUTH_API_GITHUB_COM="Bearer <your-token>"
 
-Next Steps
-  1. Set your token: export TOOLWRIGHT_AUTH_API_GITHUB_COM="Bearer ghp_yourToken"
-  2. Paste the config into Claude Desktop
-  3. Restart Claude Desktop
-  4. Ask: "List my GitHub repositories"
+Connect to MCP clients:
+  toolwright config --toolpack .toolwright/toolpacks/github/toolpack.yaml
+
+  Next steps:
+    1. Set your auth token
+    2. Run toolwright config --toolpack .toolwright/toolpacks/github/toolpack.yaml
+    3. Paste the config into Claude Desktop and restart
+    4. Ask Claude about your API
 ```
 
-Set your token, paste the config, restart Claude Desktop — done.
+Set your token, run `toolwright config`, paste the snippet, restart Claude Desktop — done.
 
-> **Too many tools?** Serve a subset: `toolwright serve --scope repos`
+> **Start narrow for Claude/Desktop.** The GitHub recipe produces a large tool surface. For a smaller first setup, use a subset such as `repos,issues` when you serve it.
+
+```bash
+toolwright serve --toolpack .toolwright/toolpacks/github/toolpack.yaml --scope repos,issues
+```
 
 ---
 
@@ -61,7 +60,7 @@ Use this if you want to capture only the specific endpoints you actually use.
 ### Step 1: Install
 
 ```bash
-pip install "toolwright[all]"
+pip install "toolwright[playwright]"
 python -m playwright install chromium    # use the same interpreter you installed with; on some systems use python3
 ```
 
@@ -128,5 +127,5 @@ python -m playwright install chromium    # use the same interpreter you installe
 - Browse your tools: `toolwright groups list`
 - Check auth: `toolwright auth check`
 - Detect API drift: `toolwright drift`
-- Continuous monitoring: `toolwright serve --watch --auto-heal safe`
+- Advanced monitoring: `toolwright serve --watch --auto-heal safe`
 - See all commands: `toolwright --help`

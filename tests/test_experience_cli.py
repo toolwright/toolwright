@@ -16,12 +16,14 @@ def test_top_help_includes_core_commands() -> None:
     assert result.exit_code == 0
     # Quick Start (core) commands
     assert "create" in result.stdout
-    assert "mint" in result.stdout
-    assert "gate" in result.stdout
     assert "serve" in result.stdout
-    assert "config" in result.stdout
-    # Operations commands
+    assert "gate" in result.stdout
+    assert "status" in result.stdout
     assert "drift" in result.stdout
+    assert "repair" in result.stdout
+    # Operations commands
+    assert "mint" in result.stdout
+    assert "config" in result.stdout
     assert "verify" in result.stdout
 
 
@@ -58,6 +60,32 @@ def test_demo_offline_emits_required_artifacts(tmp_path: Path) -> None:
         "report_path",
         "diff_path",
     }
+
+
+def test_demo_smoke_emits_matrix_report(tmp_path: Path) -> None:
+    runner = CliRunner()
+    out_dir = tmp_path / "demo_smoke"
+    result = runner.invoke(
+        cli,
+        [
+            "demo",
+            "--smoke",
+            "--smoke-scenarios",
+            "basic_products",
+            "--out",
+            str(out_dir),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+
+    report = json.loads((out_dir / "prove_smoke_report.json").read_text(encoding="utf-8"))
+    assert report["overall_ok"] is True
+    assert len(report["runs"]) == 1
+    assert report["runs"][0]["scenario"] == "basic_products"
+    assert report["runs"][0]["ok"] is True
+    assert report["runs"][0]["summary"]["schema_version"] == "1.0.0"
+    assert report["runs"][0]["summary"]["parity_ok"] is True
 
 
 def test_demo_fails_when_governance_check_fails(

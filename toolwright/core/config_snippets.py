@@ -14,6 +14,7 @@ def render_mcp_client_config(
     fmt: str,
     *,
     name_override: str | None = None,
+    command_override: str | None = None,
 ) -> str:
     """Render an MCP client config snippet for a toolpack."""
     resolved_path = Path(toolpack_path)
@@ -22,6 +23,7 @@ def render_mcp_client_config(
     payload = build_mcp_config_payload(
         toolpack_path=resolved_path,
         server_name=server_name,
+        command_override=command_override,
     )
     return render_config_payload(payload, fmt)
 

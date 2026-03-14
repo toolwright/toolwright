@@ -6,12 +6,9 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-import pytest
 import yaml
 
 from toolwright.core.approval import ApprovalStatus, LockfileManager
-from toolwright.core.approval.smart_gate import classify_approval
-
 
 # ---------------------------------------------------------------------------
 # Helper: create a realistic lockfile with tools at various risk tiers

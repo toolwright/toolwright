@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 from toolwright.models.reconcile import ReconcileEvent
 
@@ -55,7 +56,7 @@ class ReconcileEventLog:
         # Move current log to .1
         self.log_path.rename(parent / f"{base}.1")
 
-    def recent(self, n: int = 50) -> list[dict]:
+    def recent(self, n: int = 50) -> list[dict[str, Any]]:
         """Read the N most recent events."""
         if not self.log_path.exists():
             return []
@@ -63,7 +64,11 @@ class ReconcileEventLog:
             lines = f.readlines()
         return [json.loads(line) for line in lines[-n:]]
 
-    def events_for_tool(self, tool_id: str, n: int = 20) -> list[dict]:
+    def events_for_tool(
+        self,
+        tool_id: str,
+        n: int = 20,
+    ) -> list[dict[str, Any]]:
         """Read recent events for a specific tool."""
         all_events = self.recent(500)
         return [e for e in all_events if e["tool_id"] == tool_id][-n:]

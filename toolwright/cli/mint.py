@@ -13,6 +13,7 @@ import sys
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import click
 import httpx
@@ -69,7 +70,79 @@ def format_capture_message(allowed_hosts: list[str]) -> str:
     return f"  Capturing traffic from {hosts}... Browse normally, then close the browser when done."
 
 
-def format_example_tool(tool: dict) -> str:
+def build_scope_warning(
+    tool_count: int,
+    *,
+    groups_index: Any | None,
+    toolpack_id: str,  # noqa: ARG001 — reserved for future use in scope warnings
+) -> str:
+    """Build a scope warning message when tool count exceeds agent-friendly limits.
+
+    Returns an empty string when tool_count <= 30.
+    Otherwise returns a multi-line warning with actionable --scope guidance.
+    """
+    from toolwright.mcp.runtime import TOOL_COUNT_WARN_THRESHOLD
+
+    if tool_count <= TOOL_COUNT_WARN_THRESHOLD:
+        return ""
+
+    lines: list[str] = []
+    lines.append("")
+    lines.append(
+        click.style(
+            f"  \u26a0 Tool count ({tool_count}) exceeds agent-friendly limits "
+            f"(recommended: \u2264{TOOL_COUNT_WARN_THRESHOLD})",
+            fg="yellow",
+        )
+    )
+
+    # Build --scope examples from group data
+    has_groups = False
+    if groups_index is not None:
+        from toolwright.models.groups import ToolGroupIndex
+
+        if isinstance(groups_index, ToolGroupIndex) and groups_index.groups:
+            has_groups = True
+            top = sorted(
+                groups_index.groups, key=lambda g: len(g.tools), reverse=True
+            )
+            if len(top) >= 2:
+                combo2_names = ",".join(g.name for g in top[:2])
+                combo2_count = sum(len(g.tools) for g in top[:2])
+                combo3_names = ",".join(g.name for g in top[:3]) if len(top) >= 3 else combo2_names
+                combo3_count = sum(len(g.tools) for g in top[:3]) if len(top) >= 3 else combo2_count
+
+                lines.append("")
+                lines.append("  Serve a focused subset with --scope:")
+                lines.append(
+                    f"    toolwright serve --scope {combo2_names}"
+                    f"    # {combo2_count} tools"
+                )
+                if len(top) >= 3 and combo3_count != combo2_count:
+                    lines.append(
+                        f"    toolwright serve --scope {combo3_names}"
+                        f"    # {combo3_count} tools"
+                    )
+            else:
+                g = top[0]
+                lines.append("")
+                lines.append("  Serve a focused subset with --scope:")
+                lines.append(
+                    f"    toolwright serve --scope {g.name}"
+                    f"    # {len(g.tools)} tools"
+                )
+
+    if not has_groups:
+        lines.append("")
+        lines.append("  Use --scope when serving to narrow to useful tool groups.")
+
+    lines.append("")
+    lines.append("  See all groups: toolwright groups list --toolpack <path-to-toolpack.yaml>")
+
+    return "\n".join(lines)
+
+
+def format_example_tool(tool: dict[str, Any]) -> str:
     """Format a single tool for display as an example."""
     name = tool.get("name", "unknown")
     method = tool.get("method", "GET")
@@ -720,6 +793,16 @@ class ProbeResult:
     )
 
 
+def _probe_client(
+    *,
+    timeout: float = 5.0,
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> httpx.AsyncClient:
+    if transport is None:
+        return httpx.AsyncClient(timeout=timeout)
+    return httpx.AsyncClient(timeout=timeout, transport=transport)
+
+
 async def _probe_base_url(
     start_url: str,
     *,
@@ -729,11 +812,8 @@ async def _probe_base_url(
 
     Returns a dict of ProbeResult field updates.
     """
-    kwargs: dict[str, object] = {}
-    if transport is not None:
-        kwargs["transport"] = transport
     try:
-        async with httpx.AsyncClient(timeout=5.0, **kwargs) as client:
+        async with _probe_client(transport=transport) as client:
             resp = await client.get(
                 start_url, headers={"User-Agent": "toolwright-probe/1.0"}
             )
@@ -783,11 +863,8 @@ async def _probe_graphql(
         if candidate not in urls:
             urls.append(candidate)
 
-    kwargs: dict[str, object] = {}
-    if transport is not None:
-        kwargs["transport"] = transport
     try:
-        async with httpx.AsyncClient(timeout=5.0, **kwargs) as client:
+        async with _probe_client(transport=transport) as client:
             for url in urls:
                 try:
                     resp = await client.post(
@@ -822,10 +899,6 @@ async def _probe_hosts(
     start_netloc = urlparse(start_url).netloc
     results: dict[str, dict[str, object]] = {}
 
-    kwargs: dict[str, object] = {}
-    if transport is not None:
-        kwargs["transport"] = transport
-
     for host in allowed_hosts[:3]:
         if host == start_netloc:
             continue
@@ -840,7 +913,7 @@ async def _probe_hosts(
             "error": None,
         }
         try:
-            async with httpx.AsyncClient(timeout=5.0, **kwargs) as client:
+            async with _probe_client(transport=transport) as client:
                 resp = await client.get(
                     url, headers={"User-Agent": "toolwright-probe/1.0"}
                 )
@@ -885,11 +958,8 @@ async def _probe_openapi(
     """
     from toolwright.core.discover.openapi import OpenAPIDiscovery
 
-    kwargs: dict[str, object] = {}
-    if transport is not None:
-        kwargs["transport"] = transport
     try:
-        async with httpx.AsyncClient(timeout=5.0, **kwargs) as client:
+        async with _probe_client(transport=transport) as client:
             for host in allowed_hosts[:2]:
                 proto = "http" if host.startswith(("localhost", "127.")) else "https"
                 base = f"{proto}://{host}"
@@ -913,15 +983,11 @@ async def _smart_probe_async(
     transport: httpx.AsyncBaseTransport | None = None,
 ) -> ProbeResult:
     """Run all probes concurrently, merge results."""
-    kwargs: dict[str, object] = {}
-    if transport is not None:
-        kwargs["transport"] = transport
-
     base_r, gql_r, openapi_r, hosts_r = await asyncio.gather(
-        _probe_base_url(start_url, **kwargs),
-        _probe_graphql(start_url, allowed_hosts[:2], **kwargs),
-        _probe_openapi(allowed_hosts[:2], **kwargs),
-        _probe_hosts(start_url, allowed_hosts[:3], **kwargs),
+        _probe_base_url(start_url, transport=transport),
+        _probe_graphql(start_url, allowed_hosts[:2], transport=transport),
+        _probe_openapi(allowed_hosts[:2], transport=transport),
+        _probe_hosts(start_url, allowed_hosts[:3], transport=transport),
         return_exceptions=True,
     )
 
@@ -943,7 +1009,7 @@ def _render_probe_results(
     """Render structured advisory messages from probe results. Never blocks."""
     from urllib.parse import urlparse
 
-    from toolwright.cli.commands_auth import _host_to_env_var
+    from toolwright.utils.auth import host_to_env_var as _host_to_env_var
 
     CHECK = "\u2713"
     WARN = "\u26A0"
@@ -1075,11 +1141,8 @@ def _smart_probe(
     Safe to call with asyncio.run() here -- the call site (mint.py)
     is before any event loop starts (Playwright capture starts later).
     """
-    kwargs: dict[str, object] = {}
-    if transport is not None:
-        kwargs["transport"] = transport
     result = asyncio.run(
-        _smart_probe_async(start_url, allowed_hosts, **kwargs)
+        _smart_probe_async(start_url, allowed_hosts, transport=transport)
     )
     _render_probe_results(result, start_url, allowed_hosts)
 

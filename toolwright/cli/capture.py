@@ -140,6 +140,11 @@ def run_capture_openapi(
     except ValueError as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)
+    finally:
+        # Clean up temp file from URL fetch
+        temp_dir = Path(tempfile.gettempdir()).resolve()
+        if source_path.resolve().parent == temp_dir:
+            source_path.unlink(missing_ok=True)
 
     # Save
     base_path = _resolve_storage_root(output=output, root_path=root_path)

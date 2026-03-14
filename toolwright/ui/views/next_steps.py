@@ -102,7 +102,7 @@ def compute_next_steps(inp: NextStepsInput) -> NextStepsOutput:
     if inp.pending_count > 0:
         noun = "tool" if inp.pending_count == 1 else "tools"
         candidates.append(NextStep(
-            command=_tp("toolwright gate allow", tid),
+            command=_tp("toolwright gate allow --all", tid),
             label="Approve pending tools",
             why=f"{inp.pending_count} {noun} awaiting approval before serving",
         ))
@@ -118,7 +118,7 @@ def compute_next_steps(inp: NextStepsInput) -> NextStepsOutput:
     # 4. Drift breaking
     if inp.drift_state == "breaking":
         candidates.append(NextStep(
-            command=_tp("toolwright drift", tid),
+            command="toolwright drift",
             label="Investigate breaking drift",
             why="Breaking API surface changes detected — review before serving",
         ))
@@ -150,7 +150,7 @@ def compute_next_steps(inp: NextStepsInput) -> NextStepsOutput:
     # 8. Drift not checked
     if inp.drift_state == "not_checked" and inp.has_baseline:
         candidates.append(NextStep(
-            command=_tp("toolwright drift", tid),
+            command="toolwright drift",
             label="Check for drift",
             why="Drift has not been checked — detect API surface changes",
         ))
@@ -174,7 +174,7 @@ def compute_next_steps(inp: NextStepsInput) -> NextStepsOutput:
     # Drift warnings (non-blocking, always alternative if present)
     if inp.drift_state == "warnings" and not any("drift" in c.command for c in candidates):
         candidates.append(NextStep(
-            command=_tp("toolwright drift", tid),
+            command="toolwright drift",
             label="Review drift warnings",
             why="Non-breaking drift detected — review when convenient",
         ))

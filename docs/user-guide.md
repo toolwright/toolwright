@@ -83,6 +83,8 @@ toolwright config
 
 `create` fetches the OpenAPI spec, compiles tools, auto-approves low/medium risk, applies behavioral rules, and points you to `toolwright config` for the MCP snippet to paste into Claude Desktop, Cursor, or Codex.
 
+For Claude/Desktop users, start narrow when the generated tool surface is large. The GitHub recipe is a good example: use a focused serve scope like `repos,issues` while evaluating the alpha.
+
 ### Custom path (5 minutes) — from any web app
 
 ```bash
@@ -91,15 +93,15 @@ toolwright gate allow --all
 toolwright serve
 ```
 
-`mint` opens a browser, captures your API interactions, and compiles a governed toolpack. See the [Any REST API quickstart](quickstarts/any-rest-api.md) for the full walkthrough.
+`mint` opens a browser, captures your API interactions, and compiles a governed toolpack. This path is supported, but it is still a more operator-driven alpha workflow than the known-API recipe path. See the [Any REST API quickstart](quickstarts/any-rest-api.md) for the full walkthrough.
 
-### Interactive path — guided lifecycle
+### Advanced path — guided lifecycle
 
 ```bash
 toolwright ship
 ```
 
-Walks you through the full lifecycle interactively: capture, review, approve, snapshot, verify, and serve. If any stage fails, `toolwright ship` tells you exactly what went wrong and what to do next.
+Walks you through the full lifecycle interactively: capture, review, approve, snapshot, verify, and serve. It is useful, but it remains a secondary alpha path compared with `demo`, `create github`, `config`, and `serve`.
 
 ### Connect to your AI client
 
@@ -499,11 +501,11 @@ Recipes pre-fill mint settings for known APIs:
 
 ```bash
 toolwright recipes list
-toolwright recipes show shopify
-toolwright mint --recipe shopify https://yourstore.myshopify.com
+toolwright recipes show github
+toolwright mint --recipe github https://api.github.com
 ```
 
-Bundled recipes: github, shopify, notion, stripe, slack.
+Bundled recipes: github, stripe.
 
 Each recipe sets: hosts, auth headers, extra headers, and rule template references. Post-mint, referenced templates are queued as DRAFT rules.
 
@@ -771,7 +773,7 @@ Falls back to `toolwright status` output when Textual is not installed.
 | `toolwright dashboard` | Full-screen Textual dashboard (`toolwright[tui]`) |
 | `toolwright demo` | Prove governance works (offline, 30 seconds) |
 
-> Use `toolwright --help-all` to see all 35+ commands including `compliance`, `bundle`, `enforce`, `confirm`, and more.
+> Use `toolwright --help-all` to see all 40+ commands including `bundle`, `enforce`, `confirm`, and more.
 
 ### Help
 

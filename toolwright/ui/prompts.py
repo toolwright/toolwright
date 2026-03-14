@@ -14,9 +14,10 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import TextIO
+from typing import Any, TextIO
 
 from rich.console import Console
+from rich.text import Text
 
 from toolwright.ui.console import err_console
 from toolwright.ui.policy import resolve_ui_mode
@@ -127,12 +128,12 @@ def _select_one_fancy(
         selected_index = (selected_index + 1) % len(display)
 
     @kb.add("enter")
-    def _accept(_event: object) -> None:
+    def _accept(_event: Any) -> None:
         app = _event.app
         app.exit(result=selected_index)
 
     @kb.add("c-c")
-    def _cancel(_event: object) -> None:
+    def _cancel(_event: Any) -> None:
         app = _event.app
         app.exit(result=None)
 
@@ -327,13 +328,13 @@ def _select_many_fancy(
             checked.update(range(len(choices)))
 
     @kb.add("enter")
-    def _accept(_event: object) -> None:
+    def _accept(_event: Any) -> None:
         app = _event.app
         # Return indices in original order
         app.exit(result=sorted(checked))
 
     @kb.add("c-c")
-    def _cancel(_event: object) -> None:
+    def _cancel(_event: Any) -> None:
         app = _event.app
         app.exit(result=None)
 
@@ -490,21 +491,24 @@ def _has_prompt_toolkit() -> bool:
         return False
 
 
-def _format_action_hint(actions: dict[str, str]) -> str:
+def _format_action_hint(actions: dict[str, str]) -> Text:
     """Format action choices as keyboard hints.
 
     Given ``{"a": "approve", "b": "block", "s": "skip"}``, returns:
     ``[a]pprove  [b]lock  [s]kip``
     """
-    parts: list[str] = []
+    parts = Text()
+    first = True
     for key, label in actions.items():
-        if label.lower().startswith(key.lower()):
-            # Highlight the first letter: [a]pprove
-            parts.append(f"[bold][{key}][/bold]{label[len(key):]}")
-        else:
-            # Key doesn't match label start: [y]why
-            parts.append(f"[bold][{key}][/bold]{label}")
-    return "  ".join(parts)
+        if not first:
+            parts.append("  ")
+        suffix = label[len(key):] if label.lower().startswith(key.lower()) else label
+        parts.append("[")
+        parts.append(key, style="bold")
+        parts.append("]")
+        parts.append(suffix)
+        first = False
+    return parts
 
 
 def prompt_action(
@@ -542,7 +546,10 @@ def prompt_action(
     hint = _format_action_hint(actions)
     if prompt:
         con.print(f"\n  {prompt}")
-    con.print(f"  {hint}: ", end="")
+    line = Text("  ")
+    line.append_text(hint)
+    line.append(": ")
+    con.print(line, end="")
 
     valid_keys = {k.lower() for k in actions}
 
@@ -565,17 +572,17 @@ def _prompt_action_toolkit(valid_keys: set[str], con: Console) -> str:
 
     for key in valid_keys:
         @bindings.add(key)
-        def _handler(event, k=key):  # noqa: B023
+        def _handler(event: Any, k: str = key) -> None:  # noqa: B023
             nonlocal result
             result = k
             event.app.exit(result=k)
 
     @bindings.add(Keys.ControlC)
-    def _cancel(event):
+    def _cancel(event: Any) -> None:
         event.app.exit(result=None)
 
     @bindings.add("?")
-    def _help(event):
+    def _help(event: Any) -> None:
         # Treat ? same as pressing the key if it's in valid_keys
         if "?" in valid_keys:
             nonlocal result

@@ -8,9 +8,9 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.helpers import write_demo_toolpack
 from toolwright.core.approval import ApprovalStatus, LockfileManager, ToolApproval
 from toolwright.core.approval.snapshot import materialize_snapshot
-from tests.helpers import write_demo_toolpack
 
 
 class TestToolApproval:
@@ -140,6 +140,26 @@ class TestLockfileManager:
         assert "sig123" in manager2.lockfile.tools
         assert manager2.lockfile.tools["sig123"].signature_id == "sig123"
         assert manager2.lockfile.schema_version == "1.0"
+
+    def test_sync_generated_at_never_epoch_zero(
+        self, tmp_lockfile: Path, sample_manifest: dict
+    ) -> None:
+        """M16: generated_at must never be epoch zero, even with deterministic=True."""
+        from datetime import UTC, datetime
+
+        manager = LockfileManager(tmp_lockfile)
+        manager.load()
+
+        manager.sync_from_manifest(sample_manifest, deterministic=True)
+
+        epoch_zero = datetime(1970, 1, 1, tzinfo=UTC)
+        assert manager.lockfile.generated_at != epoch_zero, (
+            "Lockfile generated_at should be a real timestamp, not epoch zero"
+        )
+        # Should be recent (within last minute)
+        now = datetime.now(UTC)
+        delta = (now - manager.lockfile.generated_at).total_seconds()
+        assert delta < 60, f"generated_at is {delta}s old, expected recent"
 
     def test_sync_from_manifest_new_tools(
         self, tmp_lockfile: Path, sample_manifest: dict
@@ -698,7 +718,7 @@ class TestApprovalCLI:
         )
 
         assert result.exit_code == 0
-        assert "Rejected: create_user" in result.output
+        assert "Blocked: create_user" in result.output
 
     def test_check_fails_on_pending(self, setup_env: tuple[Path, Path]) -> None:
         """Test that check fails when tools are pending."""
@@ -722,7 +742,7 @@ class TestApprovalCLI:
         )
 
         assert result.exit_code == 1
-        assert "Pending approval" in result.output
+        assert "pending approval" in result.output.lower()
 
     def test_check_passes_when_all_approved(self, tmp_path: Path) -> None:
         """Test that check passes when all tools approved with snapshot present."""
@@ -762,7 +782,7 @@ class TestApprovalCLI:
             ["gate", "check", "--lockfile", str(lockfile_path), "--toolset", "readonly"],
         )
         assert pending_check.exit_code == 1
-        assert "Pending approval in 'readonly'" in pending_check.output
+        assert "pending approval" in pending_check.output.lower()
 
         approve_result = runner.invoke(
             cli,

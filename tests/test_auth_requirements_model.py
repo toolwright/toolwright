@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-import re
-
-import pytest
-
 from toolwright.core.toolpack import ToolpackAuthRequirement
 
 

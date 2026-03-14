@@ -226,7 +226,11 @@ If the reconciliation loop exits unexpectedly, check the server logs for the roo
 
 ### Claude Desktop can't connect to Toolwright MCP server
 
-1. Verify the config in `~/.claude/claude_desktop_config.json`:
+1. Verify the config file for your platform:
+
+   - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+   - **Linux:** `~/.config/Claude/claude_desktop_config.json`
 
 ```json
 {

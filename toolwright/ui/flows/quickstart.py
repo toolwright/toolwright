@@ -14,6 +14,7 @@ important next action.
 
 from __future__ import annotations
 
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -55,7 +56,7 @@ def _gather_governance_status(
             results.append(model)
         except Exception:
             pass
-    return results
+    return sorted(results, key=_status_priority)
 
 
 # ---------------------------------------------------------------------------
@@ -64,33 +65,155 @@ def _gather_governance_status(
 
 
 def _render_health_bar(statuses: list[Any], con: Any) -> None:
-    """Render a compact one-line-per-toolpack governance health summary."""
+    """Render a compact governance summary grouped by display name."""
     from toolwright.ui.views.status import _status_icon
 
     if not statuses:
-        con.print("  [muted]No toolpacks found. Run [command]toolwright mint[/command] to capture an API.[/muted]")
+        con.print("  [muted]No toolpacks found. Run [command]toolwright create[/command] to get started.[/muted]")
         return
 
+    groups: dict[str, list[Any]] = defaultdict(list)
     for model in statuses:
-        name = model.toolpack_id or "unknown"
-        lockfile_icon = _status_icon(model.lockfile_state)
-        baseline_icon = _status_icon("current" if model.has_baseline else "missing")
-        drift_icon = _status_icon(model.drift_state)
-        verify_icon = _status_icon(model.verification_state)
+        groups[model.toolpack_id or "unknown"].append(model)
+
+    grouped = list(groups.items())
+    visible = grouped[:6]
+
+    for name, models in visible:
+        pending_total = sum(model.pending_count for model in models)
+        toolpack_count = len(models)
+        lockfile_icon = _status_icon(_worst_lockfile_state(models))
+        baseline_icon = _status_icon("current" if all(model.has_baseline for model in models) else "missing")
+        drift_icon = _status_icon(_worst_drift_state(models))
+        verify_icon = _status_icon(_worst_verification_state(models))
 
         name_part = f"  [bold]{name}[/bold]"
-        if model.pending_count > 0:
-            name_part += f"  [warning]({model.pending_count} pending)[/warning]"
+        if toolpack_count > 1:
+            label = "toolpack" if toolpack_count == 1 else "toolpacks"
+            name_part += f"  [muted]({toolpack_count} {label})[/muted]"
+        if pending_total > 0:
+            name_part += f"  [warning]({pending_total} pending)[/warning]"
 
-        parts = [
-            name_part,
-            f"  {lockfile_icon} lockfile",
-            f"  {baseline_icon} baseline",
-            f"  {drift_icon} drift",
-            f"  {verify_icon} verify",
-        ]
+        con.print(
+            "".join(
+                [
+                    name_part,
+                    f"  {lockfile_icon} lockfile",
+                    f"  {baseline_icon} baseline",
+                    f"  {drift_icon} drift",
+                    f"  {verify_icon} verify",
+                ]
+            ),
+            no_wrap=True,
+        )
 
-        con.print("".join(parts), no_wrap=True)
+    hidden_groups = grouped[6:]
+    if hidden_groups:
+        hidden_toolpacks = sum(len(models) for _name, models in hidden_groups)
+        hidden_pending = sum(
+            model.pending_count for _name, models in hidden_groups for model in models
+        )
+        label = "toolpack" if hidden_toolpacks == 1 else "toolpacks"
+        suffix = f" ({hidden_pending} pending)" if hidden_pending > 0 else ""
+        con.print(f"  [muted]... and {hidden_toolpacks} more {label}{suffix}[/muted]")
+
+
+def _status_priority(model: Any) -> tuple[int, int, int, int, int, str, str]:
+    """Sort the wizard toward the most actionable toolpacks first."""
+    if model.pending_count > 0:
+        tier = 0
+    elif model.verification_state == "fail":
+        tier = 1
+    elif model.drift_state in ("breaking", "warnings"):
+        tier = 2
+    elif model.lockfile_state in ("missing", "pending") or not model.has_baseline:
+        tier = 3
+    elif model.verification_state != "pass" or not model.has_mcp_config:
+        tier = 4
+    else:
+        tier = 5
+
+    verify_rank = {"fail": 0, "partial": 1, "not_run": 2, "pass": 3}
+    drift_rank = {"breaking": 0, "warnings": 1, "not_checked": 2, "clean": 3}
+    lockfile_rank = {"missing": 0, "pending": 1, "stale": 2, "sealed": 3}
+    return (
+        tier,
+        -int(model.pending_count),
+        verify_rank.get(model.verification_state, 99),
+        drift_rank.get(model.drift_state, 99),
+        lockfile_rank.get(model.lockfile_state, 99),
+        str(model.toolpack_id or "").lower(),
+        str(model.toolpack_path),
+    )
+
+
+def _worst_lockfile_state(models: list[Any]) -> str:
+    ranking = {"missing": 0, "pending": 1, "stale": 2, "sealed": 3}
+    return str(
+        min(
+        (model.lockfile_state for model in models),
+        key=lambda state: ranking.get(state, 99),
+        )
+    )
+
+
+def _worst_drift_state(models: list[Any]) -> str:
+    ranking = {"breaking": 0, "warnings": 1, "not_checked": 2, "clean": 3}
+    return str(
+        min(
+        (model.drift_state for model in models),
+        key=lambda state: ranking.get(state, 99),
+        )
+    )
+
+
+def _worst_verification_state(models: list[Any]) -> str:
+    ranking = {"fail": 0, "partial": 1, "not_run": 2, "pass": 3}
+    return str(
+        min(
+        (model.verification_state for model in models),
+        key=lambda state: ranking.get(state, 99),
+        )
+    )
+
+
+def _render_next_guidance(statuses: list[Any], con: Any, sym: Any) -> None:
+    """Show the next most useful action without undercounting pending work."""
+    if not statuses:
+        return
+
+    total_pending = sum(model.pending_count for model in statuses)
+    pending_toolpacks = sum(1 for model in statuses if model.pending_count > 0)
+    if total_pending > 0:
+        tool_word = "tool" if total_pending == 1 else "tools"
+        if pending_toolpacks > 1:
+            pack_word = "toolpack" if pending_toolpacks == 1 else "toolpacks"
+            con.print(
+                f"  [next]Next {sym.arrow}[/next] {total_pending} {tool_word} awaiting approval across {pending_toolpacks} {pack_word}"
+            )
+        else:
+            con.print(
+                f"  [next]Next {sym.arrow}[/next] {total_pending} {tool_word} awaiting approval before serving"
+            )
+        return
+
+    from toolwright.ui.views.next_steps import NextStepsInput, compute_next_steps
+
+    model = statuses[0]
+    inp = NextStepsInput(
+        command="wizard",
+        toolpack_id=model.toolpack_id,
+        lockfile_state=model.lockfile_state,
+        verification_state=model.verification_state,
+        drift_state=model.drift_state,
+        pending_count=model.pending_count,
+        has_baseline=model.has_baseline,
+        has_mcp_config=model.has_mcp_config,
+        has_approved_lockfile=model.lockfile_state in ("sealed", "stale"),
+        has_pending_lockfile=model.lockfile_state == "pending",
+    )
+    ns = compute_next_steps(inp)
+    con.print(f"  [next]Next {sym.arrow}[/next] {ns.primary.why}")
 
 
 # ---------------------------------------------------------------------------
@@ -123,7 +246,7 @@ def _build_menu(
 
     # If we have toolpack statuses, use next_steps to determine recommendation
     if statuses:
-        model = statuses[0]  # Use first toolpack for primary recommendation
+        model = statuses[0]
         inp = NextStepsInput(
             command="wizard",
             toolpack_id=model.toolpack_id,
@@ -145,7 +268,8 @@ def _build_menu(
             if "sync" in ns.primary.command:
                 menu.append(("gate_sync", f"{ns.primary.label} (recommended)"))
             else:
-                pending_label = f" ({model.pending_count} pending)" if model.pending_count > 0 else ""
+                pending_total = sum(m.pending_count for m in statuses)
+                pending_label = f" ({pending_total} pending)" if pending_total > 0 else ""
                 menu.append(("gate", f"Review & approve tools{pending_label} (recommended)"))
         elif primary_cmd == "repair" or "repair" in ns.primary.command:
             menu.append(("repair", f"{ns.primary.label} (recommended)"))
@@ -198,7 +322,7 @@ def wizard_flow(*, root: Path, verbose: bool = False) -> None:
 
 
 def _first_run_flow(*, root: Path, verbose: bool) -> None:
-    """First-time user experience: welcome, detect, guide."""
+    """First-time user experience: welcome, demo, detect, guide."""
     from toolwright.ui.views.branding import render_rich_header
 
     con = err_console
@@ -206,8 +330,9 @@ def _first_run_flow(*, root: Path, verbose: bool) -> None:
 
     render_rich_header(console=con)
 
-    con.print("  [heading]Welcome to Toolwright[/heading]")
-    con.print("  [muted]Turn any web API into a governed, agent-ready MCP server.[/muted]")
+    con.print("  [heading]Welcome to Toolwright[/heading] — the immune system for AI tools.")
+    con.print()
+
     con.print()
 
     # Auto-detect project context
@@ -231,6 +356,7 @@ def _first_run_flow(*, root: Path, verbose: bool) -> None:
     # Offer first-run options
     first_run_menu = [
         ("quickstart", f"Quick Start {sym.arrow} capture & govern an API in minutes"),
+        ("demo", f"Watch Demo {sym.arrow} see governance in action"),
         ("ship", f"Ship Secure Agent {sym.arrow} end-to-end governed deployment"),
         ("init", f"Initialize Toolwright {sym.arrow} set up .toolwright/ in this project"),
         ("exit", "Exit"),
@@ -267,23 +393,7 @@ def _returning_flow(*, root: Path, verbose: bool) -> None:
         con.print()
 
         if statuses:
-            from toolwright.ui.views.next_steps import NextStepsInput, compute_next_steps
-
-            model = statuses[0]
-            inp = NextStepsInput(
-                command="wizard",
-                toolpack_id=model.toolpack_id,
-                lockfile_state=model.lockfile_state,
-                verification_state=model.verification_state,
-                drift_state=model.drift_state,
-                pending_count=model.pending_count,
-                has_baseline=model.has_baseline,
-                has_mcp_config=model.has_mcp_config,
-                has_approved_lockfile=model.lockfile_state in ("sealed", "stale"),
-                has_pending_lockfile=model.lockfile_state == "pending",
-            )
-            ns = compute_next_steps(inp)
-            con.print(f"  [next]Next {sym.arrow}[/next] {ns.primary.why}")
+            _render_next_guidance(statuses, con, sym)
             con.print()
 
         menu = _build_menu(statuses, toolpacks)
@@ -364,8 +474,12 @@ def _dispatch(
             _run_verify(str(toolpacks[0]), con, sym)
         else:
             con.print("  [warning]No toolpacks found.[/warning]")
+    elif choice == "demo":
+        from toolwright.cli.demo import run_demo
+
+        run_demo(output_root=None, verbose=verbose, quiet=False)
     elif choice == "drift":
-        con.print("  [muted]Run:[/muted] [command]toolwright drift --toolpack <path>[/command]")
+        con.print("  [muted]Run:[/muted] [command]toolwright drift[/command]")
     else:
         con.print(f"[warning]Unknown option: {choice}[/warning]")
 

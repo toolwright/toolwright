@@ -7,10 +7,8 @@ import os
 import re
 import time
 
-import pytest
-
 from toolwright.core.heal.sample_factory import create_response_sample
-from toolwright.models.heal import FieldSchema, FieldTypeInfo, InferredSchema, ResponseSample
+from toolwright.models.heal import FieldSchema, InferredSchema, ResponseSample
 
 
 def _make_sample(
@@ -106,7 +104,7 @@ class TestSampleStorage:
         store = BaselineStore(tmp_path)
         store.record_sample(_make_sample())
         # No .tmp files should remain
-        for root, _dirs, files in os.walk(tmp_path):
+        for _root, _dirs, files in os.walk(tmp_path):
             for f in files:
                 assert not f.endswith(".tmp"), f"Leftover tmp file: {f}"
 
@@ -226,7 +224,7 @@ class TestSchemaStorage:
         store.record_sample(_make_sample())
         store.save_schema("list_customers", "list_customers:default", _make_schema())
 
-        for root, _dirs, files in os.walk(tmp_path):
+        for _root, _dirs, files in os.walk(tmp_path):
             for f in files:
                 assert not f.endswith(".tmp"), f"Leftover tmp: {f}"
 

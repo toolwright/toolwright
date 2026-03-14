@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from toolwright.models.shape import FieldShape, ShapeModel
@@ -64,7 +64,7 @@ def infer_shape(body: Any) -> tuple[ShapeModel, InferenceMetadata]:
     """
     model = ShapeModel(
         sample_count=0,  # NOT 1 — presence stats set by merge_observation
-        last_updated=datetime.now(timezone.utc).isoformat(),
+        last_updated=datetime.now(UTC).isoformat(),
     )
     metadata = InferenceMetadata()
     _walk(body, "", model, metadata, depth=0)
@@ -177,7 +177,7 @@ def merge_observation(existing: ShapeModel, body: Any) -> ShapeModel:
     Returns the mutated existing model (also mutates in place).
     """
     existing.sample_count += 1
-    existing.last_updated = datetime.now(timezone.utc).isoformat()
+    existing.last_updated = datetime.now(UTC).isoformat()
 
     observed, meta = infer_shape(body)
 

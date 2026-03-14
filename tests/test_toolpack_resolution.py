@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 import click
@@ -115,8 +114,8 @@ class TestNoToolpacks:
         with pytest.raises(click.UsageError, match="No toolpack found"):
             resolve_toolpack_path(root=tw_root)
 
-    def test_no_toolpacks_error_suggests_mint(self, tw_root: Path) -> None:
-        with pytest.raises(click.UsageError, match="toolwright mint"):
+    def test_no_toolpacks_error_suggests_create(self, tw_root: Path) -> None:
+        with pytest.raises(click.UsageError, match="toolwright create"):
             resolve_toolpack_path(root=tw_root)
 
     def test_no_toolpacks_dir_error(self, tmp_path: Path) -> None:
@@ -133,7 +132,7 @@ class TestResolutionPriority:
     def test_env_var_beats_config(
         self, tw_root: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        stripe = _make_toolpack(tw_root, "stripe")
+        _make_toolpack(tw_root, "stripe")
         github = _make_toolpack(tw_root, "github")
         config_path = tw_root / "config.yaml"
         config_path.write_text(yaml.dump({"default_toolpack": "stripe"}))
@@ -143,7 +142,7 @@ class TestResolutionPriority:
 
     def test_config_beats_auto_detect(self, tw_root: Path) -> None:
         _make_toolpack(tw_root, "stripe")
-        github = _make_toolpack(tw_root, "github")
+        _make_toolpack(tw_root, "github")
         config_path = tw_root / "config.yaml"
         config_path.write_text(yaml.dump({"default_toolpack": "github"}))
         result = resolve_toolpack_path(root=tw_root)

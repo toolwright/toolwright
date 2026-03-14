@@ -17,7 +17,6 @@ from toolwright.core.health.checker import (
     HealthResult,
 )
 
-
 # ---------------------------------------------------------------------------
 # FailureClass enum
 # ---------------------------------------------------------------------------
@@ -290,7 +289,7 @@ class TestCheckAll:
 
         call_count = 0
 
-        async def mock_probe(method, url, timeout):
+        async def mock_probe(_method, url, _timeout):
             nonlocal call_count
             call_count += 1
             if "/ok" in url:
@@ -318,9 +317,8 @@ class TestCheckAll:
         active = 0
         max_active = 0
 
-        original_send_probe = checker._send_probe
 
-        async def tracking_probe(method, url, timeout):
+        async def tracking_probe(_method, _url, _timeout):
             nonlocal active, max_active
             active += 1
             max_active = max(max_active, active)

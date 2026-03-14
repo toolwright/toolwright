@@ -139,9 +139,8 @@ class TestShipFlowStageApprove:
     """Stage 3: Approve."""
 
     def test_skips_when_all_approved(self, mock_console: Console) -> None:
-        from toolwright.ui.flows.ship import _stage_approve
-
         from toolwright.core.approval.lockfile import ApprovalStatus, ToolApproval
+        from toolwright.ui.flows.ship import _stage_approve
 
         tools = [ToolApproval(
             tool_id="get_users",
@@ -172,9 +171,8 @@ class TestShipFlowStageApprove:
         assert "already approved" in output.lower()
 
     def test_declines_approval_returns_false(self, mock_console: Console) -> None:
-        from toolwright.ui.flows.ship import _stage_approve
-
         from toolwright.core.approval.lockfile import ApprovalStatus, ToolApproval
+        from toolwright.ui.flows.ship import _stage_approve
 
         tools = [ToolApproval(
             tool_id="get_users",

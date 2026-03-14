@@ -7,8 +7,8 @@ from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
-from toolwright.cli.main import cli
 from tests.helpers import write_demo_toolpack
+from toolwright.cli.main import cli
 
 
 def test_doctor_success_on_stdout(tmp_path: Path) -> None:
@@ -21,8 +21,45 @@ def test_doctor_success_on_stdout(tmp_path: Path) -> None:
     )
 
     assert result.exit_code == 0
-    assert "Doctor check passed." in result.stdout
-    assert f"Next: toolwright serve --toolpack {toolpack_file}" in result.stdout
+    # Each passed check should appear with a checkmark
+    assert "tools.json" in result.stdout
+    assert "lockfile" in result.stdout
+    assert "All checks passed." in result.stdout
+    # Next-steps should NOT contain absolute paths
+    assert str(tmp_path) not in result.stdout
+    assert "Next:" in result.stdout
+
+
+def test_doctor_success_shows_individual_checks(tmp_path: Path) -> None:
+    """Doctor success output lists each check that was run."""
+    toolpack_file = write_demo_toolpack(tmp_path)
+    runner = CliRunner()
+
+    result = runner.invoke(
+        cli,
+        ["doctor", "--toolpack", str(toolpack_file), "--runtime", "local"],
+    )
+
+    assert result.exit_code == 0
+    out = result.stdout
+    # Should show checkmarks for each artifact check
+    for label in ("tools.json", "toolsets.yaml", "policy.yaml", "baseline.json"):
+        assert label in out, f"Expected '{label}' in doctor output"
+
+
+def test_doctor_success_uses_relative_paths(tmp_path: Path) -> None:
+    """Next-step hints should use relative or short paths, never absolute."""
+    toolpack_file = write_demo_toolpack(tmp_path)
+    runner = CliRunner()
+
+    result = runner.invoke(
+        cli,
+        ["doctor", "--toolpack", str(toolpack_file), "--runtime", "local"],
+    )
+
+    assert result.exit_code == 0
+    # The absolute tmp_path prefix should not appear in stdout
+    assert str(tmp_path) not in result.stdout
 
 
 def test_doctor_reports_missing_artifacts(tmp_path: Path) -> None:
@@ -127,4 +164,4 @@ def test_doctor_auto_does_not_require_mcp(tmp_path: Path, monkeypatch) -> None:
     )
 
     assert result.exit_code == 0
-    assert "Doctor check passed." in result.stdout
+    assert "All checks passed." in result.stdout

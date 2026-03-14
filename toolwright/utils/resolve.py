@@ -27,9 +27,16 @@ def resolve_toolpack_path(
     # 1. Explicit flag
     if explicit:
         p = Path(explicit)
-        if not p.exists():
-            raise FileNotFoundError(f"Toolpack not found: {p}")
-        return p
+        if p.exists():
+            return p
+
+        # Try as a bare name under .toolwright/toolpacks/{name}/toolpack.yaml
+        resolved_root = root if root is not None else DEFAULT_ROOT
+        name_path = resolved_root / "toolpacks" / explicit / "toolpack.yaml"
+        if name_path.exists():
+            return name_path
+
+        raise FileNotFoundError(f"Toolpack not found: {p}")
 
     # 2. Env var
     env_val = os.environ.get("TOOLWRIGHT_TOOLPACK")
@@ -50,7 +57,7 @@ def resolve_toolpack_path(
         if default:
             p = resolved_root / "toolpacks" / default / "toolpack.yaml"
             if p.exists():
-                return p
+                return Path(p)
 
     # 4. Auto-detect single toolpack
     toolpacks_dir = resolved_root / "toolpacks"
@@ -69,8 +76,8 @@ def resolve_toolpack_path(
     # 5. Nothing found
     raise click.UsageError(
         "No toolpack found. Create one with:\n"
-        "  toolwright mint <url> -a <api-host>\n"
-        "  toolwright capture import <spec> -a <api-host>"
+        "  toolwright create <recipe>          # e.g. github, stripe\n"
+        "  toolwright create --spec <spec>     # from OpenAPI spec"
     )
 
 

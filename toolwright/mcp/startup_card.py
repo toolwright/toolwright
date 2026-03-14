@@ -56,10 +56,11 @@ def render_startup_card(
     for tier in ("low", "medium", "high", "critical"):
         count = risk_counts.get(tier, 0)
         if count:
-            label = tier[:4] if tier != "critical" else "crit"
+            label = tier[:3] if tier != "critical" else "crit"
             risk_parts.append(f"{count} {label}")
     if risk_parts:
-        lines.append(f"  Risk:     {' \u00b7 '.join(risk_parts)}")
+        sep = " \u00b7 "
+        lines.append(f"  Risk:     {sep.join(risk_parts)}")
 
     # Context budget
     lines.append(f"  Context:  ~{context_tokens:,} tokens \u00b7 ~{tokens_per_tool} per tool")

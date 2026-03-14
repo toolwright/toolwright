@@ -69,6 +69,6 @@ def init_flow(
     con.print("[success]Toolwright initialized.[/success]")
     con.print("Next steps:")
     con.print("  Try the demo:        toolwright demo")
-    con.print("  Browser capture:     toolwright mint <url> -a <host>")
-    con.print("  Import HAR/OpenAPI:  toolwright capture import <file> -a <host>")
+    con.print("  Create from recipe:  toolwright create <recipe>       # e.g. toolwright create github")
+    con.print("  Create from spec:    toolwright create --spec <path>  # from an OpenAPI spec")
     echo_summary([cmd], console=con)

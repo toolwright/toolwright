@@ -9,6 +9,8 @@ Replaces test_mint_auth_precheck.py. Covers:
 
 from __future__ import annotations
 
+from contextlib import suppress
+
 import httpx
 import pytest
 
@@ -494,7 +496,7 @@ def test_no_probe_flag_skips_probing() -> None:
 
         # run_mint will fail early because there's no playwright etc, but
         # we only care that _smart_probe was NOT called before it errors.
-        try:
+        with suppress(SystemExit, Exception):
             run_mint(
                 start_url="https://example.com",
                 allowed_hosts=["api.example.com"],
@@ -509,8 +511,6 @@ def test_no_probe_flag_skips_probing() -> None:
                 verbose=False,
                 no_probe=True,
             )
-        except (SystemExit, Exception):
-            pass  # Expected — we only check the mock
         mock_probe.assert_not_called()
 
 
@@ -521,7 +521,7 @@ def test_probe_runs_by_default_regardless_of_auth_profile() -> None:
     with patch("toolwright.cli.mint._smart_probe") as mock_probe:
         from toolwright.cli.mint import run_mint
 
-        try:
+        with suppress(SystemExit, Exception):
             run_mint(
                 start_url="https://example.com",
                 allowed_hosts=["api.example.com"],
@@ -536,8 +536,6 @@ def test_probe_runs_by_default_regardless_of_auth_profile() -> None:
                 verbose=False,
                 auth_profile="nonexistent",
             )
-        except (SystemExit, Exception):
-            pass  # Expected — auth profile doesn't exist
         mock_probe.assert_called_once()
 
 

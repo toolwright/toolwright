@@ -13,6 +13,39 @@ def _default_breaker_state_path() -> Path:
     return resolve_root() / "state" / "circuit_breakers.json"
 
 
+def _default_lockfile_path() -> str | None:
+    """Return default lockfile path if it exists, else None."""
+    candidate = Path.cwd() / "toolwright.lock.yaml"
+    if candidate.exists():
+        return str(candidate)
+    return None
+
+
+def _validate_tool_in_lockfile(tool_id: str, lockfile_path: str | None) -> None:
+    """Validate that tool_id exists in the lockfile. Raise ClickException if not found."""
+    if lockfile_path is None:
+        return  # No lockfile specified or found — skip validation
+
+    path = Path(lockfile_path)
+    if not path.exists():
+        return  # Lockfile path given but file missing — skip validation
+
+    from toolwright.core.approval.lockfile import LockfileManager
+
+    mgr = LockfileManager(lockfile_path=path)
+    lockfile = mgr.load()
+
+    # Check by key, tool_id, signature_id, or name
+    if mgr.get_tool(tool_id) is not None:
+        return
+
+    available = sorted(t.tool_id for t in lockfile.tools.values())
+    available_str = ", ".join(available) if available else "(none)"
+    raise click.ClickException(
+        f"Tool '{tool_id}' not found in lockfile. Available tools: {available_str}"
+    )
+
+
 def register_kill_commands(*, cli: click.Group) -> None:
     """Register kill-related commands on the provided CLI group."""
 
@@ -25,8 +58,22 @@ def register_kill_commands(*, cli: click.Group) -> None:
         default=str(_default_breaker_state_path()),
         help="Path to circuit breaker state file.",
     )
+    @click.option(
+        "--lockfile",
+        type=click.Path(),
+        default=None,
+        help="Path to lockfile for tool ID validation (default: auto-detect).",
+    )
     @click.option("--yes", "-y", is_flag=True, default=False, help="Skip confirmation prompt.")
-    def kill(tool_id: str, reason: str, breaker_state: str, yes: bool) -> None:
+    @click.pass_context
+    def kill(
+        ctx: click.Context,
+        tool_id: str,
+        reason: str,
+        breaker_state: str,
+        lockfile: str | None,
+        yes: bool,
+    ) -> None:
         """Kill a tool by forcing its circuit breaker open.
 
         The tool will be blocked from execution until manually re-enabled
@@ -37,7 +84,14 @@ def register_kill_commands(*, cli: click.Group) -> None:
           toolwright kill dangerous_tool --reason "broken endpoint"
           toolwright kill search --reason "rate limiting detected"
         """
-        if not yes:
+        if not tool_id or not tool_id.strip():
+            raise click.ClickException("Tool ID must not be empty.")
+
+        lockfile_resolved = lockfile or _default_lockfile_path()
+        _validate_tool_in_lockfile(tool_id, lockfile_resolved)
+
+        no_interactive = ctx.obj.get("no_interactive_explicit", False) if ctx.obj else False
+        if not yes and not no_interactive:
             click.confirm(f"Kill tool '{tool_id}'?", default=False, abort=True)
 
         from toolwright.core.kill.breaker import CircuitBreakerRegistry
@@ -54,16 +108,32 @@ def register_kill_commands(*, cli: click.Group) -> None:
         default=str(_default_breaker_state_path()),
         help="Path to circuit breaker state file.",
     )
-    def enable(tool_id: str, breaker_state: str) -> None:
+    @click.option(
+        "--lockfile",
+        type=click.Path(),
+        default=None,
+        help="Path to lockfile for tool ID validation (default: auto-detect).",
+    )
+    def enable(tool_id: str, breaker_state: str, lockfile: str | None) -> None:
         """Re-enable a killed tool by resetting its circuit breaker.
 
         \b
         Examples:
           toolwright enable dangerous_tool
         """
+        if not tool_id or not tool_id.strip():
+            raise click.ClickException("Tool ID must not be empty.")
+
+        lockfile_resolved = lockfile or _default_lockfile_path()
+        _validate_tool_in_lockfile(tool_id, lockfile_resolved)
+
         from toolwright.core.kill.breaker import CircuitBreakerRegistry
 
         reg = CircuitBreakerRegistry(state_path=Path(breaker_state))
+        breaker = reg.get_breaker(tool_id)
+        if breaker is None or breaker.state == "closed":
+            click.echo(f"Tool '{tool_id}' is not currently killed.")
+            return
         reg.enable_tool(tool_id)
         click.echo(f"Tool '{tool_id}' enabled (circuit breaker closed).")
 
@@ -112,6 +182,9 @@ def register_kill_commands(*, cli: click.Group) -> None:
         Examples:
           toolwright breaker-status search
         """
+        if not tool_id or not tool_id.strip():
+            raise click.ClickException("Tool ID must not be empty.")
+
         from toolwright.core.kill.breaker import CircuitBreakerRegistry
 
         reg = CircuitBreakerRegistry(state_path=Path(breaker_state))

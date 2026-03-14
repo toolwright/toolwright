@@ -23,11 +23,9 @@ import pytest
 
 from toolwright.core.network_safety import (
     RuntimeBlockError,
-    is_ip_allowed,
     validate_network_target,
     validate_url_scheme,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -45,7 +43,7 @@ def _mock_resolved_ips(*addrs: str):
     """Return a mock replacement for ``resolved_ips`` that returns *addrs*."""
     ips = [_ip(a) for a in addrs]
 
-    def _fake(host: str):
+    def _fake(_host: str):
         return ips
 
     return _fake
@@ -66,20 +64,18 @@ class TestMetadataEndpointsHardBlocked:
         with patch(
             "toolwright.core.network_safety.resolved_ips",
             _mock_resolved_ips("169.254.169.254"),
-        ):
-            with pytest.raises(RuntimeBlockError, match="metadata"):
-                validate_network_target("metadata.internal", [])
+        ), pytest.raises(RuntimeBlockError, match="metadata"):
+            validate_network_target("metadata.internal", [])
 
     def test_classic_metadata_not_overridable_by_allowlist(self) -> None:
         """Even with the full link-local range allowed, 169.254.169.254 stays blocked."""
         with patch(
             "toolwright.core.network_safety.resolved_ips",
             _mock_resolved_ips("169.254.169.254"),
-        ):
-            with pytest.raises(RuntimeBlockError, match="metadata"):
-                validate_network_target(
-                    "metadata.internal", [_net("169.254.0.0/16")]
-                )
+        ), pytest.raises(RuntimeBlockError, match="metadata"):
+            validate_network_target(
+                "metadata.internal", [_net("169.254.0.0/16")]
+            )
 
     # -- AWS ECS metadata ----------------------------------------------------
 
@@ -88,20 +84,18 @@ class TestMetadataEndpointsHardBlocked:
         with patch(
             "toolwright.core.network_safety.resolved_ips",
             _mock_resolved_ips("169.254.170.2"),
-        ):
-            with pytest.raises(RuntimeBlockError, match="metadata"):
-                validate_network_target("ecs-metadata.internal", [])
+        ), pytest.raises(RuntimeBlockError, match="metadata"):
+            validate_network_target("ecs-metadata.internal", [])
 
     def test_ecs_metadata_not_overridable_by_allowlist(self) -> None:
         """Even with the full link-local range allowed, 169.254.170.2 stays blocked."""
         with patch(
             "toolwright.core.network_safety.resolved_ips",
             _mock_resolved_ips("169.254.170.2"),
-        ):
-            with pytest.raises(RuntimeBlockError, match="metadata"):
-                validate_network_target(
-                    "ecs-metadata.internal", [_net("169.254.0.0/16")]
-                )
+        ), pytest.raises(RuntimeBlockError, match="metadata"):
+            validate_network_target(
+                "ecs-metadata.internal", [_net("169.254.0.0/16")]
+            )
 
     # -- AWS IPv6 metadata ---------------------------------------------------
 
@@ -110,20 +104,18 @@ class TestMetadataEndpointsHardBlocked:
         with patch(
             "toolwright.core.network_safety.resolved_ips",
             _mock_resolved_ips("fd00:ec2::254"),
-        ):
-            with pytest.raises(RuntimeBlockError, match="metadata"):
-                validate_network_target("ipv6-metadata.internal", [])
+        ), pytest.raises(RuntimeBlockError, match="metadata"):
+            validate_network_target("ipv6-metadata.internal", [])
 
     def test_ipv6_metadata_not_overridable_by_allowlist(self) -> None:
         """Even with the fd00::/8 ULA range allowed, fd00:ec2::254 stays blocked."""
         with patch(
             "toolwright.core.network_safety.resolved_ips",
             _mock_resolved_ips("fd00:ec2::254"),
-        ):
-            with pytest.raises(RuntimeBlockError, match="metadata"):
-                validate_network_target(
-                    "ipv6-metadata.internal", [_net("fd00::/8")]
-                )
+        ), pytest.raises(RuntimeBlockError, match="metadata"):
+            validate_network_target(
+                "ipv6-metadata.internal", [_net("fd00::/8")]
+            )
 
     # -- IP literal direct invocation ----------------------------------------
 
@@ -150,25 +142,22 @@ class TestPrivateCIDRBehavior:
         with patch(
             "toolwright.core.network_safety.resolved_ips",
             _mock_resolved_ips("10.0.0.1"),
-        ):
-            with pytest.raises(RuntimeBlockError):
-                validate_network_target("internal.corp", [])
+        ), pytest.raises(RuntimeBlockError):
+            validate_network_target("internal.corp", [])
 
     def test_private_172_16_blocked_by_default(self) -> None:
         with patch(
             "toolwright.core.network_safety.resolved_ips",
             _mock_resolved_ips("172.16.5.10"),
-        ):
-            with pytest.raises(RuntimeBlockError):
-                validate_network_target("internal.corp", [])
+        ), pytest.raises(RuntimeBlockError):
+            validate_network_target("internal.corp", [])
 
     def test_private_192_168_blocked_by_default(self) -> None:
         with patch(
             "toolwright.core.network_safety.resolved_ips",
             _mock_resolved_ips("192.168.1.1"),
-        ):
-            with pytest.raises(RuntimeBlockError):
-                validate_network_target("router.local", [])
+        ), pytest.raises(RuntimeBlockError):
+            validate_network_target("router.local", [])
 
     def test_private_10_allowed_when_permitted(self) -> None:
         with patch(
@@ -197,17 +186,15 @@ class TestLoopbackBehavior:
         with patch(
             "toolwright.core.network_safety.resolved_ips",
             _mock_resolved_ips("127.0.0.1"),
-        ):
-            with pytest.raises(RuntimeBlockError):
-                validate_network_target("localhost", [])
+        ), pytest.raises(RuntimeBlockError):
+            validate_network_target("localhost", [])
 
     def test_ipv6_loopback_blocked(self) -> None:
         with patch(
             "toolwright.core.network_safety.resolved_ips",
             _mock_resolved_ips("::1"),
-        ):
-            with pytest.raises(RuntimeBlockError):
-                validate_network_target("localhost", [])
+        ), pytest.raises(RuntimeBlockError):
+            validate_network_target("localhost", [])
 
 
 # ---------------------------------------------------------------------------
@@ -223,9 +210,8 @@ class TestLinkLocalBehavior:
         with patch(
             "toolwright.core.network_safety.resolved_ips",
             _mock_resolved_ips("169.254.1.2"),
-        ):
-            with pytest.raises(RuntimeBlockError):
-                validate_network_target("link-local.test", [_net("169.254.0.0/16")])
+        ), pytest.raises(RuntimeBlockError):
+            validate_network_target("link-local.test", [_net("169.254.0.0/16")])
 
 
 # ---------------------------------------------------------------------------

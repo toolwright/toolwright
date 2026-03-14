@@ -6,12 +6,18 @@ hosts:
     auth_scheme: bearer
 extra_headers: {}
 setup_instructions_url: https://docs.stripe.com/api
-openapi_spec_url: null
+openapi_spec_url: https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json
 rate_limit_hints: "100 req/sec in live mode"
 usage_notes: "Uses Bearer token with secret key. Test mode keys start with sk_test_."
 rule_templates:
   - crud-safety
   - rate-control
+auth_guide:
+  host: api.stripe.com
+  scheme: bearer
+  create_url: https://dashboard.stripe.com/apikeys
+  scopes_hint: "Use a test mode key (starts with sk_test_) for development"
+  instructions: "Copy your Secret key from the Stripe dashboard"
 probe_hints:
   expect_auth: true
-  expect_openapi: false
+  expect_openapi: true

@@ -10,12 +10,19 @@ import yaml
 _RECIPES_DIR = Path(__file__).parent
 
 
+def _load_yaml_dict(path: Path) -> dict[str, Any]:
+    with open(path, encoding="utf-8") as f:
+        data = yaml.safe_load(f) or {}
+    if not isinstance(data, dict):
+        raise ValueError(f"Recipe file must contain a mapping: {path}")
+    return dict(data)
+
+
 def list_recipes() -> list[dict[str, Any]]:
     """Return metadata for all bundled recipes."""
     results = []
     for path in sorted(_RECIPES_DIR.glob("*.yaml")):
-        with open(path) as f:
-            data = yaml.safe_load(f)
+        data = _load_yaml_dict(path)
         results.append({
             "name": data["name"],
             "description": data.get("description", ""),
@@ -33,5 +40,4 @@ def load_recipe(name: str) -> dict[str, Any]:
             f"Unknown recipe: {name}. "
             f"Available: {', '.join(available)}"
         )
-    with open(path) as f:
-        return yaml.safe_load(f)
+    return _load_yaml_dict(path)

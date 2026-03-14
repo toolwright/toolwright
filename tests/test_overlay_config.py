@@ -1,7 +1,5 @@
 """Tests for overlay config persistence and server name derivation."""
 
-import pytest
-import yaml
 
 
 class TestDeriveServerName:

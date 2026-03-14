@@ -7,9 +7,9 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
+from tests.helpers import write_demo_toolpack
 from toolwright.cli.main import cli
 from toolwright.cli.verify import _score_candidate
-from tests.helpers import write_demo_toolpack
 
 
 def test_verify_provenance_generates_report(tmp_path: Path) -> None:
@@ -71,7 +71,8 @@ def test_verify_provenance_requires_inputs(tmp_path: Path) -> None:
             "provenance",
         ],
     )
-    assert result.exit_code == 3
+    assert result.exit_code == 1
+    assert "--playbook is required" in result.output
 
 
 def test_verify_provenance_rejects_unknown_playbook_step(tmp_path: Path) -> None:
@@ -147,6 +148,65 @@ def test_verify_provenance_accepts_versioned_assertion_payload(tmp_path: Path) -
     payload = json.loads((output_dir / "verify_tp_demo.json").read_text(encoding="utf-8"))
     assert payload["provenance"]["playbook_version"] == "1.0"
     assert payload["provenance"]["assertions_version"] == "1.0"
+
+
+def test_verify_all_without_playbook_gives_clean_error(tmp_path: Path) -> None:
+    """--mode all (default) without --playbook should exit 1 with a clear message, not crash."""
+    toolpack = write_demo_toolpack(tmp_path)
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "verify",
+            "--toolpack",
+            str(toolpack),
+            "--mode",
+            "all",
+        ],
+    )
+    assert result.exit_code == 1
+    assert "--playbook is required" in result.output
+
+
+def test_verify_provenance_without_playbook_gives_clean_error(tmp_path: Path) -> None:
+    """--mode provenance without --playbook should exit cleanly with a clear message."""
+    toolpack = write_demo_toolpack(tmp_path)
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "verify",
+            "--toolpack",
+            str(toolpack),
+            "--mode",
+            "provenance",
+        ],
+    )
+    assert result.exit_code == 1
+    assert "--playbook is required" in result.output
+
+
+def test_verify_contracts_mode_without_playbook_succeeds(tmp_path: Path) -> None:
+    """--mode contracts should work fine without --playbook."""
+    toolpack = write_demo_toolpack(tmp_path)
+    output_dir = tmp_path / "reports"
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "verify",
+            "--toolpack",
+            str(toolpack),
+            "--mode",
+            "contracts",
+            "--no-strict",
+            "--output",
+            str(output_dir),
+        ],
+    )
+    # contracts mode doesn't require playbook, so it should not error about playbook
+    assert "--playbook is required" not in result.output
+    assert "Verification complete:" in result.output
 
 
 def test_provenance_scoring_does_not_use_assertion_text_as_content_match() -> None:

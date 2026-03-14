@@ -16,7 +16,7 @@ from toolwright.core.drift.shape_diff import (
     diff_shapes,
     overall_severity,
 )
-from toolwright.core.drift.shape_inference import InferenceMetadata, merge_observation
+from toolwright.core.drift.shape_inference import InferenceMetadata
 from toolwright.models.shape import FieldShape, ShapeModel
 
 
@@ -688,7 +688,7 @@ class TestEmptyArrayParentNotSkipped:
 
         # .items itself should still be present and compared
         # .items[] should be skipped (child of empty array)
-        items_changes = [c for c in changes if c.path == ".items"]
+        [c for c in changes if c.path == ".items"]
         items_bracket_changes = [c for c in changes if c.path == ".items[]"]
         assert len(items_bracket_changes) == 0  # skipped
 

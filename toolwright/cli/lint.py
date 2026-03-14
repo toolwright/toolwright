@@ -54,7 +54,7 @@ def run_lint(
         policy_payload = _load_yaml(resolved_policy_path)
     except (FileNotFoundError, ValueError, OSError) as exc:
         click.echo(f"Error: {exc}", err=True)
-        sys.exit(2)
+        sys.exit(1)
 
     issues: list[LintIssue] = []
     issues.extend(_lint_sensitive_actions(tools_payload))

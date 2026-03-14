@@ -2,8 +2,6 @@
 
 from click.testing import CliRunner
 
-import pytest
-
 
 class TestWrapCommandParsing:
     def test_wrap_help(self):
@@ -37,6 +35,19 @@ class TestWrapCommandParsing:
         # Should get past argument parsing
         # (may fail later due to no actual server)
         assert "Unknown" not in result.output or result.exit_code != 2
+
+    def test_wrap_accepts_dash_args_for_upstream(self):
+        """M12: 'toolwright wrap npx -y ...' must not fail on the -y flag."""
+        from toolwright.cli.commands_wrap import wrap_command
+
+        runner = CliRunner()
+        result = runner.invoke(
+            wrap_command,
+            ["npx", "-y", "@modelcontextprotocol/server-github", "--name", "gh", "--dry-run"],
+            catch_exceptions=True,
+        )
+        # Should parse correctly — exit 2 means Click rejected the args
+        assert result.exit_code != 2, f"Click rejected -y flag: {result.output}"
 
     def test_wrap_url_option_parsing(self):
         """Verify --url is parsed correctly (don't try to actually connect)."""

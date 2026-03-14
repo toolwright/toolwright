@@ -163,6 +163,65 @@ class TestDashboardStatusWidget:
         assert "Verification: pass" in output
         assert "Tools: 8" in output
 
+    def test_sealed_with_blocked_shows_warn_not_ok(self) -> None:
+        """M15: status should show [WARN] not [OK] when lockfile is sealed but has blocked tools."""
+        from toolwright.ui.ops import StatusModel
+        from toolwright.ui.views.status import render_plain
+
+        model = StatusModel(
+            toolpack_id="my-api",
+            toolpack_path="/tmp/tp.yaml",
+            root="/tmp",
+            lockfile_state="sealed",
+            lockfile_path="/tmp/lockfile.yaml",
+            approved_count=5,
+            blocked_count=2,
+            pending_count=0,
+            has_baseline=True,
+            baseline_age_seconds=3600.0,
+            drift_state="clean",
+            verification_state="pass",
+            has_mcp_config=True,
+            tool_count=7,
+            alerts=[],
+        )
+
+        output = render_plain(model)
+        # Find the Lockfile line
+        lockfile_line = [ln for ln in output.splitlines() if "Lockfile" in ln][0]
+        # Should NOT show [OK] when there are blocked tools
+        assert "[OK]" not in lockfile_line, (
+            f"Lockfile with blocked tools should not show [OK]: {lockfile_line}"
+        )
+        assert "[WARN]" in lockfile_line
+
+    def test_sealed_no_blocked_shows_ok(self) -> None:
+        """Sealed lockfile with no blocked tools should show [OK]."""
+        from toolwright.ui.ops import StatusModel
+        from toolwright.ui.views.status import render_plain
+
+        model = StatusModel(
+            toolpack_id="my-api",
+            toolpack_path="/tmp/tp.yaml",
+            root="/tmp",
+            lockfile_state="sealed",
+            lockfile_path="/tmp/lockfile.yaml",
+            approved_count=5,
+            blocked_count=0,
+            pending_count=0,
+            has_baseline=True,
+            baseline_age_seconds=3600.0,
+            drift_state="clean",
+            verification_state="pass",
+            has_mcp_config=True,
+            tool_count=5,
+            alerts=[],
+        )
+
+        output = render_plain(model)
+        lockfile_line = [ln for ln in output.splitlines() if "Lockfile" in ln][0]
+        assert "[OK]" in lockfile_line
+
     def test_next_step_computed_from_engine(self) -> None:
         """Verify next-step is computed via compute_next_steps, not a model attr."""
         from toolwright.ui.views.next_steps import NextStepsInput, compute_next_steps

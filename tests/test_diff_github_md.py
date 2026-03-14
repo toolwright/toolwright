@@ -7,9 +7,9 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
+from tests.helpers import write_demo_toolpack
 from toolwright.cli.main import cli
 from toolwright.core.approval import LockfileManager
-from tests.helpers import write_demo_toolpack
 
 
 def _append_write_action(tools_path: Path) -> None:

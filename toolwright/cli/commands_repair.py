@@ -17,16 +17,12 @@ STALENESS_THRESHOLD_SECONDS = 3600
 def register_repair_commands(*, cli: click.Group) -> None:
     """Register the top-level repair command group."""
 
-    @cli.group()
-    def repair() -> None:
-        """Diagnose, plan, and apply fixes for a governed toolpack.
-
-        \b
-        Subcommands:
-          diagnose  Diagnose issues from audit logs, drift, and verify reports
-          plan      Show the current repair plan (Terraform-style)
-          apply     Apply patches from the repair plan
-        """
+    @cli.group(invoke_without_command=True)
+    @click.pass_context
+    def repair(ctx: click.Context) -> None:
+        """Diagnose, plan, and apply fixes for a governed toolpack."""
+        if ctx.invoked_subcommand is None:
+            click.echo(ctx.get_help())
 
     @repair.command(
         epilog="""\b
@@ -39,7 +35,7 @@ Examples:
     )
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolved if not given)",
     )
     @click.option(
@@ -112,7 +108,7 @@ def register_repair_plan_apply(*, repair_group: click.Group) -> None:
         Reads the repair plan from .toolwright/state/repair_plan.json and
         displays patches grouped by safety level: SAFE, APPROVAL_REQUIRED, MANUAL.
 
-        \\b
+        \b
         Examples:
           toolwright repair plan
           toolwright repair plan --root /path/to/project
@@ -199,7 +195,7 @@ def register_repair_plan_apply(*, repair_group: click.Group) -> None:
 
         Warns if the plan is stale (older than 1 hour).
 
-        \\b
+        \b
         Examples:
           toolwright repair apply
           toolwright repair apply --root /path/to/project
@@ -208,7 +204,7 @@ def register_repair_plan_apply(*, repair_group: click.Group) -> None:
         plan_file = project_root / ".toolwright" / "state" / "repair_plan.json"
 
         if not plan_file.exists():
-            click.echo("No repair plan found. Run `toolwright repair plan` first.")
+            click.echo("No repair plan found. Run `toolwright repair diagnose` first.")
             return
 
         try:
@@ -248,12 +244,34 @@ def register_repair_plan_apply(*, repair_group: click.Group) -> None:
         approval_patches = [p for p in patches if p.get("kind") == "approval_required"]
         manual_patches = [p for p in patches if p.get("kind") == "manual"]
 
-        # SAFE patches: apply automatically (stub - just report)
+        # SAFE patches: apply automatically
+        import shlex
+        import subprocess
+
         if safe_patches:
             click.echo(click.style(f"Applying {len(safe_patches)} SAFE patch(es):", fg="green"))
             for patch in safe_patches:
-                click.echo(f"  ✓ {patch.get('title', 'Untitled')}")
-                click.echo(f"    $ {patch.get('cli_command', '')}")
+                title = patch.get("title", "Untitled")
+                cli_cmd = patch.get("cli_command", "")
+                click.echo(f"  → {title}")
+                click.echo(f"    $ {cli_cmd}")
+                if cli_cmd:
+                    try:
+                        result = subprocess.run(
+                            shlex.split(cli_cmd),
+                            capture_output=True,
+                            text=True,
+                            timeout=60,
+                        )
+                        if result.returncode == 0:
+                            click.echo(click.style("    ✓ Applied", fg="green"))
+                        else:
+                            stderr = result.stderr.strip()
+                            click.echo(click.style(f"    ✗ Failed (exit {result.returncode})", fg="red"))
+                            if stderr:
+                                click.echo(f"      {stderr[:200]}")
+                    except Exception as exc:
+                        click.echo(click.style(f"    ✗ Error: {exc}", fg="red"))
             click.echo()
 
         # APPROVAL_REQUIRED patches: prompt user

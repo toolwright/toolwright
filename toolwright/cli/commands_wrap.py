@@ -10,8 +10,8 @@ from typing import Any
 import click
 
 
-@click.command("wrap")
-@click.argument("command_args", nargs=-1)
+@click.command("wrap", context_settings={"ignore_unknown_options": True})
+@click.argument("command_args", nargs=-1, type=click.UNPROCESSED)
 @click.option("--name", default=None, help="Server name (auto-derived from command if omitted)")
 @click.option("--url", default=None, help="Streamable HTTP target URL")
 @click.option(
@@ -43,9 +43,9 @@ def wrap_command(
 
     \b
     Examples:
-      toolwright wrap npx -y @modelcontextprotocol/server-github
+      toolwright wrap -- npx -y @modelcontextprotocol/server-github
       toolwright wrap --url https://mcp.sentry.dev/mcp --header "Authorization: Bearer xxx"
-      toolwright wrap --name github --auto-approve npx -y @modelcontextprotocol/server-github
+      toolwright wrap --name github --auto-approve -- npx -y @modelcontextprotocol/server-github
       toolwright wrap                    # Uses saved .toolwright/wrap/<name>/wrap.yaml
     """
     from toolwright.models.overlay import TargetType, WrapConfig
@@ -83,7 +83,7 @@ def wrap_command(
             )
             sys.exit(1)
         config = saved
-        click.echo(f"Using saved config for '{config.server_name}'")
+        click.echo(f"Using saved config for '{config.server_name}'", err=True)
         _run_wrap(config, dry_run, rules, circuit_breaker, use_http, port)
         return
 
@@ -147,7 +147,7 @@ async def _async_run_wrap(
     from toolwright.overlay.server import OverlayServer
 
     # 1. Connect to upstream
-    click.echo(f"Connecting to upstream server '{config.server_name}'...")
+    click.echo(f"Connecting to upstream server '{config.server_name}'...", err=True)
     connection = WrappedConnection(config)
     try:
         await connection.connect()
@@ -155,12 +155,17 @@ async def _async_run_wrap(
         click.echo(f"Error: Failed to connect to upstream: {e}", err=True)
         sys.exit(1)
 
-    click.echo(f"Connected to '{config.server_name}'")
+    click.echo(f"Connected to '{config.server_name}'", err=True)
 
     # 2. Discover tools
-    click.echo("Discovering tools...")
-    discovery = await discover_tools(connection, config)
-    click.echo(f"Found {len(discovery.tools)} tools")
+    click.echo("Discovering tools...", err=True)
+    try:
+        discovery = await discover_tools(connection, config)
+    except Exception as e:
+        click.echo(f"Error: Failed to discover tools from upstream: {e}", err=True)
+        await connection.close()
+        sys.exit(1)
+    click.echo(f"Found {len(discovery.tools)} tools", err=True)
 
     # Show risk breakdown
     risk_counts: dict[str, int] = {}
@@ -168,7 +173,7 @@ async def _async_run_wrap(
         risk_counts[tool.risk_tier] = risk_counts.get(tool.risk_tier, 0) + 1
     for tier in ["critical", "high", "medium", "low"]:
         if tier in risk_counts:
-            click.echo(f"  {tier}: {risk_counts[tier]}")
+            click.echo(f"  {tier}: {risk_counts[tier]}", err=True)
 
     # 3. Build manifest and sync lockfile
     manifest = build_synthetic_manifest(discovery, config)
@@ -185,9 +190,9 @@ async def _async_run_wrap(
     modified_count = len(changes.get("modified", []))
 
     if new_count:
-        click.echo(f"\n{new_count} new tool(s) pending approval")
+        click.echo(f"\n{new_count} new tool(s) pending approval", err=True)
     if modified_count:
-        click.echo(f"{modified_count} tool(s) changed, pending re-approval")
+        click.echo(f"{modified_count} tool(s) changed, pending re-approval", err=True)
 
     # 4. Auto-approve low-risk if requested
     if config.auto_approve_safe:
@@ -206,13 +211,13 @@ async def _async_run_wrap(
                     approved_count += 1
             if approved_count:
                 lockfile.save()
-                click.echo(f"Auto-approved {approved_count} low-risk tool(s)")
+                click.echo(f"Auto-approved {approved_count} low-risk tool(s)", err=True)
 
     # 5. Load approved tools
     server.load_tools_from_discovery(discovery)
     approved = len(server.actions)
     total = len(discovery.tools)
-    click.echo(f"\nServing {approved}/{total} approved tools")
+    click.echo(f"\nServing {approved}/{total} approved tools", err=True)
 
     if approved == 0:
         click.echo(
@@ -224,18 +229,18 @@ async def _async_run_wrap(
 
     # 6. Print client config
     client_config = build_client_config(config, proxy_port=port)
-    click.echo("\n--- Client Configuration ---")
-    click.echo("\nClaude Desktop (claude_desktop_config.json):")
-    click.echo(json.dumps(client_config["claude_desktop"], indent=2))
-    click.echo(f"\nClaude Code:\n  {client_config['claude_code']}")
+    click.echo("\n--- Client Configuration ---", err=True)
+    click.echo("\nClaude Desktop (claude_desktop_config.json):", err=True)
+    click.echo(json.dumps(client_config["claude_desktop"], indent=2), err=True)
+    click.echo(f"\nClaude Code:\n  {client_config['claude_code']}", err=True)
 
     # 7. Run server
     if dry_run:
-        click.echo("\n[dry-run] Would start MCP server. Exiting.")
+        click.echo("\n[dry-run] Would start MCP server. Exiting.", err=True)
         await connection.close()
         return
 
-    click.echo(f"\nStarting Toolwright overlay proxy for '{config.server_name}'...")
+    click.echo(f"\nStarting Toolwright overlay proxy for '{config.server_name}'...", err=True)
     try:
         if use_http:
             server.run_http(host="127.0.0.1", port=port)

@@ -9,11 +9,11 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any, Optional
+from enum import StrEnum
+from typing import Any
 
 
-class WorkItemKind(str, Enum):
+class WorkItemKind(StrEnum):
     TOOL_APPROVAL = "tool_approval"
     CONFIRMATION = "confirmation"
     REPAIR_PATCH = "repair_patch"
@@ -22,7 +22,7 @@ class WorkItemKind(str, Enum):
     CAPABILITY_REQUEST = "capability_request"
 
 
-class WorkItemStatus(str, Enum):
+class WorkItemStatus(StrEnum):
     OPEN = "open"
     APPROVED = "approved"
     DENIED = "denied"
@@ -36,7 +36,7 @@ class WorkItemAction:
     action_id: str
     label: str
     style: str = "default"  # "primary", "danger", "default"
-    confirm_text: Optional[str] = None
+    confirm_text: str | None = None
 
 
 @dataclass
@@ -59,7 +59,7 @@ class WorkItem:
     # Risk and urgency
     risk_tier: str = "medium"
     is_blocking: bool = False
-    blocking_session_id: Optional[str] = None
+    blocking_session_id: str | None = None
 
     # Evidence: minimum context needed to decide
     evidence: dict[str, Any] = field(default_factory=dict)
@@ -69,12 +69,12 @@ class WorkItem:
 
     # Timestamps
     created_at: float = field(default_factory=time.time)
-    resolved_at: Optional[float] = None
-    expires_at: Optional[float] = None
+    resolved_at: float | None = None
+    expires_at: float | None = None
 
     # Audit
-    resolved_by: Optional[str] = None
-    resolution_reason: Optional[str] = None
+    resolved_by: str | None = None
+    resolution_reason: str | None = None
 
     def is_terminal(self) -> bool:
         return self.status in (

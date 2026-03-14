@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import json
 
-import pytest
-
 from toolwright.core.reconcile.event_log import ReconcileEventLog
 from toolwright.models.reconcile import EventKind, ReconcileEvent
 

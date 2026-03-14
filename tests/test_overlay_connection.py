@@ -62,7 +62,7 @@ class TestWrappedConnectionLifecycle:
             "toolwright.overlay.connection._connect_stdio",
             new_callable=AsyncMock,
             return_value=mock_session,
-        ) as mock_connect:
+        ):
             await conn.connect()
             assert conn.is_connected is True
 
@@ -164,7 +164,7 @@ class TestWrappedConnectionCalls:
         call_count = 0
         max_concurrent = 0
 
-        async def slow_call(name, args):
+        async def slow_call(_name, _args):
             nonlocal call_count, max_concurrent
             call_count += 1
             current = call_count
@@ -209,7 +209,7 @@ class TestWrappedConnectionReconnect:
 
         connect_count = 0
 
-        async def mock_connect_fn(config, stack):
+        async def mock_connect_fn(_config, _stack):
             nonlocal connect_count
             connect_count += 1
             return mock_session

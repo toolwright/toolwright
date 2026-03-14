@@ -10,14 +10,11 @@ import json
 import time
 from pathlib import Path
 
-import pytest
-
 from toolwright.core.kill.breaker import (
     BreakerState,
     CircuitBreakerRegistry,
     ToolCircuitBreaker,
 )
-
 
 # ---------------------------------------------------------------------------
 # Tests: BreakerState enum

@@ -9,16 +9,12 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from toolwright.core.correct.engine import RuleEngine
-from toolwright.core.correct.session import SessionHistory
 from toolwright.mcp.server import ToolwrightMCPServer
 from toolwright.models.decision import ReasonCode
-from toolwright.models.rule import RuleEvaluation, RuleKind, RuleViolation
-
+from toolwright.models.rule import RuleKind
 
 # ---------------------------------------------------------------------------
 # Fixtures

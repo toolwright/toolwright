@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from toolwright.ui.discovery import find_lockfiles, find_toolpacks
+from toolwright.ui.discovery import (
+    find_lockfiles,
+    find_toolpacks,
+    lockfile_labels,
+    toolpack_labels,
+)
 
 
 class TestFindToolpacks:
@@ -138,3 +143,54 @@ class TestFindLockfiles:
         # Should be sorted by path
         names = [r.name for r in results]
         assert all(n.startswith("toolwright.lock") for n in names)
+
+
+class TestFriendlyLabels:
+    """Selector labels should stay readable and avoid raw absolute paths."""
+
+    def test_toolpack_labels_disambiguate_duplicate_display_names(self, tmp_path: Path) -> None:
+        root = tmp_path / ".toolwright"
+        first = root / "toolpacks" / "tp_123"
+        second = root / "toolpacks" / "tp_456"
+        first.mkdir(parents=True)
+        second.mkdir(parents=True)
+        (first / "toolpack.yaml").write_text(
+            "toolpack_id: tp_123\n"
+            "display_name: Toolwright Demo\n"
+        )
+        (second / "toolpack.yaml").write_text(
+            "toolpack_id: tp_456\n"
+            "display_name: Toolwright Demo\n"
+        )
+
+        labels = toolpack_labels(
+            [first / "toolpack.yaml", second / "toolpack.yaml"],
+            root=root,
+        )
+
+        assert labels == [
+            "Toolwright Demo [tp_123]",
+            "Toolwright Demo [tp_456]",
+        ]
+
+    def test_lockfile_labels_show_toolpack_name_and_state(self, tmp_path: Path) -> None:
+        root = tmp_path / ".toolwright"
+        toolpack = root / "toolpacks" / "github"
+        lock_dir = toolpack / "lockfile"
+        lock_dir.mkdir(parents=True)
+        (toolpack / "toolpack.yaml").write_text(
+            "toolpack_id: github\n"
+            "allowed_hosts:\n"
+            "  - api.github.com\n"
+        )
+        pending = lock_dir / "toolwright.lock.pending.yaml"
+        approved = lock_dir / "toolwright.lock.yaml"
+        pending.write_text("version: 1")
+        approved.write_text("version: 1")
+
+        labels = lockfile_labels([approved, pending], root=root)
+
+        assert labels == [
+            "github approved lockfile",
+            "github pending lockfile",
+        ]

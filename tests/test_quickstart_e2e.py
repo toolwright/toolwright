@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 from click.testing import CliRunner
@@ -85,7 +84,7 @@ class TestCreateUnknownApiError:
 class TestGateStatusAfterCreate:
     """Verify gate status works after create."""
 
-    def test_gate_status_shows_tools(self, cli_runner, tmp_path: Path):
+    def test_gate_status_shows_tools(self, cli_runner):
         # Create toolpack first
         result = cli_runner("create", "--spec", str(MINI_SPEC), "--name", "mini-api")
         assert result.exit_code == 0
@@ -101,7 +100,7 @@ class TestGateStatusAfterCreate:
 class TestCreateWithSpecUrl:
     """Test --spec flag with local file path."""
 
-    def test_spec_from_local_file(self, cli_runner, tmp_path: Path):
+    def test_spec_from_local_file(self, cli_runner):
         result = cli_runner("create", "--spec", str(MINI_SPEC))
         assert result.exit_code == 0
         assert "Tools Created" in result.output or "tools" in result.output.lower()

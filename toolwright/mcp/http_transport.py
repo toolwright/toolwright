@@ -179,7 +179,7 @@ class ToolwrightHTTPApp:
                         try:
                             event = await asyncio.wait_for(queue.get(), timeout=30)
                             yield _format_sse_event(event, console_event_store)
-                        except asyncio.TimeoutError:
+                        except TimeoutError:
                             yield ": keepalive\n\n"
                 finally:
                     console_event_store.unsubscribe(queue)

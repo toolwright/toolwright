@@ -7,7 +7,7 @@ from typing import Any
 
 from toolwright.ui import prompts as prompt_primitives
 from toolwright.ui.console import err_console
-from toolwright.ui.discovery import find_toolpacks
+from toolwright.ui.discovery import find_toolpacks, toolpack_labels
 from toolwright.ui.echo import echo_plan, echo_summary
 from toolwright.ui.prompts import select_one
 from toolwright.ui.runner import run_doctor_checks
@@ -45,16 +45,16 @@ def doctor_flow(
     if toolpack_path is None:
         candidates = find_toolpacks(root)
         if not candidates:
-            con.print("[error]No toolpacks found.[/error]")
-            con.print("Run 'toolwright mint' or 'toolwright capture import' first.")
+            con.print("[error]No toolpack found.[/error]")
+            con.print("Create one with: [command]toolwright create <recipe-name>[/command]")
             return
         if len(candidates) == 1:
             toolpack_path = str(candidates[0])
-            con.print(f"Found toolpack: [bold]{toolpack_path}[/bold]")
+            con.print(f"Found toolpack: [bold]{toolpack_labels(candidates, root=root)[0]}[/bold]")
         else:
-            labels = [str(p) for p in candidates]
             toolpack_path = select_one(
-                labels,
+                [str(p) for p in candidates],
+                labels=toolpack_labels(candidates, root=root),
                 prompt="Select toolpack",
                 console=con,
             )

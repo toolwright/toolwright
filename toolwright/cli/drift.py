@@ -15,6 +15,26 @@ from toolwright.storage import Storage
 from toolwright.utils.schema_version import resolve_schema_version
 
 
+def _auto_detect_baseline(root_path: str) -> Path | None:
+    """Find the most recent baseline.json under root_path."""
+    root = Path(root_path)
+    candidates = list(root.glob("**/baseline.json"))
+    if not candidates:
+        return None
+    # Prefer the one with the most recent mtime
+    return max(candidates, key=lambda p: p.stat().st_mtime)
+
+
+def _auto_detect_latest_capture(root_path: str) -> str | None:
+    """Find the most recent capture ID from storage."""
+    storage = Storage(base_path=root_path)
+    captures = storage.list_captures()
+    if not captures:
+        return None
+    # list_captures returns sorted by created_at descending; take the first (newest)
+    return captures[0].get("id")
+
+
 def run_drift(
     from_capture: str | None,
     to_capture: str | None,
@@ -80,12 +100,26 @@ def run_drift(
             deterministic,
         )
     else:
-        click.echo(
-            "Error: Specify --from/--to for capture comparison "
-            "OR --baseline with --capture-id/--capture-path for baseline comparison",
-            err=True,
-        )
-        sys.exit(1)
+        # Auto-detect: find latest baseline and most recent capture
+        baseline_candidate = _auto_detect_baseline(root_path)
+        capture_candidate = _auto_detect_latest_capture(root_path)
+        if baseline_candidate and capture_candidate:
+            if verbose:
+                click.echo(f"Auto-detected baseline: {baseline_candidate}")
+                click.echo(f"Auto-detected capture: {capture_candidate}")
+            report = _compare_to_baseline(
+                storage, engine, str(baseline_candidate), capture_candidate,
+                verbose, deterministic,
+            )
+        else:
+            click.echo(
+                "Error: No args given and auto-detect failed.\n"
+                "  Specify --from/--to for capture comparison\n"
+                "  OR --baseline with --capture-id/--capture-path\n"
+                "  OR ensure .toolwright/ has a baseline and capture.",
+                err=True,
+            )
+            sys.exit(1)
 
     # Output results
     output_path = Path(output_dir)
@@ -254,11 +288,13 @@ def run_shape_drift(
 
     # List mode: show available tools
     if not tool:
-        click.echo(f"\nShape baselines ({len(index.baselines)} tools):\n")
+        from toolwright.utils.text import pluralize
+
+        click.echo(f"\nShape baselines ({pluralize(len(index.baselines), 'tool')}):\n")
         for name, bl in sorted(index.baselines.items()):
             fields = len(bl.shape.fields)
             samples = bl.shape.sample_count
-            click.echo(f"  {name:<40} {fields} fields, {samples} samples")
+            click.echo(f"  {name:<40} {pluralize(fields, 'field')}, {pluralize(samples, 'sample')}")
         click.echo("\nCheck a tool: toolwright drift --shape-baselines ... --tool <name> --response-file <file>")
         return
 
@@ -331,9 +367,9 @@ def drift_status(events_path: str, limit: int) -> None:
 
     \b
     Examples:
-      toolwright drift status
-      toolwright drift status --events-path /path/to/drift_events.jsonl
-      toolwright drift status -n 50
+      toolwright drift-status
+      toolwright drift-status --events-path /path/to/drift_events.jsonl
+      toolwright drift-status -n 50
     """
     events_file = Path(events_path)
 

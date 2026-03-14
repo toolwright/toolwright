@@ -10,6 +10,7 @@ from typing import Any
 
 import click
 import httpx
+import yaml
 
 from toolwright.cli.approve import sync_lockfile
 from toolwright.cli.compile import compile_capture_session
@@ -57,13 +58,9 @@ def _fetch_or_cache_spec(
             cache_file.write_text(content)
 
         # Write to temp file for parser
-        tmp = tempfile.NamedTemporaryFile(
-            suffix=".json" if spec_url.endswith(".json") else ".yaml",
-            delete=False,
-            mode="w",
-        )
-        tmp.write(content)
-        tmp.close()
+        suffix = ".json" if spec_url.endswith(".json") else ".yaml"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False, mode="w") as tmp:
+            tmp.write(content)
         return Path(tmp.name)
 
     except (httpx.HTTPError, OSError) as exc:
@@ -90,6 +87,9 @@ def _resolve_spec_path(
         spec_path = Path(spec)
         if spec_path.exists():
             return spec_path
+        # If it looks like a file path (not a URL), give a clear error
+        if not spec.startswith(("http://", "https://")):
+            raise click.ClickException(f"OpenAPI spec file not found: {spec}")
         # Treat as URL
         return _fetch_or_cache_spec(spec, api_name, root)
 
@@ -117,6 +117,31 @@ def run_create(
 
     recipe_data: dict[str, Any] | None = None
 
+    # URL detection: if api_name looks like a URL, fetch spec from it
+    url_spec_path: Path | None = None
+    if api_name and (api_name.startswith("http://") or api_name.startswith("https://")):
+        from toolwright.core.capture.url_fetcher import SpecFetchError, fetch_spec_from_url
+
+        click.echo(f"  Fetching spec from {api_name}...")
+        try:
+            spec_dict, source_url = fetch_spec_from_url(api_name)
+        except SpecFetchError as exc:
+            raise click.ClickException(str(exc)) from exc
+
+        content = json.dumps(spec_dict)
+        with tempfile.NamedTemporaryFile(suffix=".json", delete=False, mode="w") as tmp:
+            tmp.write(content)
+        url_spec_path = Path(tmp.name)
+
+        # Auto-derive name from URL hostname if not provided
+        if not name:
+            from urllib.parse import urlparse as _urlparse
+
+            parsed_url = _urlparse(source_url)
+            name = parsed_url.netloc.split(".")[0] if parsed_url.netloc else "api"
+
+        api_name = None  # Clear so recipe lookup is skipped
+
     # Resolve recipe if api_name provided
     if api_name:
         from toolwright.recipes.loader import list_recipes, load_recipe
@@ -133,8 +158,8 @@ def run_create(
                 f"  Or use: toolwright create --spec <path-or-url>"
             ) from exc
 
-    # Need either api_name or spec
-    if not api_name and not spec:
+    # Need either api_name or spec or URL-fetched spec
+    if not api_name and not spec and not url_spec_path:
         raise click.ClickException(
             "Provide an API name or --spec.\n"
             "  Example: toolwright create github\n"
@@ -142,8 +167,11 @@ def run_create(
         )
 
     # Resolve spec
-    click.echo("  Fetching OpenAPI spec...")
-    spec_path = _resolve_spec_path(api_name, spec, recipe_data, root)
+    if url_spec_path:
+        spec_path = url_spec_path
+    else:
+        click.echo("  Fetching OpenAPI spec...")
+        spec_path = _resolve_spec_path(api_name, spec, recipe_data, root)
 
     # Parse spec
     click.echo("  Parsing spec...")
@@ -152,14 +180,47 @@ def run_create(
         allowed_hosts = [h["pattern"] for h in recipe_data.get("hosts", [])]
 
     parser = OpenAPIParser(allowed_hosts=allowed_hosts)
-    session = parser.parse_file(spec_path, name=name or api_name)
+
+    try:
+        session = parser.parse_file(spec_path, name=name or api_name)
+    except yaml.scanner.ScannerError as exc:
+        raise click.ClickException(f"Invalid YAML syntax in spec file: {exc}") from exc
+    except yaml.parser.ParserError as exc:
+        raise click.ClickException(f"Invalid YAML syntax in spec file: {exc}") from exc
+    except KeyError as exc:
+        raise click.ClickException(f"Missing required field in OpenAPI spec: {exc}") from exc
+    except AttributeError as exc:
+        raise click.ClickException(f"Malformed OpenAPI spec: expected object structure — {exc}") from exc
+    except ValueError as exc:
+        raise click.ClickException(f"Failed to parse spec: {exc}") from exc
+    except Exception as exc:
+        raise click.ClickException(f"Failed to parse spec: {exc}") from exc
+
+    # Surface skipped endpoint warnings (C1)
+    skipped = parser.stats.get("skipped", 0)
+    total = parser.stats.get("total_operations", 0)
+    if skipped > 0 and not session.exchanges:
+        # ALL endpoints skipped
+        details = "\n".join(f"  - {w}" for w in parser.warnings)
+        raise click.ClickException(
+            f"All {skipped} of {total} endpoints were skipped during parsing.\n{details}"
+        )
+    if skipped > 0:
+        click.echo(
+            f"  WARNING: {skipped} of {total} endpoints were skipped during parsing.",
+            err=True,
+        )
+        for w in parser.warnings:
+            click.echo(f"    - {w}", err=True)
 
     if not session.exchanges:
         raise click.ClickException(
             "No endpoints found in the OpenAPI spec. Check the spec file."
         )
 
-    click.echo(f"  Found {len(session.exchanges)} endpoints")
+    from toolwright.utils.text import pluralize
+
+    click.echo(f"  Found {pluralize(len(session.exchanges), 'endpoint')}")
 
     # Compile
     click.echo("  Compiling artifacts...")
@@ -233,7 +294,7 @@ def run_create(
     # Write toolpack.yaml
     toolpack = Toolpack(
         toolpack_id=toolpack_id,
-        created_at=resolve_generated_at(deterministic=True),
+        created_at=resolve_generated_at(deterministic=False),
         capture_id=session.id,
         artifact_id=compile_result.artifact_id,
         scope="first_party_only",
@@ -310,7 +371,7 @@ def run_create(
     # Section 1: Tools Created (inline gate status)
     tools_data = json.loads(copied_tools.read_text())
     actions = tools_data.get("actions", [])
-    click.echo(f"\n  Tools: {len(actions)} endpoints compiled")
+    click.echo(f"\n  Tools: {pluralize(len(actions), 'endpoint')} compiled")
 
     if gate_result and gate_result.approved_count > 0:
         click.echo(f"  Auto-approved: {gate_result.approved_count} (low/medium risk)")
@@ -320,7 +381,7 @@ def run_create(
         click.echo(f"  Pending approvals: {sync_result.pending_count}")
 
     if rules_result and rules_result.rule_count > 0:
-        click.echo(f"  Rules: {rules_result.template_name} ({rules_result.rule_count} rules)")
+        click.echo(f"  Rules: {rules_result.template_name} ({pluralize(rules_result.rule_count, 'rule')})")
 
     # Example tool
     if actions:
@@ -329,7 +390,7 @@ def run_create(
 
     # Section 2: Auth Required
     if recipe_data and recipe_data.get("hosts"):
-        from toolwright.cli.commands_auth import _host_to_env_var
+        from toolwright.utils.auth import host_to_env_var as _host_to_env_var
 
         click.echo(click.style("\n  Auth:", fg="cyan"))
         for host_info in recipe_data["hosts"]:
@@ -342,11 +403,13 @@ def run_create(
 
     # Section 4: Next Steps
     click.echo("  Next steps:")
+    step = 1
     if recipe_data and recipe_data.get("hosts"):
-        click.echo("    1. Set your auth token (see above)")
-    click.echo("    2. Run: toolwright config --toolpack " + str(toolpack_file))
-    click.echo("    3. Paste config into Claude Desktop and restart")
-    click.echo("    4. Ask Claude about your API!")
+        click.echo(f"    {step}. Run: toolwright auth setup")
+        step += 1
+    click.echo(f"    {step}. Run: toolwright config --toolpack " + str(toolpack_file))
+    click.echo(f"    {step + 1}. Paste config into Claude Desktop and restart")
+    click.echo(f"    {step + 2}. Ask Claude about your API!")
 
 
 def register_create_commands(*, cli: click.Group, run_with_lock: Any) -> None:

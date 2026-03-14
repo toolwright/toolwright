@@ -122,3 +122,29 @@ class TestRunEnforce:
                 allow_redirects=False,
                 unsafe_no_lockfile=True,
             )
+
+    def test_evaluate_mode_does_not_start_server(self, tmp_path: Path) -> None:
+        """H6: evaluate mode should evaluate and exit, not start HTTP server."""
+        tools_path, policy_path = _write_tools_and_policy(tmp_path)
+
+        # HTTPServer should NOT be instantiated in evaluate mode
+        with patch("toolwright.cli.enforce.HTTPServer") as mock_server:
+            run_enforce(
+                tools_path=str(tools_path),
+                toolsets_path=None,
+                toolset_name=None,
+                policy_path=str(policy_path),
+                port=18082,
+                audit_log=None,
+                dry_run=False,
+                verbose=False,
+                mode="evaluate",
+                base_url=None,
+                auth_header=None,
+                lockfile_path=None,
+                confirmation_store_path=str(tmp_path / "confirmations.db"),
+                allow_private_cidrs=None,
+                allow_redirects=False,
+                unsafe_no_lockfile=False,
+            )
+            mock_server.assert_not_called()

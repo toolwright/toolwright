@@ -29,6 +29,7 @@ from toolwright.cli.commands_rules import register_rules_commands
 from toolwright.cli.commands_runtime import register_runtime_commands
 from toolwright.cli.commands_snapshots import register_snapshot_commands
 from toolwright.cli.commands_status import register_status_commands
+from toolwright.cli.commands_tokens import register_tokens_commands
 from toolwright.cli.commands_use import register_use_command
 from toolwright.cli.commands_validation import register_validation_commands
 from toolwright.cli.commands_watch import register_watch_commands
@@ -40,7 +41,6 @@ ADVANCED_COMMANDS = {
     "compile",
     "bundle",
     "lint",
-    "doctor",
     "enforce",
     "migrate",
     "inspect",
@@ -59,16 +59,19 @@ ADVANCED_COMMANDS = {
     "share",
     "install",
     "capture",
-    "wrap",
 }
 
 # Operations commands shown after core in default help.
 OPERATIONS_COMMANDS = [
-    "drift",
+    "mint",
+    "config",
+    "rules",
+    "groups",
     "diff",
-    "repair",
     "verify",
     "health",
+    "why",
+    "doctor",
     "auth",
     "kill",
     "enable",
@@ -76,23 +79,42 @@ OPERATIONS_COMMANDS = [
     "watch",
     "recipes",
     "dashboard",
+    "completions",
+    "wrap",
 ]
 
 # Core commands shown prominently in default help, in workflow order.
 CORE_COMMANDS = [
     "create",
-    "mint",
     "serve",
     "gate",
     "status",
-    "rules",
-    "groups",
-    "config",
+    "score",
+    "drift",
+    "repair",
 ]
 
 
 class ToolwrightGroup(click.Group):
     """Custom group with sectioned help output and interactive flow dispatch."""
+
+    def parse_args(self, ctx: click.Context, args: list[str]) -> list[str]:
+        """Extract --no-interactive from anywhere in the arg list.
+
+        Click normally only sees parent-group options before the subcommand
+        name.  This override lets users write either:
+            toolwright --no-interactive serve ...
+            toolwright serve --no-interactive ...
+        """
+        # Pull --no-interactive out of any position so the subcommand
+        # parser never rejects it as "unknown option".
+        if "--no-interactive" in args:
+            # Ensure it's in the position where the *group* will see it
+            # (before the first subcommand token).  We remove all
+            # occurrences and prepend one.
+            args = [a for a in args if a != "--no-interactive"]
+            args.insert(0, "--no-interactive")
+        return super().parse_args(ctx, args)
 
     def invoke(self, ctx: click.Context) -> None:
         """Override invoke to intercept MissingParameter for allowlisted commands."""
@@ -141,7 +163,7 @@ class ToolwrightGroup(click.Group):
 
         formatter.write("\n")
         formatter.write("  Use 'toolwright <command> --help' for details on any command.\n")
-        formatter.write("  Use 'toolwright --help-all' to see all commands including advanced.\n")
+        formatter.write("  Use 'toolwright --help-all' to see all commands (init, ship, demo, and more).\n")
 
 
 def _render_help_all(ctx: click.Context) -> str:
@@ -202,7 +224,7 @@ def _show_help_all(
 )
 @click.pass_context
 def cli(ctx: click.Context, verbose: bool, root: Path, no_interactive: bool) -> None:
-    """Trusted MCP supply chain for AI tools with fail-closed runtime and bounded self-healing."""
+    """The immune system for AI tools — governed runtime with fail-closed enforcement and self-healing."""
     from toolwright.ui.policy import should_interact
 
     ctx.ensure_object(dict)
@@ -215,6 +237,9 @@ def cli(ctx: click.Context, verbose: bool, root: Path, no_interactive: bool) -> 
     ctx.obj["interactive"] = should_interact(
         force=False if no_interactive else None,
     )
+    # Track explicit --no-interactive flag separately from auto-detection.
+    # Commands use this to skip confirmation prompts only when explicitly requested.
+    ctx.obj["no_interactive_explicit"] = no_interactive
 
     if ctx.invoked_subcommand is None:
         if ctx.obj["interactive"]:
@@ -268,11 +293,36 @@ register_auth_commands(cli=cli)
 register_validation_commands(cli=cli, run_with_lock=_run_with_lock)
 register_repair_commands(cli=cli)
 register_governance_commands(cli=cli, run_with_lock=_run_with_lock)
+register_tokens_commands(cli=cli)
 
 # Register wrap (overlay) command
 from toolwright.cli.commands_wrap import wrap_command as _wrap_cmd  # noqa: E402
 
 cli.add_command(_wrap_cmd, "wrap")
+
+# Shell completions command
+@cli.command()
+@click.argument("shell", type=click.Choice(["bash", "zsh", "fish"]))
+def completions(shell: str) -> None:
+    """Print shell completion activation script.
+
+    Add the printed line to your shell profile (~/.bashrc, ~/.zshrc, etc.)
+    to enable tab-completion for all toolwright commands.
+
+    \b
+    Examples:
+      toolwright completions bash >> ~/.bashrc
+      toolwright completions zsh >> ~/.zshrc
+      toolwright completions fish > ~/.config/fish/completions/toolwright.fish
+    """
+    prog = CLI_PRIMARY_COMMAND
+    if shell == "bash":
+        click.echo(f'eval "$(_TOOLWRIGHT_COMPLETE=bash_source {prog})"')
+    elif shell == "zsh":
+        click.echo(f'eval "$(_TOOLWRIGHT_COMPLETE=zsh_source {prog})"')
+    elif shell == "fish":
+        click.echo(f"_TOOLWRIGHT_COMPLETE=fish_source {prog} | source")
+
 
 # Register drift status subcommand
 from toolwright.cli.drift import drift_status as _drift_status_cmd  # noqa: E402

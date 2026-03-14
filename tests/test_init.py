@@ -144,7 +144,7 @@ def test_gitignore_entries() -> None:
 def test_suggestions_with_api_spec(tmp_path: Path) -> None:
     (tmp_path / "openapi.yaml").write_text("openapi: 3.1.0\n")
     result = detect_project(tmp_path)
-    assert any("toolwright capture import" in s for s in result.suggestions)
+    assert any("toolwright create --spec" in s for s in result.suggestions)
 
 
 def test_suggestions_for_unknown_project(tmp_path: Path) -> None:
@@ -152,29 +152,26 @@ def test_suggestions_for_unknown_project(tmp_path: Path) -> None:
     assert any("defaults" in s for s in result.suggestions)
 
 
-def test_init_shows_all_three_entry_paths(tmp_path: Path) -> None:
-    """Init output must show all 3 entry paths so users know how to start."""
+def test_init_shows_create_entry_paths(tmp_path: Path) -> None:
+    """Init output must show create entry paths so users know how to start."""
     runner = CliRunner()
     result = runner.invoke(cli, ["init", "--directory", str(tmp_path)])
 
     assert result.exit_code == 0
-    # Path 1: "I have a URL" -> toolwright mint
-    assert "toolwright mint" in result.output
-    # Path 2: "I have a HAR" -> toolwright capture import
-    assert "toolwright capture import" in result.output
-    # Path 3: "I have an OpenAPI spec" -> toolwright capture import --input-format openapi
-    assert "openapi" in result.output.lower()
+    # Path 1: recipe-based create
+    assert "toolwright create" in result.output
+    # Path 2: spec-based create
+    assert "toolwright create --spec" in result.output
 
 
-def test_init_next_steps_use_openapi_command(tmp_path: Path) -> None:
+def test_init_next_steps_use_create_command(tmp_path: Path) -> None:
     (tmp_path / "openapi.yaml").write_text("openapi: 3.1.0\n")
     runner = CliRunner()
 
     result = runner.invoke(cli, ["init", "--directory", str(tmp_path)])
 
     assert result.exit_code == 0
-    assert "toolwright capture import openapi.yaml" in result.output
-    assert "--input-format openapi" in result.output
+    assert "toolwright create --spec openapi.yaml" in result.output
     assert "mint --openapi" not in result.output
     assert "gate allow" in result.output.lower()
     assert "--tools <tools.json>" not in result.output
@@ -192,15 +189,15 @@ def test_init_next_steps_mention_demo(tmp_path: Path) -> None:
     assert "toolwright demo" in result.output
 
 
-def test_init_next_steps_demo_appears_before_mint(tmp_path: Path) -> None:
+def test_init_next_steps_demo_appears_before_create(tmp_path: Path) -> None:
     """Demo should be the first suggestion (easiest path for new users)."""
     runner = CliRunner()
     result = runner.invoke(cli, ["init", "--directory", str(tmp_path)])
 
     assert result.exit_code == 0
     demo_pos = result.output.index("toolwright demo")
-    mint_pos = result.output.index("toolwright mint")
-    assert demo_pos < mint_pos, "toolwright demo should appear before toolwright mint"
+    create_pos = result.output.index("toolwright create")
+    assert demo_pos < create_pos, "toolwright demo should appear before toolwright create"
 
 
 # --- to_dict ---

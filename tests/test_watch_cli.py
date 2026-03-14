@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
 import pytest
 from click.testing import CliRunner
 
@@ -136,7 +133,7 @@ class TestWatchLogCommand:
         )
         assert result.exit_code == 0
         # Should show at most 1 event
-        lines = [l for l in result.output.strip().splitlines() if "probe" in l.lower()]
+        lines = [line for line in result.output.strip().splitlines() if "probe" in line.lower()]
         assert len(lines) <= 1
 
     def test_handles_missing_log_file(self, runner, tmp_path):

@@ -23,7 +23,7 @@ def register_validation_commands(
     @cli.command("diff")
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolved if not given)",
     )
     @click.option(
@@ -170,7 +170,7 @@ Examples:
     )
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolved if not given)",
     )
     @click.option(
@@ -242,9 +242,9 @@ Examples:
     @cli.command(hidden=True)
     @click.option(
         "--toolpack",
-        required=True,
-        type=click.Path(exists=True),
-        help="Path to toolpack.yaml",
+        required=False,
+        type=click.Path(),
+        help="Path to toolpack.yaml (auto-detected if omitted).",
     )
     @click.option(
         "--runtime",
@@ -254,11 +254,23 @@ Examples:
         help="Runtime to validate",
     )
     @click.pass_context
-    def doctor(ctx: click.Context, toolpack: str, runtime: str) -> None:
+    def doctor(ctx: click.Context, toolpack: str | None, runtime: str) -> None:
         """Validate toolpack readiness for execution."""
         from click.core import ParameterSource
 
         from toolwright.cli.doctor import run_doctor
+
+        # Auto-discover toolpack if not specified
+        if toolpack is None:
+            from toolwright.ui.discovery import find_toolpacks
+
+            root = Path(ctx.obj.get("root", ".toolwright"))
+            candidates = find_toolpacks(root)
+            if not candidates:
+                raise click.ClickException(
+                    "No toolpacks found. Run 'toolwright create' first."
+                )
+            toolpack = str(candidates[0])
 
         runtime_source = ctx.get_parameter_source("runtime")
         require_local_mcp = (
@@ -275,10 +287,10 @@ Examples:
     @cli.command(hidden=True)
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (resolves tools/policy paths)",
     )
-    @click.option("--tools", type=click.Path(exists=True), help="Path to tools.json")
+    @click.option("--tools", type=click.Path(), help="Path to tools.json")
     @click.option("--policy", type=click.Path(exists=True), help="Path to policy.yaml")
     @click.option(
         "--format",
@@ -310,11 +322,16 @@ Examples:
     @cli.command()
     @click.option(
         "--tools",
-        required=True,
+        required=False,
         type=click.Path(exists=True),
         help="Path to tools.json manifest.",
     )
-    def health(tools: str) -> None:
+    @click.option(
+        "--toolpack",
+        type=click.Path(),
+        help="Path to toolpack.yaml (auto-resolves tools.json path)",
+    )
+    def health(tools: str | None, toolpack: str | None) -> None:
         """Probe endpoint health for all tools in a manifest.
 
         Sends non-mutating probes (HEAD/OPTIONS) to each endpoint and
@@ -326,8 +343,19 @@ Examples:
         Examples:
           toolwright health --tools output/tools.json
           toolwright health --tools my-api/tools.json
+          toolwright health --toolpack toolpack.yaml
         """
-        manifest = json.loads(Path(tools).read_text())
+        if not tools and not toolpack:
+            raise click.UsageError("Provide --tools or --toolpack.")
+
+        if toolpack and not tools:
+            from toolwright.core.toolpack import load_toolpack, resolve_toolpack_paths
+
+            tp = load_toolpack(Path(toolpack))
+            resolved = resolve_toolpack_paths(toolpack=tp, toolpack_path=toolpack)
+            tools = str(resolved.tools_path)
+
+        manifest = json.loads(Path(tools).read_text())  # type: ignore[arg-type]
         actions = manifest.get("actions", [])
 
         if not actions:

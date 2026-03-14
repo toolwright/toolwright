@@ -130,6 +130,108 @@ class TestShareErrors:
             assert "KB" in result.output or "MB" in result.output
 
 
+class TestShareWithDirectoryArg:
+    """M14: share must work correctly when given a directory instead of toolpack.yaml."""
+
+    def test_share_directory_uses_correct_name(self) -> None:
+        """Passing a directory to share should name the bundle after the directory, not its parent."""
+        runner = CliRunner()
+        with tempfile.TemporaryDirectory() as td:
+            tp_dir = _make_toolpack(Path(td))
+            # Pass the directory, not toolpack.yaml
+            result = runner.invoke(cli, ["share", str(tp_dir)])
+            assert result.exit_code == 0, result.output
+            twp_files = list(Path(td).glob("*.twp"))
+            assert len(twp_files) == 1
+            # Bundle should be named after the toolpack dir, not its parent
+            assert twp_files[0].stem == "my-toolpack"
+
+    def test_share_directory_install_no_nesting(self) -> None:
+        """M14: share a directory, install the bundle — no toolpacks/toolpacks/ nesting."""
+        runner = CliRunner()
+        with tempfile.TemporaryDirectory() as td:
+            tp_dir = _make_toolpack(Path(td))
+            # Share using directory path
+            runner.invoke(cli, ["share", str(tp_dir)])
+            twp_files = list(Path(td).glob("*.twp"))
+            assert len(twp_files) == 1
+
+            # Install with custom root
+            custom_root = Path(td) / "project"
+            custom_root.mkdir()
+            result = runner.invoke(
+                cli,
+                ["--root", str(custom_root), "install", str(twp_files[0])],
+            )
+            assert result.exit_code == 0, result.output
+            # Should be at project/toolpacks/my-toolpack, NOT project/toolpacks/toolpacks
+            expected = custom_root / "toolpacks" / "my-toolpack"
+            assert expected.exists(), (
+                f"Expected install at {expected}. "
+                f"Contents: {list((custom_root / 'toolpacks').iterdir()) if (custom_root / 'toolpacks').exists() else 'toolpacks dir missing'}"
+            )
+            assert (expected / "toolpack.yaml").exists()
+
+
+class TestInstallDefaultPath:
+    """Install should default to {root}/.toolwright/toolpacks/{stem}."""
+
+    def test_install_default_uses_root_toolpacks(self) -> None:
+        """Without --target, install should put files under --root's .toolwright/toolpacks/."""
+        runner = CliRunner()
+        with tempfile.TemporaryDirectory() as td:
+            tp_dir = _make_toolpack(Path(td))
+            # Share to get a .twp
+            runner.invoke(cli, ["share", str(tp_dir / "toolpack.yaml")])
+            twp_files = list(Path(td).glob("*.twp"))
+            assert len(twp_files) == 1
+
+            # Use a custom --root so we can verify install goes there
+            custom_root = Path(td) / "project"
+            custom_root.mkdir()
+
+            result = runner.invoke(
+                cli,
+                ["--root", str(custom_root), "install", str(twp_files[0])],
+            )
+            assert result.exit_code == 0, result.output
+            assert "Installed" in result.output
+
+            expected_dir = custom_root / "toolpacks" / twp_files[0].stem
+            assert expected_dir.exists(), (
+                f"Expected install at {expected_dir}, but it does not exist"
+            )
+            assert (expected_dir / "toolpack.yaml").exists()
+
+    def test_install_default_without_root_uses_cwd_dotdir(self) -> None:
+        """Without --target or --root, install should use .toolwright/toolpacks/ under cwd."""
+        runner = CliRunner()
+        with tempfile.TemporaryDirectory() as td:
+            tp_dir = _make_toolpack(Path(td))
+            runner.invoke(cli, ["share", str(tp_dir / "toolpack.yaml")])
+            twp_files = list(Path(td).glob("*.twp"))
+            assert len(twp_files) == 1
+
+            # Use a fresh working dir to verify install goes under cwd/.toolwright/
+            work_dir = Path(td) / "workdir"
+            work_dir.mkdir()
+            import os
+            old_cwd = os.getcwd()
+            try:
+                os.chdir(work_dir)
+                result = runner.invoke(
+                    cli, ["install", str(twp_files[0])]
+                )
+            finally:
+                os.chdir(old_cwd)
+
+            assert result.exit_code == 0, result.output
+            expected_dir = work_dir / ".toolwright" / "toolpacks" / twp_files[0].stem
+            assert expected_dir.exists(), (
+                f"Expected install at {expected_dir}, but it does not exist"
+            )
+
+
 class TestInstallErrors:
     """Error handling for the install command."""
 

@@ -5,13 +5,13 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
-import re
 import sys
 from pathlib import Path
 from typing import Any
 
 import click
 
+from toolwright.utils.auth import host_to_env_var
 from toolwright.utils.deps import require_mcp_dependency
 
 TOOL_COUNT_WARN_THRESHOLD = 30
@@ -23,6 +23,7 @@ def check_tool_count_guardrails(
     *,
     groups_index: Any | None,
     no_tool_limit: bool,
+    scope: str | None = None,
 ) -> tuple[list[str], bool]:
     """Check tool count against safety thresholds.
 
@@ -37,9 +38,11 @@ def check_tool_count_guardrails(
     if tool_count <= TOOL_COUNT_WARN_THRESHOLD:
         return warnings, block
 
-    # Build group suggestion text
+    # Build group suggestion text (suppress if scope already specified)
     group_hint = ""
-    if groups_index is not None:
+    if scope:
+        pass  # Don't suggest --scope when it's already in use
+    elif groups_index is not None:
         from toolwright.models.groups import ToolGroupIndex
 
         if isinstance(groups_index, ToolGroupIndex) and groups_index.groups:
@@ -85,7 +88,7 @@ def stdio_transport_warning() -> str:
     """Return a one-line warning about stdio mode being local-only."""
     return (
         "Running in stdio mode (local only). "
-        "Use --use-http for networked/production deployments."
+        "Use --http for networked/production deployments."
     )
 
 
@@ -120,14 +123,73 @@ def warn_missing_auth(
     hosts = manifest.get("allowed_hosts", [])
     warnings: list[str] = []
     for host in hosts:
-        normalized = re.sub(r"[^A-Za-z0-9]", "_", host).upper()
-        env_key = f"TOOLWRIGHT_AUTH_{normalized}"
+        env_key = host_to_env_var(host)
         if not os.environ.get(env_key):
             warnings.append(
                 f"No auth configured for {host}. "
                 f'Set: export {env_key}="Bearer <token>"'
             )
     return warnings
+
+
+def load_dotenv_auth(root: Path) -> dict[str, str]:
+    """Load auth tokens from .toolwright/.env under the given root.
+
+    Returns a dict of KEY=VALUE pairs, or empty dict if file is missing.
+    """
+    from toolwright.utils.dotenv import DotenvFile
+
+    env_path = root / ".toolwright" / ".env"
+    d = DotenvFile(env_path)
+    return d.load()
+
+
+def inject_dotenv_auth(root: Path) -> dict[str, str]:
+    """Load .toolwright/.env and inject TOOLWRIGHT_AUTH_* entries into os.environ.
+
+    Does NOT overwrite existing env vars (shell env takes precedence).
+    Returns the dict of entries that were actually injected.
+    """
+    entries = load_dotenv_auth(root)
+    injected: dict[str, str] = {}
+    for key, value in entries.items():
+        if key.startswith("TOOLWRIGHT_AUTH_") and key not in os.environ:
+            os.environ[key] = value
+            injected[key] = value
+    return injected
+
+
+def prompt_auth_setup_if_missing(
+    *,
+    tools_path: str | Path,
+    auth_header: str | None,
+    root: Path,
+    no_interactive: bool = False,
+) -> None:
+    """Warn about missing auth and offer interactive setup if possible."""
+    warnings = warn_missing_auth(tools_path=tools_path, auth_header=auth_header)
+    if not warnings:
+        return
+
+    for w in warnings:
+        click.echo(f"  WARNING: {w}", err=True)
+
+    if no_interactive:
+        click.echo("  Skipping auth setup (non-interactive mode).", err=True)
+        return
+
+    if sys.stdin.isatty():
+        click.echo(err=True)
+        if click.confirm("  Run auth setup?", default=True, err=True):
+            from toolwright.cli.auth_setup import auth_setup_flow
+
+            auth_setup_flow(root=root, no_probe=False)
+    else:
+        # Non-TTY (e.g. Claude Desktop launching serve) — can't prompt, show fix instructions
+        click.echo(
+            "  Fix: run 'toolwright auth setup' in a terminal, then restart.",
+            err=True,
+        )
 
 
 def run_mcp_serve(
@@ -163,6 +225,7 @@ def run_mcp_serve(
     no_tool_limit: bool = False,
     shape_baselines_path: str | None = None,
     shape_probe_interval: int = 300,
+    no_interactive: bool = False,
 ) -> None:
     """Run the MCP server command."""
     resolved_toolpack = None
@@ -189,7 +252,11 @@ def run_mcp_serve(
         resolved_tools_path = resolved_toolpack_paths.tools_path
 
     if resolved_tools_path is None:
-        click.echo("Error: Provide --tools or --toolpack.", err=True)
+        click.echo(
+            "Error: No tools found. Provide --tools or --toolpack, "
+            "or run 'toolwright create' first.",
+            err=True,
+        )
         sys.exit(1)
     if not resolved_tools_path.exists():
         click.echo(f"Error: Tools manifest not found: {resolved_tools_path}", err=True)
@@ -229,11 +296,11 @@ def run_mcp_serve(
     effective_toolset = toolset_name
     if effective_toolset is None and resolved_toolsets_path and resolved_toolsets_path.exists():
         effective_toolset = "readonly"
-        if verbose:
-            click.echo(
-                "Defaulting to toolset readonly. Use --toolset <name> to change.",
-                err=True,
-            )
+        click.echo(
+            "Note: Using 'readonly' toolset (write tools hidden). "
+            "Use --toolset <name> to change.",
+            err=True,
+        )
 
     resolved_lockfile_path: Path | None = None
     if lockfile_path:
@@ -386,20 +453,28 @@ def run_mcp_serve(
         if not _actions:
             click.echo(
                 "Error: Toolpack has 0 tools. "
-                "Run 'toolwright mint' first to capture API traffic.",
+                "Run 'toolwright create' first to generate tools.",
                 err=True,
             )
             sys.exit(1)
     except (json.JSONDecodeError, OSError):
         pass  # Let downstream code handle invalid manifests
 
-    # Warn about missing auth env vars
-    auth_warnings = warn_missing_auth(
+    # Load auth tokens from .toolwright/.env into os.environ
+    _dotenv_injected = inject_dotenv_auth(root=Path.cwd())
+    if _dotenv_injected and verbose:
+        click.echo(
+            f"  Loaded {len(_dotenv_injected)} auth token(s) from .toolwright/.env",
+            err=True,
+        )
+
+    # Warn about missing auth env vars (and offer interactive setup)
+    prompt_auth_setup_if_missing(
         tools_path=resolved_tools_path,
         auth_header=auth_header,
+        root=Path.cwd(),
+        no_interactive=no_interactive,
     )
-    for warning in auth_warnings:
-        click.echo(f"  WARNING: {warning}", err=True)
 
     # Render startup card with governance layers
     from toolwright.mcp.startup_card import render_startup_card
@@ -411,18 +486,43 @@ def run_mcp_serve(
     except (json.JSONDecodeError, OSError):
         pass
     _tool_actions = _tools_manifest.get("actions", [])
+    _total_compiled = len(_tool_actions)
+
+    # Pre-filter by scope for accurate startup card counts
+    _display_actions = _tool_actions
+    if scope:
+        _groups_file = resolved_tools_path.parent / "groups.json"
+        if _groups_file.exists():
+            try:
+                from toolwright.core.compile.grouper import ToolGroupIndex, filter_by_scope
+
+                _groups_data = json.loads(_groups_file.read_text())
+                _groups_index = ToolGroupIndex.from_dict(_groups_data)
+                _display_actions = filter_by_scope(_tool_actions, scope, _groups_index)
+            except (json.JSONDecodeError, OSError, ValueError, ImportError):
+                pass  # Fall back to showing all tools
+
+    # M1: Filter by max_risk before computing banner counts
+    if max_risk:
+        _risk_order = ["low", "medium", "high", "critical"]
+        _max_idx = _risk_order.index(max_risk) if max_risk in _risk_order else len(_risk_order) - 1
+        _display_actions = [
+            a for a in _display_actions
+            if a.get("risk_tier", "low") in _risk_order
+            and _risk_order.index(a.get("risk_tier", "low")) <= _max_idx
+        ]
 
     _tool_categories: dict[str, int] = {}
     _risk_counts: dict[str, int] = {}
-    for _action in _tool_actions:
+    for _action in _display_actions:
         method = _action.get("method", "GET").upper()
         cat = "read" if method == "GET" else "write" if method in ("POST", "PUT", "PATCH") else "admin"
         _tool_categories[cat] = _tool_categories.get(cat, 0) + 1
         tier = _action.get("risk_tier", "low")
         _risk_counts[tier] = _risk_counts.get(tier, 0) + 1
 
-    _total_tokens = len(_tool_actions) * 500  # rough estimate
-    _tokens_per = 500 if _tool_actions else 0
+    _total_tokens = len(_display_actions) * 500  # rough estimate
+    _tokens_per = 500 if _display_actions else 0
 
     # Build governance dict
     _governance: dict[str, str | None] = {
@@ -459,6 +559,7 @@ def run_mcp_serve(
         tokens_per_tool=_tokens_per,
         auto_heal=auto_heal_override if watch else None,
         scope_info=scope,
+        total_compiled=_total_compiled if scope else None,
         governance=_governance,
     )
     click.echo(card, err=True)

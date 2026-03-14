@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -284,6 +285,29 @@ class TestToolwrightMCPServer:
         assert "Create a new user" in desc
         assert "[Risk: high]" in desc
         assert "[Requires confirmation]" in desc
+
+
+    def test_build_description_hard_cap(self, tools_file: Path) -> None:
+        """C1: descriptions must never exceed _DESCRIPTION_HARD_CAP chars."""
+        server = ToolwrightMCPServer(tools_path=tools_file)
+        # Force verbose mode with a very long description
+        server.compact_descriptions = False
+        action = dict(server.actions["get_users"])
+        action["description"] = "A" * 1000
+
+        desc = server._build_description(action)
+
+        assert len(desc) <= server._DESCRIPTION_HARD_CAP
+        assert desc.endswith("...")
+
+    def test_base_url_host_added_to_allowlist(self, tools_file: Path) -> None:
+        """H3: --base-url host must be auto-added to the session allowlist."""
+        server = ToolwrightMCPServer(
+            tools_path=tools_file,
+            base_url="https://petstore3.swagger.io/api/v3",
+        )
+        allowed = server._allowed_app_hosts()
+        assert "petstore3.swagger.io" in allowed
 
 
 class TestMCPServerHandlers:
@@ -687,3 +711,78 @@ class TestMCPRuntimeSafety:
         assert resolver.await_count == 1
         assert any(f"/_next/data/{default_build_id}/" in url for url in captured_urls)
         assert any(f"/_next/data/{refreshed_build_id}/" in url for url in captured_urls)
+
+
+class TestCrossHostRedirectAuthStripping:
+    """Auth headers must be stripped when a redirect goes to a different host."""
+
+    @pytest.mark.asyncio
+    async def test_auth_stripped_on_cross_host_redirect(self, tmp_path: Path) -> None:
+        """When a redirect crosses to a different host, auth headers must not leak."""
+        import httpx
+
+        manifest = {
+            "version": "1.0.0",
+            "schema_version": "1.0",
+            "allowed_hosts": ["api.example.com", "cdn.example.com"],
+            "actions": [
+                {
+                    "name": "get_data",
+                    "method": "GET",
+                    "path": "/data",
+                    "host": "api.example.com",
+                    "parameters": [],
+                },
+            ],
+        }
+        tools_file = tmp_path / "tools.json"
+        tools_file.write_text(json.dumps(manifest))
+
+        server = ToolwrightMCPServer(
+            tools_path=tools_file,
+            auth_header="Bearer secret_token",
+            allow_redirects=True,
+        )
+
+        # Track headers sent per request
+        captured_headers: list[dict[str, str]] = []
+
+        redirect_response = httpx.Response(
+            302,
+            headers={"location": "https://cdn.example.com/data"},
+            request=httpx.Request("GET", "https://api.example.com/data"),
+        )
+        final_response = httpx.Response(
+            200,
+            json={"result": "ok"},
+            request=httpx.Request("GET", "https://cdn.example.com/data"),
+        )
+
+        call_count = 0
+
+        async def mock_request(_method: str, _url: str, **kwargs: Any) -> httpx.Response:
+            nonlocal call_count
+            captured_headers.append(dict(kwargs.get("headers", {})))
+            call_count += 1
+            if call_count == 1:
+                return redirect_response
+            return final_response
+
+        mock_client = AsyncMock()
+        mock_client.request = mock_request
+
+        with (
+            patch.object(server, "_get_http_client", return_value=mock_client),
+            patch("toolwright.mcp.server.validate_network_target"),
+        ):
+            result = await server._execute_request(
+                server.actions["get_data"],
+                {},
+            )
+
+        assert result["status_code"] == 200
+        # First request should have auth
+        assert "Authorization" in captured_headers[0]
+        assert captured_headers[0]["Authorization"] == "Bearer secret_token"
+        # Second request (different host) should NOT have auth
+        assert "Authorization" not in captured_headers[1]

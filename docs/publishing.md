@@ -2,13 +2,15 @@
 
 ## PyPI
 
-This repository includes `.github/workflows/publish-pypi.yaml` to publish from tags
-using PyPI Trusted Publishing.
+This repository publishes to PyPI with:
+
+- `.github/workflows/ci.yml` for required release checks
+- `.github/workflows/publish.yml` for trusted publishing after those checks pass
 
 Install-doc truth gate:
 
 - README install section must match the currently published path (`pip install toolwright`).
-- Keep command snippets defaulted to `toolwright` (not `cask`).
+- Keep the public alpha docs centered on the supported path: `demo`, `create github`, `config`, `serve`, and basic `gate` / `status`.
 
 ### One-time setup
 
@@ -16,7 +18,7 @@ Install-doc truth gate:
 2. In PyPI project settings, add a Trusted Publisher:
    - Owner: `Toolwright`
    - Repository: `Toolwright`
-   - Workflow: `publish-pypi.yaml`
+   - Workflow: `publish.yml`
    - Environment: `pypi`
 3. In GitHub repo settings, create an Environment named `pypi`.
 
@@ -25,16 +27,17 @@ Install-doc truth gate:
 1. Bump version in:
    - `pyproject.toml`
    - `toolwright/__init__.py`
-2. Update `CHANGELOG.md` (canonical release history).
+2. Update `CHANGELOG.md` (canonical release history) for the exact version being released.
    - `docs/releases/` contains historical alpha notes and should not be treated as the primary release ledger.
-3. Tag and push (recommended to mirror PEP 440):
+3. Ensure `.github/workflows/ci.yml` is green for the release commit.
+4. Tag and push (recommended to mirror PEP 440):
 
 ```bash
 git tag v<pep440-version>
 git push origin v<pep440-version>
 ```
 
-4. GitHub Actions builds and publishes to PyPI.
+5. Publish a GitHub release from that tag. `.github/workflows/publish.yml` re-runs the reusable CI checks, builds fresh distributions, and publishes to PyPI only if they pass.
 
 Tag naming guidance:
 
@@ -47,27 +50,9 @@ Tag naming guidance:
 ```bash
 pip install -U toolwright
 toolwright --help
+toolwright demo --out /tmp/toolwright-release-smoke
 ```
 
-## Official MCP Registry
+## MCP Registry
 
-MCP Registry publishing is managed by the official publisher tooling.
-
-Pre-reqs:
-- README includes an `mcp-name` marker (already present):
-  - `io.github.toolwright/toolwright`
-- Root `server.json` is present and kept in sync with released package version.
-- Repository is public.
-
-Run:
-
-```bash
-npx -y @modelcontextprotocol/mcp-publisher@latest publish
-```
-
-Follow prompts to authenticate and submit metadata.
-
-Notes:
-- Registry metadata and packaging paths may differ by ecosystem.
-- Some examples in official docs are npm-oriented; for Python packages,
-  ensure metadata points to the published PyPI package and repo docs.
+MCP Registry publication is intentionally deferred for this public alpha. Ship the PyPI + GitHub path first, then add registry metadata and publication once the repo carries the required registry-specific files and release process.

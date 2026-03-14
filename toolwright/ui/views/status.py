@@ -73,6 +73,16 @@ def _verify_label(model: StatusModel) -> str:
     }.get(model.verification_state, model.verification_state)
 
 
+def _lockfile_icon_state(model: StatusModel) -> str:
+    """Return the icon state for the lockfile row.
+
+    A sealed lockfile with blocked tools is a warning, not OK.
+    """
+    if model.lockfile_state == "sealed" and model.blocked_count > 0:
+        return "warnings"
+    return model.lockfile_state
+
+
 def _status_icon(state: str) -> str:
     """Map state to SymbolSet icon name."""
     sym = get_symbols()
@@ -124,8 +134,8 @@ def render_rich(model: StatusModel) -> RenderableType:
     table.add_column("Value")
 
     rows = [
-        ("Toolpack", f"{model.toolpack_id or 'unknown'}  ({model.tool_count} tools)", "sealed"),
-        ("Lockfile", _lockfile_label(model), model.lockfile_state),
+        ("Toolpack", f"{model.toolpack_id or 'unknown'}  ({model.tool_count} {'tool' if model.tool_count == 1 else 'tools'})", "sealed"),
+        ("Lockfile", _lockfile_label(model), _lockfile_icon_state(model)),
         ("Baseline", _baseline_label(model), "current" if model.has_baseline else "missing"),
         ("Drift", _drift_label(model), model.drift_state),
         ("Verify", _verify_label(model), model.verification_state),
@@ -187,8 +197,8 @@ def render_plain(model: StatusModel) -> str:
     }
 
     rows = [
-        ("Toolpack", f"{model.toolpack_id or 'unknown'}  ({model.tool_count} tools)", "sealed"),
-        ("Lockfile", _lockfile_label(model).replace("\u00b7", "-"), model.lockfile_state),
+        ("Toolpack", f"{model.toolpack_id or 'unknown'}  ({model.tool_count} {'tool' if model.tool_count == 1 else 'tools'})", "sealed"),
+        ("Lockfile", _lockfile_label(model).replace("\u00b7", "-"), _lockfile_icon_state(model)),
         ("Baseline", _baseline_label(model), "current" if model.has_baseline else "missing"),
         ("Drift", _drift_label(model), model.drift_state),
         ("Verify", _verify_label(model), model.verification_state),

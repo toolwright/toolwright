@@ -7,6 +7,8 @@ requiring prometheus-client.
 
 from __future__ import annotations
 
+import importlib
+from collections.abc import Generator
 from contextlib import contextmanager
 from typing import Any
 
@@ -32,17 +34,20 @@ class _NoopTracer:
     """Tracer that produces no-op spans."""
 
     @contextmanager
-    def start_as_current_span(self, name: str, **kwargs: Any):  # noqa: ARG002
+    def start_as_current_span(  # noqa: ARG002
+        self,
+        _name: str,
+        **_kwargs: Any,
+    ) -> Generator[_NoopSpan, None, None]:
         yield _NoopSpan()
 
 
 def create_tracer(name: str) -> Any:
     """Create a tracer. Returns OTEL tracer if available, else no-op."""
     try:
-        from opentelemetry import trace
-
-        return trace.get_tracer(name)
-    except ImportError:
+        trace_module = importlib.import_module("opentelemetry.trace")
+        return trace_module.get_tracer(name)
+    except (ImportError, AttributeError):
         return _NoopTracer()
 
 

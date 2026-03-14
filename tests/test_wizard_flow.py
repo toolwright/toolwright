@@ -64,7 +64,7 @@ class TestRenderHealthBar:
         _render_health_bar([], mock_console)
         output = mock_console.file.getvalue()  # type: ignore[attr-defined]
         assert "No toolpacks found" in output
-        assert "toolwright mint" in output
+        assert "toolwright create" in output
 
     def test_shows_toolpack_name(self, mock_console: Console) -> None:
         from toolwright.ui.flows.quickstart import _render_health_bar
@@ -95,6 +95,52 @@ class TestRenderHealthBar:
         _render_health_bar([model], mock_console)
         output = mock_console.file.getvalue()  # type: ignore[attr-defined]
         assert "3 pending" in output
+
+    def test_groups_duplicate_display_names(self, mock_console: Console) -> None:
+        from toolwright.ui.flows.quickstart import _render_health_bar
+
+        first = MagicMock()
+        first.toolpack_id = "Toolwright Demo"
+        first.toolpack_path = "/tmp/.toolwright/toolpacks/tp_123/toolpack.yaml"
+        first.lockfile_state = "pending"
+        first.has_baseline = True
+        first.drift_state = "clean"
+        first.verification_state = "pass"
+        first.pending_count = 3
+
+        second = MagicMock()
+        second.toolpack_id = "Toolwright Demo"
+        second.toolpack_path = "/tmp/.toolwright/toolpacks/tp_456/toolpack.yaml"
+        second.lockfile_state = "pending"
+        second.has_baseline = True
+        second.drift_state = "clean"
+        second.verification_state = "pass"
+        second.pending_count = 5
+
+        _render_health_bar([first, second], mock_console)
+        output = mock_console.file.getvalue()  # type: ignore[attr-defined]
+        assert "Toolwright Demo" in output
+        assert "2 toolpacks" in output
+        assert "8 pending" in output
+
+    def test_summarizes_hidden_toolpacks(self, mock_console: Console) -> None:
+        from toolwright.ui.flows.quickstart import _render_health_bar
+
+        statuses = []
+        for idx in range(8):
+            model = MagicMock()
+            model.toolpack_id = f"api-{idx}"
+            model.toolpack_path = f"/tmp/.toolwright/toolpacks/api-{idx}/toolpack.yaml"
+            model.lockfile_state = "sealed"
+            model.has_baseline = True
+            model.drift_state = "clean"
+            model.verification_state = "pass"
+            model.pending_count = 0
+            statuses.append(model)
+
+        _render_health_bar(statuses, mock_console)
+        output = mock_console.file.getvalue()  # type: ignore[attr-defined]
+        assert "... and 2 more toolpacks" in output
 
 
 # ---------------------------------------------------------------------------
@@ -129,6 +175,32 @@ class TestBuildMenu:
         first_key, first_label = menu[0]
         assert first_key == "gate"
         assert "recommended" in first_label.lower()
+
+    def test_pending_recommendation_uses_total_pending(self) -> None:
+        from toolwright.ui.flows.quickstart import _build_menu
+
+        first = MagicMock()
+        first.toolpack_id = "github"
+        first.lockfile_state = "pending"
+        first.verification_state = "not_run"
+        first.drift_state = "not_checked"
+        first.pending_count = 1
+        first.has_baseline = False
+        first.has_mcp_config = False
+
+        second = MagicMock()
+        second.toolpack_id = "Toolwright Demo"
+        second.lockfile_state = "pending"
+        second.verification_state = "not_run"
+        second.drift_state = "not_checked"
+        second.pending_count = 8
+        second.has_baseline = False
+        second.has_mcp_config = False
+
+        menu = _build_menu([first, second], [Path("/fake/github.yaml"), Path("/fake/demo.yaml")])
+        first_key, first_label = menu[0]
+        assert first_key == "gate"
+        assert "(9 pending)" in first_label
 
     def test_all_green_recommends_ship(self) -> None:
         from toolwright.ui.flows.quickstart import _build_menu
@@ -187,11 +259,28 @@ class TestWizardFirstRun:
             patch("toolwright.ui.flows.quickstart.err_console", mock_console),
             patch("toolwright.ui.flows.quickstart.select_one", return_value="exit"),
             patch("toolwright.ui.views.branding.err_console", mock_console),
+            patch("toolwright.cli.demo.run_demo"),
         ):
             wizard_flow(root=Path("/nonexistent/.toolwright"))
 
         output = mock_console.file.getvalue()  # type: ignore[attr-defined]
         assert "Welcome" in output or "toolwright" in output.lower()
+
+    def test_first_run_offers_demo_as_menu_option(self, mock_console: Console) -> None:
+        """First-run menu should include demo as a choice (not auto-run)."""
+        from toolwright.ui.flows.quickstart import wizard_flow
+
+        with (
+            patch("toolwright.ui.flows.quickstart.err_console", mock_console),
+            patch("toolwright.ui.flows.quickstart.select_one", return_value="exit") as mock_select,
+            patch("toolwright.ui.views.branding.err_console", mock_console),
+        ):
+            wizard_flow(root=Path("/nonexistent/.toolwright"))
+
+        # Verify demo is offered as a menu choice
+        call_args = mock_select.call_args
+        options = call_args[0][0] if call_args[0] else call_args[1].get("options", [])
+        assert "demo" in options
 
     def test_first_run_shows_project_detection(self, mock_console: Console, tmp_path: Path) -> None:
         from toolwright.ui.flows.quickstart import wizard_flow
@@ -246,6 +335,50 @@ class TestWizardReturning:
 
         output = mock_console.file.getvalue()  # type: ignore[attr-defined]
         assert "test-api" in output
+
+    def test_returning_user_aggregates_pending_guidance(self, mock_console: Console, tmp_path: Path) -> None:
+        from toolwright.ui.flows.quickstart import wizard_flow
+
+        tp = tmp_path / "toolpacks" / "test-api"
+        tp.mkdir(parents=True)
+        (tp / "toolpack.yaml").write_text("name: test-api")
+
+        first = MagicMock()
+        first.toolpack_id = "github"
+        first.toolpack_path = str(tmp_path / "toolpacks" / "github" / "toolpack.yaml")
+        first.lockfile_state = "pending"
+        first.verification_state = "not_run"
+        first.drift_state = "not_checked"
+        first.pending_count = 1
+        first.has_baseline = False
+        first.has_mcp_config = False
+        first.tool_count = 1
+        first.approved_count = 0
+        first.blocked_count = 0
+
+        second = MagicMock()
+        second.toolpack_id = "Toolwright Demo"
+        second.toolpack_path = str(tmp_path / "toolpacks" / "tp_demo" / "toolpack.yaml")
+        second.lockfile_state = "pending"
+        second.verification_state = "not_run"
+        second.drift_state = "not_checked"
+        second.pending_count = 8
+        second.has_baseline = False
+        second.has_mcp_config = False
+        second.tool_count = 8
+        second.approved_count = 0
+        second.blocked_count = 0
+
+        with (
+            patch("toolwright.ui.flows.quickstart.err_console", mock_console),
+            patch("toolwright.ui.flows.quickstart.select_one", return_value="exit"),
+            patch("toolwright.ui.views.branding.err_console", mock_console),
+            patch("toolwright.ui.flows.quickstart._gather_governance_status", return_value=[first, second]),
+        ):
+            wizard_flow(root=tmp_path)
+
+        output = mock_console.file.getvalue()  # type: ignore[attr-defined]
+        assert "9 tools awaiting approval across 2 toolpacks" in output
 
 
 # ---------------------------------------------------------------------------

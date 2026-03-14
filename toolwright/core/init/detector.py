@@ -123,7 +123,7 @@ def detect_project(directory: Path) -> ProjectDetection:
     if result.api_specs:
         result.suggestions.append(
             f"Found API spec(s): {', '.join(result.api_specs)}. "
-            "Consider running: toolwright capture import <spec>"
+            "Consider running: toolwright create --spec <path>"
         )
     if not result.has_existing_toolwright:
         result.suggestions.append("Will create .toolwright/ directory with starter config")

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from toolwright.ui.console import err_console
-from toolwright.ui.discovery import find_lockfiles
+from toolwright.ui.discovery import find_lockfiles, lockfile_labels
 from toolwright.ui.echo import echo_plan, echo_summary
 from toolwright.ui.prompts import confirm, select_one
 from toolwright.ui.runner import load_lockfile_tools, run_gate_snapshot
@@ -45,6 +45,7 @@ def gate_snapshot_flow(
         else:
             lockfile_path = select_one(
                 [str(p) for p in use],
+                labels=lockfile_labels(use, root=root),
                 prompt="Select lockfile",
                 console=con,
             )

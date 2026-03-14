@@ -6,9 +6,9 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
+from tests.helpers import write_demo_toolpack
 from toolwright.cli.main import cli
 from toolwright.core.approval import LockfileManager
-from tests.helpers import write_demo_toolpack
 
 
 def test_check_ci_requires_snapshot(tmp_path: Path) -> None:

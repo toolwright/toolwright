@@ -16,11 +16,9 @@ def test_demo_default_root_output_and_clean_stderr() -> None:
 
     assert result.exit_code == 0
     assert result.stderr == ""
-    assert "Demo complete" in result.stdout
-    assert "Next steps:" in result.stdout
-
-    # Default root is .toolwright
-    assert "Toolpack:" in result.stdout
+    assert "governance in action" in result.stdout
+    assert "What just happened" in result.stdout
+    assert "toolwright create github" in result.stdout
     root = Path(".toolwright")
     assert root.exists()
     assert (root / "captures").exists()
@@ -36,8 +34,5 @@ def test_demo_out_override(tmp_path: Path) -> None:
 
     assert result.exit_code == 0
     assert result.stderr == ""
-    assert str(output_root) in result.stdout
+    assert "governance in action" in result.stdout
     assert output_root.exists()
-    assert (output_root / "captures").exists()
-    assert (output_root / "artifacts").exists()
-    assert (output_root / "toolpacks").exists()

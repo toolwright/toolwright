@@ -12,6 +12,7 @@ import logging
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 import yaml
@@ -89,12 +90,12 @@ class ToolpackVersioner:
 
         logger.info("Rolled back to snapshot %s", snapshot_id)
 
-    def list_snapshots(self) -> list[dict]:
+    def list_snapshots(self) -> list[dict[str, Any]]:
         """List all snapshots, newest first."""
         if not self._snapshots_dir.exists():
             return []
 
-        snapshots = []
+        snapshots: list[dict[str, Any]] = []
         for d in self._snapshots_dir.iterdir():
             if not d.is_dir():
                 continue
@@ -144,11 +145,13 @@ class ToolpackVersioner:
     def _make_id(self) -> str:
         return datetime.now(UTC).strftime("%Y%m%dT%H%M%S") + "-" + uuid4().hex[:8]
 
-    def _get_toolpack_config(self) -> dict:
+    def _get_toolpack_config(self) -> dict[str, Any]:
         """Load toolpack.yaml to find artifact paths."""
         tp_path = self._tp_dir / "toolpack.yaml"
         if tp_path.exists():
-            return yaml.safe_load(tp_path.read_text()) or {}
+            data = yaml.safe_load(tp_path.read_text()) or {}
+            if isinstance(data, dict):
+                return dict(data)
         return {}
 
     def _copy_file(self, relative: str, dest_dir: Path) -> None:

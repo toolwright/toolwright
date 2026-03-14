@@ -8,9 +8,9 @@ from unittest.mock import patch
 
 from click.testing import CliRunner
 
+from tests.helpers import load_yaml, write_demo_toolpack
 from toolwright.cli.main import cli
 from toolwright.core.approval import LockfileManager
-from tests.helpers import load_yaml, write_demo_toolpack
 
 
 class TestMaterializeSnapshotOverride:
