@@ -225,7 +225,11 @@ def run_mcp_serve(
         resolved_tools_path = resolved_toolpack_paths.tools_path
 
     if resolved_tools_path is None:
-        click.echo("Error: Provide --tools or --toolpack.", err=True)
+        click.echo(
+            "Error: No tools found. Provide --tools or --toolpack, "
+            "or run 'toolwright create' first.",
+            err=True,
+        )
         sys.exit(1)
     if not resolved_tools_path.exists():
         click.echo(f"Error: Tools manifest not found: {resolved_tools_path}", err=True)

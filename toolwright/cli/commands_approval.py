@@ -259,7 +259,11 @@ def register_approval_commands(
             from toolwright.core.approval import LockfileManager
 
             if not lockfile:
-                click.echo("No lockfile found. Run 'toolwright gate sync' first.", err=True)
+                click.echo(
+                    "No lockfile found. Run 'toolwright create' to generate a toolpack, "
+                    "or 'toolwright gate sync' if you already have one.",
+                    err=True,
+                )
                 ctx.exit(1)
                 return
 
