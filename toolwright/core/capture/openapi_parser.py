@@ -235,6 +235,22 @@ class OpenAPIParser:
         # Extract response
         response_status, response_body_json = self._extract_response(operation, spec)
 
+        # Preserve OpenAPI parameter schemas for downstream type fidelity
+        param_schemas = self._extract_parameter_schemas(parameters)
+        body_meta = self._extract_request_body_meta(operation, spec)
+
+        notes: dict[str, Any] = {
+            "openapi_operation_id": operation.get("operationId"),
+            "openapi_summary": operation.get("summary"),
+            "openapi_description": operation.get("description"),
+            "openapi_tags": operation.get("tags", []),
+            "openapi_deprecated": operation.get("deprecated", False),
+        }
+        if param_schemas:
+            notes["openapi_parameter_schemas"] = param_schemas
+        if body_meta:
+            notes["openapi_request_body_meta"] = body_meta
+
         # Create exchange
         exchange = HttpExchange(
             url=url,
@@ -248,13 +264,7 @@ class OpenAPIParser:
             response_content_type="application/json",
             timestamp=datetime.now(UTC),
             source=CaptureSource.MANUAL,
-            notes={
-                "openapi_operation_id": operation.get("operationId"),
-                "openapi_summary": operation.get("summary"),
-                "openapi_description": operation.get("description"),
-                "openapi_tags": operation.get("tags", []),
-                "openapi_deprecated": operation.get("deprecated", False),
-            },
+            notes=notes,
         )
 
         return exchange
@@ -310,6 +320,70 @@ class OpenAPIParser:
                 query[name] = str(example) if example is not None else ""
 
         return query
+
+    def _extract_parameter_schemas(
+        self, parameters: list[dict[str, Any]]
+    ) -> dict[str, dict[str, Any]]:
+        """Extract OpenAPI schema metadata for each parameter.
+
+        Returns a dict of param_name -> schema dict (type, enum, format, etc.)
+        for query, path, and header parameters.
+        """
+        result: dict[str, dict[str, Any]] = {}
+        for param in parameters:
+            name = param.get("name", "")
+            schema = param.get("schema", {})
+            if not schema or not name:
+                continue
+            # Copy relevant schema fields
+            preserved: dict[str, Any] = {}
+            for key in ("type", "enum", "format", "minimum", "maximum", "pattern",
+                        "minLength", "maxLength", "default"):
+                if key in schema:
+                    preserved[key] = schema[key]
+            if preserved:
+                result[name] = preserved
+        return result
+
+    def _extract_request_body_meta(
+        self, operation: dict[str, Any], spec: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Extract request body metadata: required fields and per-field schemas."""
+        request_body = operation.get("requestBody")
+        if not request_body:
+            return {}
+
+        content = request_body.get("content", {})
+        for content_type in ("application/json", "application/x-www-form-urlencoded"):
+            if content_type not in content:
+                continue
+            schema = content[content_type].get("schema", {})
+            if "$ref" in schema:
+                schema = self._resolve_ref(schema["$ref"], spec)
+
+            meta: dict[str, Any] = {}
+            if "required" in schema:
+                meta["required_fields"] = schema["required"]
+
+            # Preserve per-field schema metadata
+            properties = schema.get("properties", {})
+            if properties:
+                field_schemas: dict[str, dict[str, Any]] = {}
+                for field_name, field_schema in properties.items():
+                    if "$ref" in field_schema:
+                        field_schema = self._resolve_ref(field_schema["$ref"], spec)
+                    preserved: dict[str, Any] = {}
+                    for key in ("type", "enum", "format", "minimum", "maximum",
+                                "pattern", "minLength", "maxLength", "default"):
+                        if key in field_schema:
+                            preserved[key] = field_schema[key]
+                    if preserved:
+                        field_schemas[field_name] = preserved
+                if field_schemas:
+                    meta["field_schemas"] = field_schemas
+
+            return meta
+        return {}
 
     def _extract_request_body(
         self, operation: dict[str, Any], spec: dict[str, Any]

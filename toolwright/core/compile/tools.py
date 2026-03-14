@@ -261,6 +261,10 @@ class ToolManifestGenerator:
                 prop["pattern"] = param.pattern
             if param.default is not None:
                 prop["default"] = param.default
+            # Propagate enum and other constraints from OpenAPI schema
+            if param.json_schema:
+                if "enum" in param.json_schema:
+                    prop["enum"] = param.json_schema["enum"]
 
             if self._is_nextjs_build_id_param(endpoint, param.name, param.location.value):
                 # Next.js build IDs are deployment-derived and should never be user-supplied.
