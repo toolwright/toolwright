@@ -28,6 +28,9 @@ CURATE_SCRIPT = JIRA_DIR / "curate_spec.py"
 
 def _load_jira_curate_spec():
     """Load dogfood/jira/curate_spec.py as 'jira_curate_spec' module."""
+    if not CURATE_SCRIPT.exists():
+        pytest.skip("dogfood/jira/curate_spec.py not found (dogfood/ is gitignored)")
+
     module_name = "jira_curate_spec"
     if module_name in sys.modules:
         return sys.modules[module_name]

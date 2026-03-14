@@ -78,7 +78,9 @@ class TestMCPClientDetection:
         config_file = config_dir / "claude_desktop_config.json"
         config_file.write_text("{}")
 
-        with patch.dict(os.environ, {"HOME": str(tmp_path)}):
+        with patch("toolwright.utils.mcp_clients.platform") as mock_platform, \
+             patch.dict(os.environ, {"HOME": str(tmp_path)}):
+            mock_platform.system.return_value = "Darwin"
             clients = detect_mcp_clients(home_override=tmp_path)
 
         names = [c.name for c in clients]

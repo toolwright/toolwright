@@ -17,6 +17,11 @@ import yaml
 # The module under test
 CURATE_SCRIPT = Path(__file__).parent.parent / "dogfood" / "github" / "curate_spec.py"
 
+pytestmark = pytest.mark.skipif(
+    not CURATE_SCRIPT.exists(),
+    reason="dogfood/github/curate_spec.py not found (dogfood/ is gitignored)",
+)
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
