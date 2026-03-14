@@ -223,7 +223,9 @@ def run_create(
             "No endpoints found in the OpenAPI spec. Check the spec file."
         )
 
-    click.echo(f"  Found {len(session.exchanges)} endpoints")
+    from toolwright.utils.text import pluralize
+
+    click.echo(f"  Found {pluralize(len(session.exchanges), 'endpoint')}")
 
     # Compile
     click.echo("  Compiling artifacts...")
@@ -374,7 +376,7 @@ def run_create(
     # Section 1: Tools Created (inline gate status)
     tools_data = json.loads(copied_tools.read_text())
     actions = tools_data.get("actions", [])
-    click.echo(f"\n  Tools: {len(actions)} endpoints compiled")
+    click.echo(f"\n  Tools: {pluralize(len(actions), 'endpoint')} compiled")
 
     if gate_result and gate_result.approved_count > 0:
         click.echo(f"  Auto-approved: {gate_result.approved_count} (low/medium risk)")
