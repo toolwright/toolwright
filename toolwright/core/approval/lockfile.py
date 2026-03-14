@@ -493,16 +493,39 @@ class LockfileManager:
         return new_level > old_level
 
     def _default_approval_root(self) -> Path:
-        """Resolve canonical root for approval signing key material."""
+        """Resolve canonical root for approval signing key material.
+
+        Search order:
+        1. TOOLWRIGHT_ROOT env var
+        2. .toolwright ancestor in the lockfile path
+        3. Toolpack-local .toolwright (next to toolpack.yaml)
+        4. .toolwright sibling to lockfile directory
+        """
         from toolwright.core.approval.signing import resolve_approval_root
 
         # When lockfiles live outside a `.toolwright` tree (exports, temp dirs, tests),
         # default to a sibling `.toolwright` root next to the lockfile for portability.
         fallback = self.lockfile_path.parent / ".toolwright" / "state" / "confirmations.db"
-        return resolve_approval_root(
+        resolved = resolve_approval_root(
             lockfile_path=self.lockfile_path,
             fallback_root=fallback,
         )
+
+        # If the resolved path has no trust store, check for toolpack-local trust store.
+        trust_store = resolved / "state" / "keys" / "trusted_signers.json"
+        if not trust_store.exists():
+            from toolwright.core.approval.snapshot import resolve_toolpack_root
+
+            toolpack_root = resolve_toolpack_root(self.lockfile_path)
+            if toolpack_root is not None:
+                toolpack_trust_root = toolpack_root / ".toolwright"
+                toolpack_trust_store = (
+                    toolpack_trust_root / "state" / "keys" / "trusted_signers.json"
+                )
+                if toolpack_trust_store.exists():
+                    return toolpack_trust_root
+
+        return resolved
 
     def approve(
         self,
@@ -690,8 +713,72 @@ class LockfileManager:
         """
         return len(self.get_pending(toolset=toolset)) > 0
 
+    def verify_signatures(
+        self,
+        root_path: str | Path | None = None,
+    ) -> tuple[bool, str]:
+        """Verify Ed25519 signatures for all approved tools in the lockfile.
+
+        Returns:
+            Tuple of (all_valid, message). On failure, message names the
+            first tool whose signature is invalid and suggests a recovery action.
+        """
+        if self.lockfile is None:
+            self.load()
+        assert self.lockfile is not None
+
+        from toolwright.core.approval.signing import ApprovalSigner
+
+        resolved_root = Path(root_path) if root_path else self._default_approval_root()
+
+        try:
+            signer = ApprovalSigner(root_path=resolved_root, read_only=True)
+        except Exception:
+            return False, (
+                "Lockfile integrity check failed: unable to load signing trust store. "
+                "Run 'toolwright gate sync' to regenerate."
+            )
+
+        failed_tools: list[str] = []
+        for tool in self.lockfile.tools.values():
+            if tool.status != ApprovalStatus.APPROVED:
+                continue
+
+            if not tool.approval_signature:
+                failed_tools.append(tool.name)
+                continue
+
+            if not tool.approved_by or tool.approved_at is None:
+                failed_tools.append(tool.name)
+                continue
+
+            valid = signer.verify_approval(
+                tool=tool,
+                approved_by=str(tool.approved_by),
+                approved_at=tool.approved_at,
+                reason=tool.approval_reason,
+                mode=tool.approval_mode,
+                signature=str(tool.approval_signature),
+            )
+            if not valid:
+                failed_tools.append(tool.name)
+
+        if failed_tools:
+            names = ", ".join(failed_tools[:5])
+            suffix = f" (and {len(failed_tools) - 5} more)" if len(failed_tools) > 5 else ""
+            return False, (
+                f"Lockfile integrity check failed: signature mismatch for tool "
+                f"'{names}'{suffix}. Run 'toolwright gate sync' to regenerate."
+            )
+
+        return True, "All approval signatures verified"
+
     def check_approvals(self, toolset: str | None = None) -> tuple[bool, str]:
-        """Check approval state without snapshot validation."""
+        """Check approval state (status only, no cryptographic verification).
+
+        For full integrity checking including Ed25519 signature verification,
+        use ``check_ci()`` or call ``verify_signatures()`` explicitly.
+        """
         if self.lockfile is None:
             self.load()
 
@@ -731,6 +818,9 @@ class LockfileManager:
     def check_ci(self, toolset: str | None = None) -> tuple[bool, str]:
         """Check if CI should pass.
 
+        Performs status checks, Ed25519 signature verification, snapshot
+        validation, and evidence summary checks.
+
         Returns:
             Tuple of (should_pass, message)
         """
@@ -754,6 +844,23 @@ class LockfileManager:
         toolpack_root = resolve_toolpack_root(self.lockfile_path)
         if toolpack_root is None:
             return False, "toolpack.yaml not found; check_ci requires toolpack context"
+
+        # Verify Ed25519 signatures for all approved tools.
+        # Try toolpack-local trust store first (seeded by `gate allow`),
+        # then fall back to default approval root resolution.
+        toolpack_trust_root = toolpack_root / ".toolwright"
+        toolpack_trust_store = toolpack_trust_root / "state" / "keys" / "trusted_signers.json"
+        if toolpack_trust_store.exists():
+            sig_passed, sig_message = self.verify_signatures(root_path=toolpack_trust_root)
+            if not sig_passed:
+                # Toolpack trust store may be stale; try default root as fallback.
+                sig_passed2, sig_message2 = self.verify_signatures()
+                if not sig_passed2:
+                    return False, sig_message
+        else:
+            sig_passed, sig_message = self.verify_signatures()
+            if not sig_passed:
+                return False, sig_message
 
         snapshot_dir = toolpack_root / self.lockfile.baseline_snapshot_dir
         try:

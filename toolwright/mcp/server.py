@@ -181,6 +181,20 @@ class ToolwrightMCPServer:
             if not manager.exists():
                 raise ValueError(f"Lockfile not found: {manager.lockfile_path}")
             lockfile = manager.load()
+
+            # Verify Ed25519 signatures at startup.
+            # This is a defense-in-depth check; per-request verification in
+            # DecisionEngine is the primary enforcement point.
+            sig_passed, sig_message = manager.verify_signatures(
+                root_path=self.approval_root_path,
+            )
+            if not sig_passed:
+                logger.warning(
+                    "Lockfile signature verification failed at startup: %s. "
+                    "Per-request signature verification is still enforced.",
+                    sig_message,
+                )
+
             self.lockfile_manager = manager
             self.lockfile_digest_current = compute_lockfile_digest(lockfile.model_dump(mode="json"))
             if self.lockfile_path.exists():
