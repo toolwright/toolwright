@@ -104,7 +104,7 @@ def register_auth_check_command(*, auth_group: click.Group) -> None:
     @auth_group.command("check")
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolves if omitted)",
     )
     @click.option(

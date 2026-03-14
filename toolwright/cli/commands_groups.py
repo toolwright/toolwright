@@ -19,7 +19,7 @@ def register_groups_commands(*, cli: click.Group) -> None:
     @groups.command("list")
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml",
     )
     @click.pass_context
@@ -64,7 +64,7 @@ def register_groups_commands(*, cli: click.Group) -> None:
     @click.argument("name")
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml",
     )
     @click.pass_context

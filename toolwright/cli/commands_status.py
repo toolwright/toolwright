@@ -17,7 +17,7 @@ def register_status_commands(*, cli: click.Group) -> None:
     @cli.command()
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-discovered if not given)",
     )
     @click.option(
@@ -75,7 +75,7 @@ def register_status_commands(*, cli: click.Group) -> None:
     @cli.command()
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-discovered if not given)",
     )
     @click.pass_context

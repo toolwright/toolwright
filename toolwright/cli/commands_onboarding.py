@@ -68,7 +68,7 @@ def register_onboarding_commands(*, cli: click.Group) -> None:
     @click.argument("new_name")
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-discovered if not given)",
     )
     @click.pass_context

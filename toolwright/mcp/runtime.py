@@ -468,8 +468,8 @@ def run_mcp_serve(
         _max_idx = _risk_order.index(max_risk) if max_risk in _risk_order else len(_risk_order) - 1
         _display_actions = [
             a for a in _display_actions
-            if _risk_order.index(a.get("risk_tier", "low")) <= _max_idx
             if a.get("risk_tier", "low") in _risk_order
+            and _risk_order.index(a.get("risk_tier", "low")) <= _max_idx
         ]
 
     _tool_categories: dict[str, int] = {}

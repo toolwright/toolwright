@@ -23,7 +23,7 @@ def register_validation_commands(
     @cli.command("diff")
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolved if not given)",
     )
     @click.option(
@@ -170,7 +170,7 @@ Examples:
     )
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolved if not given)",
     )
     @click.option(
@@ -243,7 +243,7 @@ Examples:
     @click.option(
         "--toolpack",
         required=False,
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-detected if omitted).",
     )
     @click.option(
@@ -287,10 +287,10 @@ Examples:
     @cli.command(hidden=True)
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (resolves tools/policy paths)",
     )
-    @click.option("--tools", type=click.Path(exists=True), help="Path to tools.json")
+    @click.option("--tools", type=click.Path(), help="Path to tools.json")
     @click.option("--policy", type=click.Path(exists=True), help="Path to policy.yaml")
     @click.option(
         "--format",
@@ -328,7 +328,7 @@ Examples:
     )
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolves tools.json path)",
     )
     def health(tools: str | None, toolpack: str | None) -> None:

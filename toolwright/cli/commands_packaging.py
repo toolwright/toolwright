@@ -28,7 +28,7 @@ Examples:
     )
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml (auto-resolved if not given)",
     )
     @click.option(
@@ -121,7 +121,7 @@ Examples:
     @click.option(
         "--toolpack",
         required=True,
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml",
     )
     @click.option(
@@ -146,7 +146,7 @@ Examples:
     @click.option(
         "--toolpack",
         required=True,
-        type=click.Path(exists=True),
+        type=click.Path(),
         help="Path to toolpack.yaml",
     )
     @click.option(

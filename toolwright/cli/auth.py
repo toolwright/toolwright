@@ -131,7 +131,7 @@ def auth_list(root: str) -> None:
 @auth_group.command("setup")
 @click.option(
     "--toolpack",
-    type=click.Path(exists=True),
+    type=click.Path(),
     default=None,
     help="Path to toolpack.yaml",
 )

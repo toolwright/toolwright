@@ -20,7 +20,7 @@ def register_tokens_commands(*, cli: click.Group) -> None:
     @cli.command("estimate-tokens")
     @click.option(
         "--toolpack",
-        type=click.Path(exists=True),
+        type=click.Path(),
         default=None,
         help="Path to toolpack.yaml (auto-resolves if omitted)",
     )
